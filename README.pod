@@ -1,0 +1,53 @@
+=head1 NAME
+
+github-keygen - bootstrap your Github SSH configuration
+
+=head1 SYNOPSIS
+
+    git checkout https://github.com/dolmen/github-keygen.git
+    cd github-keygen
+    ./github-keygen <my-github-username>
+
+=head1 DESCRIPTION
+
+This script will do:
+
+=over 4
+
+=item *
+
+Create a new SSH key that you will use only for Github
+
+=item *
+
+Create the SSH configuration optimized for Github and dedicated to Github
+(do not impact your other SSH configurations)
+
+=item *
+
+Install the Github SSH host authentication fingerprints
+
+=back
+
+=head1 AUTHOR
+
+Olivier MenguE<eacute>, <<<dolmen@cpan.org>>>
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright E<copy> 2011 Olivier MenguE<eacute>.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=cut

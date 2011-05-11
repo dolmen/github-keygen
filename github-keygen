@@ -1,0 +1,80 @@
+#!/bin/bash
+# Copyright (C) 2011 Olivier Mengué
+# http://github.com/dolmen
+# Licence: GNU GPL v3
+
+github_user="$1"
+github_hosts="github.com gist.github.com"
+key_type=${key_type:-rsa}
+key_bits=${key_bits:-2048}
+[[ -z "$github_user" ]] && { echo "usage: $0 <github_user>" >&2 ; exit 1 ; }
+key_name="${key_name:-$(hostname)}"
+
+key_file=~/.ssh/"id_$github_user@github"
+known_hosts_file=~/.ssh/github_known_hosts
+
+if [ -f "$key_file" ] ; then
+	echo "Key ~/${key_file#$HOME/} already exists" >&2
+else
+	echo Creating private key...
+	ssh-keygen -t $key_type -b $key_bits -C "$key_name" -f "$key_file" || exit $?
+	echo Done.
+	echo
+	#ssh-keygen -e -f "$key_file"
+fi
+
+for h in $github_hosts
+do
+	ssh-keygen -R $h 2>/dev/null
+done
+
+echo Saving github hosts authentication keys...
+ssh-keyscan -H -t dsa,rsa $github_hosts > "$known_hosts_file"
+chmod 600 "$known_hosts_file"
+
+echo
+echo "Here is your public key. Post it at https://github.com/account/ssh"
+echo '----8<--------8--------8<--------8<--------8<--------'
+cat $key_file.pub #| sed '1s/^/# /'
+echo '----8<--------8--------8<--------8<--------8<--------
+'
+
+ssh_config=$(cat <<EOF
+Host $github_hosts
+User git
+IdentityFile ~/${key_file#$HOME/}
+StrictHostKeyChecking yes
+HashKnownHosts yes
+UserKnownHostsFile ~/${known_hosts_file#$HOME/}
+ForwardAgent no
+ForwardX11 no
+PasswordAuthentication no
+PermitLocalCommand no
+PreferredAuthentications publickey
+# GitHub has not yet (2011-05) implemented SSHFP (RFC 4255)
+VerifyHostKeyDNS no
+EOF
+)
+
+if [ -f ~/.ssh/config ] ; then
+	cat <<EOF
+Add the following lines to ~/.ssh/config:
+----8<--------8--------8<--------8<--------8<--------
+$ssh_config
+----8<--------8--------8<--------8<--------8<--------
+
+EOF
+else
+	echo "Creating ~/.ssh/config..."
+	echo "$ssh_config" > ~/.ssh/config
+	echo
+fi
+
+chmod 600 ~/.ssh/config
+
+cat <<EOF
+Done.
+
+Once you have done the actions above you will be able to test with: ssh github.com
+
+EOF
