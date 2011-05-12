@@ -40,19 +40,31 @@ echo '----8<--------8--------8<--------8<--------8<--------
 '
 
 ssh_config=$(cat <<EOF
-Host $github_hosts
+# -- github-keygen - begin --
+
+Host *.github.com
+Hostname github.com
+
+Host *.gist.github.com
+Hostname gist.github.com
+
+Host $github_hosts *.github.com *.gist.github.com
 User git
-IdentityFile ~/${key_file#$HOME/}
 StrictHostKeyChecking yes
 HashKnownHosts yes
-UserKnownHostsFile ~/${known_hosts_file#$HOME/}
 ForwardAgent no
 ForwardX11 no
 PasswordAuthentication no
 PermitLocalCommand no
 PreferredAuthentications publickey
+UserKnownHostsFile ~/${known_hosts_file#$HOME/}
 # GitHub has not yet (2011-05) implemented SSHFP (RFC 4255)
 VerifyHostKeyDNS no
+
+Host $github_hosts $github_user.github.com $github_user.gist.github.com
+IdentityFile ~/${key_file#$HOME/}
+
+# -- github-keygen - end --
 EOF
 )
 
@@ -75,6 +87,10 @@ chmod 600 ~/.ssh/config
 cat <<EOF
 Done.
 
-Once you have done the actions above you will be able to test with: ssh github.com
+Once you have done the actions above you will be able to test with:
+    ssh github.com
+    ssh gist.github.com
+    ssh $github_user.github.com
+    ssh $github_user.gist.github.com
 
 EOF
