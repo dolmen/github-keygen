@@ -50,16 +50,19 @@ Hostname gist.github.com
 
 Host $github_hosts *.github.com *.gist.github.com
 User git
+# Enforce host checks
 StrictHostKeyChecking yes
-HashKnownHosts yes
-ForwardAgent no
-ForwardX11 no
-PasswordAuthentication no
-PermitLocalCommand no
-PreferredAuthentications publickey
 UserKnownHostsFile ~/${known_hosts_file#$HOME/}
+HashKnownHosts yes
 # GitHub has not yet (2011-05) implemented SSHFP (RFC 4255)
 VerifyHostKeyDNS no
+# Enable only the required authentication
+PubkeyAuthentication yes
+PreferredAuthentications publickey
+# Trust no one, especially the remote
+ForwardAgent no
+ForwardX11 no
+PermitLocalCommand no
 
 Host $github_hosts $github_user.github.com $github_user.gist.github.com
 IdentityFile ~/${key_file#$HOME/}
