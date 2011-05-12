@@ -1,6 +1,6 @@
 #!/bin/bash
 # Copyright (C) 2011 Olivier Mengué
-# http://github.com/dolmen
+# https://github.com/dolmen/github-keygen
 # Licence: GNU GPL v3
 
 github_user="$1"
