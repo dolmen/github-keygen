@@ -11,7 +11,7 @@ key_bits=${key_bits:-2048}
 key_name="${key_name:-$(hostname)}"
 
 key_file=~/.ssh/"id_$github_user@github"
-known_hosts_file=~/.ssh/github_known_hosts
+known_hosts_file=~/.ssh/known_hosts_github
 
 if [ -e "$key_file" ] ; then
 	echo "Key ~/${key_file#$HOME/} already exists" >&2
@@ -29,7 +29,9 @@ do
 done
 
 echo Saving github hosts authentication keys...
-ssh-keyscan -H -t dsa,rsa $github_hosts > "$known_hosts_file"
+# Do not hash hosts: this file is already identified as containing
+# Github hosts public keys, so this would not add any security
+ssh-keyscan -t dsa,rsa $github_hosts > "$known_hosts_file"
 chmod 600 "$known_hosts_file"
 
 echo
@@ -53,6 +55,7 @@ User git
 # Enforce host checks
 StrictHostKeyChecking yes
 UserKnownHostsFile ~/${known_hosts_file#$HOME/}
+# Hosts added later (identified by IP) will be hashed
 HashKnownHosts yes
 # GitHub has not yet (2011-05) implemented SSHFP (RFC 4255)
 VerifyHostKeyDNS no
