@@ -4,7 +4,7 @@ github-keygen - bootstrap your Github SSH configuration
 
 =head1 SYNOPSIS
 
-    git checkout https://github.com/dolmen/github-keygen.git
+    git clone https://github.com/dolmen/github-keygen.git
     cd github-keygen
     ./github-keygen <my-github-username>
 
