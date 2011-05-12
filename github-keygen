@@ -13,7 +13,7 @@ key_name="${key_name:-$(hostname)}"
 key_file=~/.ssh/"id_$github_user@github"
 known_hosts_file=~/.ssh/github_known_hosts
 
-if [ -f "$key_file" ] ; then
+if [ -e "$key_file" ] ; then
 	echo "Key ~/${key_file#$HOME/} already exists" >&2
 else
 	echo Creating private key...
