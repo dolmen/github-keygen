@@ -15,6 +15,10 @@ known_hosts_file=~/.ssh/known_hosts_github
 
 if [ -e "$key_file" ] ; then
 	echo "Key ~/${key_file#$HOME/} already exists" >&2
+	if [ ! -e "$key_file.pub" || ! -r "$key_file.pub" ] ; then
+		echo "Public key $key_file.pub is missing!" >&2
+		exit 1
+	fi
 else
 	echo Creating private key...
 	ssh-keygen -t $key_type -b $key_bits -C "$key_name" -f "$key_file" || exit $?
