@@ -13,6 +13,8 @@ key_name="${key_name:-$(hostname)}"
 key_file=~/.ssh/"id_$github_user@github"
 known_hosts_file=~/.ssh/known_hosts_github
 
+umask 077
+
 if [ -e "$key_file" ] ; then
 	echo "Key ~/${key_file#$HOME/} already exists" >&2
 	if [ ! -e "$key_file.pub" || ! -r "$key_file.pub" ] ; then
