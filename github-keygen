@@ -44,12 +44,15 @@ if [[ ! -e "$known_hosts_file" || -w "$known_hosts_file" ]] ; then
 fi
 chmod u+r,u-x,og-rwx "$known_hosts_file"
 
-echo
-echo "Here is your public key. Post it at https://github.com/account/ssh"
-echo '----8<--------8--------8<--------8<--------8<--------'
+cut='----8<--------8--------8<--------8<--------8<--------'
+
+
+echo "
+Here is your public key. Post it at https://github.com/account/ssh
+$cut"
 cat $key_file.pub #| sed '1s/^/# /'
-echo '----8<--------8--------8<--------8<--------8<--------
-'
+echo "$cut
+"
 
 ssh_config=$(cat <<EOF
 # -- github-keygen - begin --
@@ -90,9 +93,9 @@ if [ -f ~/.ssh/config ] ; then
 	Note: if you wanted only to add a new github account and have already done the
 	setup with $0 for an other Github account, you only have to add the
 	last two lines.
-----8<--------8--------8<--------8<--------8<--------
+$cut
 $ssh_config
-----8<--------8--------8<--------8<--------8<--------
+$cut
 
 EOF
 else
