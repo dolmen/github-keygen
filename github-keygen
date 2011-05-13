@@ -85,8 +85,11 @@ EOF
 )
 
 if [ -f ~/.ssh/config ] ; then
-	cat <<EOF
-Add the following lines to ~/.ssh/config:
+	cat <<-EOF
+	Add the following lines to ~/.ssh/config.
+	Note: if you wanted only to add a new github account and have already done the
+	setup with $0 for an other Github account, you only have to add the
+	last two lines.
 ----8<--------8--------8<--------8<--------8<--------
 $ssh_config
 ----8<--------8--------8<--------8<--------8<--------
@@ -95,13 +98,12 @@ EOF
 else
 	echo "Creating ~/.ssh/config..."
 	echo "$ssh_config" > ~/.ssh/config
-	echo
+	echo "Done."
 fi
 
 chmod 600 ~/.ssh/config
 
 cat <<EOF
-Done.
 
 Once you have done the actions above you will be able to test with:
     ssh github.com
