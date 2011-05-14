@@ -15,6 +15,16 @@ known_hosts_file=~/.ssh/known_hosts_github
 
 umask 077
 
+# Make the path absolute
+if ! expr "x$key_file" : x/ >/dev/null ; then
+	if [ -e "$key_file" ] || expr "x$key_file" : x..*/ >/dev/null ; then
+		key_file="$PWD/$key_file"
+	else
+		key_file=~/.ssh/"$key_file"
+	fi
+fi
+
+
 if [ -e "$key_file" ] ; then
 	echo "Key ~/${key_file#$HOME/} already exists" >&2
 	if [ ! -e "$key_file.pub" -o ! -r "$key_file.pub" ] ; then
@@ -22,7 +32,7 @@ if [ -e "$key_file" ] ; then
 		exit 1
 	fi
 else
-	echo Creating private key...
+	echo Creating private key $key_file...
 	ssh-keygen -t $key_type -b $key_bits -C "$key_name" -f "$key_file" || exit $?
 	echo Done.
 	echo
