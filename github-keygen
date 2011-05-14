@@ -125,9 +125,9 @@ chmod 600 ~/.ssh/config
 cat <<EOF
 
 Once you have done the actions above you will be able to test with:
-    ssh github.com
-    ssh gist.github.com
-    ssh $github_user.github.com
-    ssh $github_user.gist.github.com
+    ssh -Tn github.com
+    ssh -Tn gist.github.com
+    ssh -Tn $github_user.github.com
+    ssh -Tn $github_user.gist.github.com
 
 EOF
