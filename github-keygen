@@ -10,7 +10,7 @@ key_bits=${key_bits:-2048}
 [[ -z "$github_user" ]] && { echo "usage: $0 <github_user>" >&2 ; exit 1 ; }
 key_name="${key_name:-$(hostname)}"
 
-key_file=~/.ssh/"id_$github_user@github"
+key_file=${key_file:-~/.ssh/"id_$github_user@github"}
 known_hosts_file=~/.ssh/known_hosts_github
 
 umask 077
