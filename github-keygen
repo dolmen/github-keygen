@@ -17,7 +17,7 @@ umask 077
 
 if [ -e "$key_file" ] ; then
 	echo "Key ~/${key_file#$HOME/} already exists" >&2
-	if [ ! -e "$key_file.pub" || ! -r "$key_file.pub" ] ; then
+	if [ ! -e "$key_file.pub" -o ! -r "$key_file.pub" ] ; then
 		echo "Public key $key_file.pub is missing!" >&2
 		exit 1
 	fi
