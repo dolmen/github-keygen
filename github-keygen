@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 
+use 5.008001;
 use strict;
 use warnings;
 
@@ -33,24 +34,24 @@ $SIG{__DIE__} = sub {
     exit(defined $exit_code ? $exit_code : 1);
 };
 
-sub resolve_path
+sub resolve_path($)
 {
     my $path = shift;
     $path =~ s!^\~(?=/)! HOME_DIR !e;
     $path
 }
 
-sub resolve_ssh_path
+sub resolve_ssh_path($)
 {
     goto &resolve_path;
 }
 
-sub ssh_file
+sub ssh_file($)
 {
     File::Spec->rel2abs($_[0], SSH_DIR);
 }
 
-sub compress_path
+sub compress_path($)
 {
     my $path = File::Spec->canonpath(shift);
     my $home_dir = HOME_DIR;
@@ -198,7 +199,8 @@ foreach my $l (@ssh_config_lines) {
             } else {
                 my $key_file = resolve_path($1);
                 warn sprintf "identity file '%s' for Github user '%s' doesn't exist\n",
-                             $key_file, $user;
+                             $key_file, $user
+                    unless -e $key_file;
                 my $u = {
                     # Create the user without 'key_type' so that the key is not
                     # created if it does not exist
@@ -248,9 +250,6 @@ die "errors while creating key\n" if $errors;
 
 $errors = 0;
 
-if (@github_accounts) {
-}
-
 
 
 if (@github_accounts) {
@@ -271,10 +270,86 @@ if (@github_accounts) {
     unlink KNOWN_HOSTS_FILE;
 }
 
-#print @ssh_config_lines;
+# Create the new config block
+if (@github_accounts) {
 
-require Text::Diff;
-print Text::Diff::diff(\@ssh_config_lines_orig, \@ssh_config_lines, { STYLE => 'Unified' });
+my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
+
+push @ssh_config_lines,
+     ( @ssh_config_lines ? ("\n") : ()),
+     split(/\n\K/, <<EOF);
+# -- github-keygen - begin --
+
+Host *.github.com
+Hostname github.com
+
+Host *.gist.github.com
+Hostname gist.github.com
+
+Host github.com gist.github.com *.github.com *.gist.github.com
+User git
+# Enforce host checks
+StrictHostKeyChecking yes
+UserKnownHostsFile ${known_hosts_file}
+# Hosts added later (identified by IP) will be hashed
+HashKnownHosts yes
+# GitHub has not yet (2011-05) implemented SSHFP (RFC 4255)
+VerifyHostKeyDNS no
+# Enable only the required authentication
+PubkeyAuthentication yes
+PreferredAuthentications publickey
+# Trust no one, especially the remote
+ForwardAgent no
+ForwardX11 no
+PermitLocalCommand no
+
+EOF
+
+sub add_identity
+{
+    my ($gh_account, @hosts) = @_;
+    push @ssh_config_lines,
+      join(' ', 'Host', @hosts) . "\n",
+      'IdentityFile '. compress_path($gh_account->{key_file}) . "\n",
+      "\n";
+}
+
+add_identity($github_accounts[0],
+             GITHUB_HOSTS,
+             map { "$github_accounts[0]->{user}.$_" } GITHUB_HOSTS,
+);
+
+foreach my $u (@github_accounts[1..$#github_accounts]) {
+    add_identity($u,
+             map { "$u->{user}.$_" } GITHUB_HOSTS,
+    );
+}
+
+push @ssh_config_lines, "# -- github-keygen - end --\n";
+
+}
+
+#require Text::Diff;
+#print Text::Diff::diff(\@ssh_config_lines_orig, \@ssh_config_lines, { STYLE => 'Unified' });
+
+
+
+if (@ssh_config_lines) {
+    if (open my $f, '>', SSH_CONFIG_FILE) {
+        printf "Saving %s...\n", compress_path(SSH_CONFIG_FILE);
+        print $f @ssh_config_lines;
+        close $f;
+        print "Done.\n";
+    } else {
+    }
+} else {
+    if (-e SSH_CONFIG_FILE) {
+        unlink SSH_CONFIG_FILE
+            or warn sprintf("can't remove %s: %s\n",
+                            SSH_CONFIG_FILE, $!);
+    }
+}
+
 
 __END__
 github.com ssh-dss AAAAB3NzaC1kc3MAAACBANGFW2P9xlGU3zWrymJgI/lKo//ZW2WfVtmbsUZJ5uyKArtlQOT2+WRhcg4979aFxgKdcsqAYW3/LS1T2km3jYW/vr4Uzn+dXWODVk5VlUiZ1HFOHf6s6ITcZvjvdbp6ZbpM+DuJT7Bw+h5Fx8Qt8I16oCZYmAPJRtu46o9C2zk1AAAAFQC4gdFGcSbp5Gr0Wd5Ay/jtcldMewAAAIATTgn4sY4Nem/FQE+XJlyUQptPWMem5fwOcWtSXiTKaaN0lkk2p2snz+EJvAGXGq9dTSWHyLJSM2W6ZdQDqWJ1k+cL8CARAqL+UMwF84CR0m3hj+wtVGD/J4G5kW2DBAf4/bqzP4469lT+dF2FRQ2L9JKXrCWcnhMtJUvua8dvnwAAAIB6C4nQfAA7x8oLta6tT+oCk2WQcydNsyugE8vLrHlogoWEicla6cWPk7oXSspbzUcfkjN3Qa6e74PhRkc7JdSdAlFzU3m7LMkXo1MHgkqNX8glxWNVqBSc0YRdbFdTkL0C6gtpklilhvuHQCdbgB3LBAikcRkDp+FCVkUgPC/7Rw==
