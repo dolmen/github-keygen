@@ -10,6 +10,8 @@ use Getopt::Long qw(:config require_order auto_version);
 use Pod::Usage;
 use Sys::Hostname;
 
+use constant HAS_TEXT_DIFF => eval { require Text::Diff; 1 };
+
 our $VERSION = '0.001';
 $VERSION = eval $VERSION;
 
@@ -66,6 +68,7 @@ use constant KNOWN_HOSTS_FILE => ssh_file('known_hosts_github');
 my $remove_all;
 my $key_type = 'rsa';
 my $key_bits = 2048;
+my $github_default;
 
 # Parse global options
 GetOptions(
@@ -73,8 +76,6 @@ GetOptions(
     't|key-type=s' => \$key_type,
     'b|key-bits=i' => \$key_bits,
 ) or pod2usage(1);
-
-die "option --remove-all not yet implemented" if $remove_all;
 
 my @github_accounts;
 my %github_accounts;
@@ -97,6 +98,7 @@ while (@ARGV) {
     );
     GetOptions(
         'r|remove' => \$remove,
+        'd|default' => sub { $github_default = $user },
         'i|identity=s' => \$u{key_file},
         'p|passphrase=s' => \$u{passphrase},
         't|key-type=s' => \$u{key_type},
@@ -109,7 +111,7 @@ while (@ARGV) {
     if ($remove) {
         $github_remove{$user} = 1;
     } else {
-        push @github_accounts, \%u;
+        push @github_accounts, $user;
         $github_accounts{$user} = \%u;
 
         # Resolve relative path
@@ -148,6 +150,7 @@ my $block = 1;
 my $clean = 1;
 my $n = 0;
 my @ghkg_blocks;
+my @github_accounts_from_config;
 
 foreach my $l (@ssh_config_lines) {
     $n++;
@@ -175,7 +178,7 @@ foreach my $l (@ssh_config_lines) {
         my @github_hosts_pat = grep { /\bgithub\.com$/ } @hosts_patterns;
         if (@github_hosts_pat) {
             unless ($in_ghkg) {
-                #warn "Github block outside github-keygen block\n";
+                warn "Github block outside github-keygen block\n";
                 $clean = '';
             }
             #print map(+"[$_] ", @github_hosts_pat), "\n";
@@ -185,6 +188,8 @@ foreach my $l (@ssh_config_lines) {
             delete $users{$_} for grep { exists $github_remove{$_} } keys %users;
             if ($remove_all) {
                 $github_remove{$_} = 1 for keys %users;
+            } elsif (!defined $github_default && keys(%users) == 1 && grep { $_ eq 'github.com' } @github_hosts_pat) {
+                ($github_default) = keys %users;
             }
         }
     } elsif (%users && $l =~ m/^\s*IdentityFile\s+(\S+)\s*/) {
@@ -195,13 +200,15 @@ foreach my $l (@ssh_config_lines) {
         } else {
             my $user = (keys %users)[0];
             if (exists $github_accounts{$user}) {
-                $github_accounts{$user}{key_file} = resolve_path($1) unless defined $github_accounts{$user}{key_file};
-            } else {
+                $github_accounts{$user}{key_file} = resolve_path($1)
+                    unless defined $github_accounts{$user}{key_file};
+                push @github_accounts_from_config, $user;
+            } elsif (! exists $github_remove{$user}) {
                 my $key_file = resolve_path($1);
                 warn sprintf "identity file '%s' for Github user '%s' doesn't exist\n",
                              $key_file, $user
                     unless -e $key_file;
-                my $u = {
+                $github_accounts{$user} = {
                     # Create the user without 'key_type' so that the key is not
                     # created if it does not exist
                     # Rationale: the github-keygen user has not asked for this
@@ -209,7 +216,7 @@ foreach my $l (@ssh_config_lines) {
                     user => $user,
                     key_file => $key_file,
                 };
-                unshift @github_accounts, ($github_accounts{$user} = $u);
+                push @github_accounts_from_config, $user;
             }
         }
     }
@@ -222,20 +229,34 @@ splice(@ssh_config_lines, $_->[0]-1, $_->[1]-$_->[0]+1) for @ghkg_blocks;
 warn sprintf "failed to parse some parts of %s\n",
              SSH_CONFIG_FILE unless $clean;
 
+@github_accounts = do {
+    my %seen;
+    (
+        grep { !$seen{$_}++ }
+             @github_accounts_from_config,
+             @github_accounts
+    )
+};
+
+undef @github_accounts_from_config;
+
+
+print "Accounts: ", join(', ', @github_accounts), "\n" if @github_accounts;
 
 
 my $errors = 0;
 
-foreach my $u (@github_accounts) {
-    $u->{key_file} = ssh_file('id_'.$u->{user}.'@github')
+foreach my $user (@github_accounts) {
+    my $u = $github_accounts{$user};
+    $u->{key_file} = ssh_file("id_$user\@github")
         unless defined $u->{key_file};
 
     next if -e $u->{key_file} || ! exists $u->{key_type};
 
     printf "Creating private key '%s' for '%s'...\n",
-           $u->{key_file}, $u->{user};
+           $u->{key_file}, $user;
 
-    $u->{key_comment} = hostname;
+    $u->{key_comment} = hostname."/$user\@github.com";
 
     system 'ssh-keygen',
            '-t', delete $u->{key_type},
@@ -256,14 +277,18 @@ if (@github_accounts) {
     # To rebuild __DATA__ (if Github ever revokes its host keys):
     #   ssh-keyscan -t dsa,rsa github.com gist.github.com
 
-    print "Saving Github hosts authentication keys...\n";
+    printf "Saving Github hosts authentication keys in %s...\n",
+           compress_path(KNOWN_HOSTS_FILE);
 
-    open my $f, '>', KNOWN_HOSTS_FILE;
-    # Read line by line to convert EOL to the platform native EOL
-    print $f $_ while (<DATA>);
-    close $f;
-
-    print "Done.\n";
+    if (open my $f, '>', KNOWN_HOSTS_FILE) {
+        # Read line by line to convert EOL to the platform native EOL
+        print $f $_ while (<DATA>);
+        close $f;
+    } else {
+        warn sprintf "could not open %s: %s",
+                     compress_path(KNOWN_HOSTS_FILE),
+                     $!;
+    }
 } elsif (-e KNOWN_HOSTS_FILE) {
     # No more Github account, so remove the hosts file
     printf "Removing %s...\n", KNOWN_HOSTS_FILE;
@@ -310,18 +335,14 @@ sub add_identity
     my ($gh_account, @hosts) = @_;
     push @ssh_config_lines,
       join(' ', 'Host', @hosts) . "\n",
-      'IdentityFile '. compress_path($gh_account->{key_file}) . "\n",
+      'IdentityFile '. compress_path($github_accounts{$gh_account}->{key_file}) . "\n",
       "\n";
 }
 
-add_identity($github_accounts[0],
-             GITHUB_HOSTS,
-             map { "$github_accounts[0]->{user}.$_" } GITHUB_HOSTS,
-);
-
-foreach my $u (@github_accounts[1..$#github_accounts]) {
+foreach my $u (@github_accounts) {
     add_identity($u,
-             map { "$u->{user}.$_" } GITHUB_HOSTS,
+             (map { "$u.$_" } GITHUB_HOSTS),
+             ($u ~~ $github_default ? (GITHUB_HOSTS) : ()),
     );
 }
 
@@ -329,14 +350,15 @@ push @ssh_config_lines, "# -- github-keygen - end --\n";
 
 }
 
-#require Text::Diff;
-#print Text::Diff::diff(\@ssh_config_lines_orig, \@ssh_config_lines, { STYLE => 'Unified' });
 
 
 
 if (@ssh_config_lines) {
-    if (open my $f, '>', SSH_CONFIG_FILE) {
+    if (@ssh_config_lines ~~ @ssh_config_lines_orig) {
+        printf "No changes in %s.\n", compress_path(SSH_CONFIG_FILE);
+    } elsif (open my $f, '>', SSH_CONFIG_FILE) {
         printf "Saving %s...\n", compress_path(SSH_CONFIG_FILE);
+        print Text::Diff::diff(\@ssh_config_lines_orig, \@ssh_config_lines, { STYLE => 'Unified' }) if HAS_TEXT_DIFF;
         print $f @ssh_config_lines;
         close $f;
         print "Done.\n";
@@ -344,6 +366,8 @@ if (@ssh_config_lines) {
     }
 } else {
     if (-e SSH_CONFIG_FILE) {
+        printf "Removing %s...\n", compress_path(SSH_CONFIG_FILE);
+        print Text::Diff::diff(\@ssh_config_lines_orig, \@ssh_config_lines, { STYLE => 'Unified' }) if HAS_TEXT_DIFF;
         unlink SSH_CONFIG_FILE
             or warn sprintf("can't remove %s: %s\n",
                             SSH_CONFIG_FILE, $!);
