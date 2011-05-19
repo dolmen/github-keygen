@@ -1,76 +1,321 @@
-#!/bin/bash
-# Copyright (C) 2011 Olivier Mengué
-# https://github.com/dolmen/github-keygen
-# Licence: GNU GPL v3
+#!/usr/bin/env perl
 
-github_user="$1"
-github_hosts="github.com gist.github.com"
-key_type=${key_type:-rsa}
-key_bits=${key_bits:-2048}
-[ -z "$github_user" ] && { echo "usage: $0 <github_user>" >&2 ; exit 1 ; }
-key_name="${key_name:-$(hostname)}"
+use 5.008001;
+use strict;
+use warnings;
 
-key_file=${key_file:-~/.ssh/"id_$github_user@github"}
-known_hosts_file=~/.ssh/known_hosts_github
+use File::Spec;
+use Cwd ();
+use Getopt::Long qw(:config require_order auto_version);
+use Pod::Usage;
+use Sys::Hostname;
 
-umask 077
+use constant HAS_TEXT_DIFF => eval { require Text::Diff; 1 };
 
-# Make the path absolute
-if ! expr "x$key_file" : x/ >/dev/null ; then
-	if [ -e "$key_file" ] || expr "x$key_file" : x..*/ >/dev/null ; then
-		key_file="$PWD/$key_file"
-	else
-		key_file=~/.ssh/"$key_file"
-	fi
-fi
+our $VERSION = '0.001';
+$VERSION = eval $VERSION;
+
+use constant {
+    PROG => (File::Spec->splitpath($0))[2],
+    CWD => Cwd::getcwd,
+    # We can't rely on File::HomeDir because we have to reproduce OpenSSH
+    # behavior, and not depend on what File::HomeDir thinks is right
+    HOME_DIR => $ENV{HOME} // ((getpwent)[7]),
+};
+use constant SSH_DIR => File::Spec->rel2abs('.ssh', HOME_DIR);
+
+sub GITHUB_HOSTS() { qw(github.com gist.github.com) }
+
+$SIG{__WARN__} = sub {
+    print STDERR PROG.": ", @_;
+};
+
+$SIG{__DIE__} = sub {
+    my ($message, $exit_code) = @_;
+    print STDERR PROG.": $message";
+    exit(defined $exit_code ? $exit_code : 1);
+};
+
+sub resolve_path($)
+{
+    my $path = shift;
+    $path =~ s!^\~(?=/)! HOME_DIR !e;
+    $path
+}
+
+sub resolve_ssh_path($)
+{
+    goto &resolve_path;
+}
+
+sub ssh_file($)
+{
+    File::Spec->rel2abs($_[0], SSH_DIR);
+}
+
+sub compress_path($)
+{
+    my $path = File::Spec->canonpath(shift);
+    my $home_dir = HOME_DIR;
+    # FIXME
+    $path =~ s!^\Q$home_dir\E\b!~!;
+    $path;
+}
+
+use constant SSH_CONFIG_FILE => ssh_file('config');
+use constant KNOWN_HOSTS_FILE => ssh_file('known_hosts_github');
+
+my $remove_all;
+my $key_type = 'rsa';
+my $key_bits = 2048;
+my $github_default;
+
+# Parse global options
+GetOptions(
+    'R|reset|remove-all' => \$remove_all,
+    't|key-type=s' => \$key_type,
+    'b|key-bits=i' => \$key_bits,
+) or pod2usage(1);
+
+my @github_accounts;
+my %github_accounts;
+my %github_remove;
 
 
-if [ -e "$key_file" ] ; then
-	echo "Key ~/${key_file#$HOME/} already exists" >&2
-	if [ ! -e "$key_file.pub" -o ! -r "$key_file.pub" ] ; then
-		echo "Public key $key_file.pub is missing!" >&2
-		exit 1
-	fi
-else
-	echo Creating private key $key_file...
-	ssh-keygen -t $key_type -b $key_bits -C "$key_name" -f "$key_file" || exit $?
-	echo Done.
-	echo
-	#ssh-keygen -e -f "$key_file"
-fi
 
-for h in $github_hosts
-do
-	ssh-keygen -R $h 2>/dev/null
-done
+while (@ARGV) {
+    my $user = shift @ARGV;
+    pod2usage("invalid user '$user'") unless $user =~ /^[a-z0-9_]+$/;
 
-echo Saving Github hosts authentication keys...
-# Do not hash hosts: this file is already identified as containing
-# Github hosts public keys, so this would not add any security
-if [ ! -e "$known_hosts_file" -o -w "$known_hosts_file" ] ; then
-	# The content was generated with:
-	#   ssh-keyscan -t dsa,rsa $github_hosts > "$known_hosts_file"
-	cat >"$known_hosts_file" <<-EOF
-	github.com ssh-dss AAAAB3NzaC1kc3MAAACBANGFW2P9xlGU3zWrymJgI/lKo//ZW2WfVtmbsUZJ5uyKArtlQOT2+WRhcg4979aFxgKdcsqAYW3/LS1T2km3jYW/vr4Uzn+dXWODVk5VlUiZ1HFOHf6s6ITcZvjvdbp6ZbpM+DuJT7Bw+h5Fx8Qt8I16oCZYmAPJRtu46o9C2zk1AAAAFQC4gdFGcSbp5Gr0Wd5Ay/jtcldMewAAAIATTgn4sY4Nem/FQE+XJlyUQptPWMem5fwOcWtSXiTKaaN0lkk2p2snz+EJvAGXGq9dTSWHyLJSM2W6ZdQDqWJ1k+cL8CARAqL+UMwF84CR0m3hj+wtVGD/J4G5kW2DBAf4/bqzP4469lT+dF2FRQ2L9JKXrCWcnhMtJUvua8dvnwAAAIB6C4nQfAA7x8oLta6tT+oCk2WQcydNsyugE8vLrHlogoWEicla6cWPk7oXSspbzUcfkjN3Qa6e74PhRkc7JdSdAlFzU3m7LMkXo1MHgkqNX8glxWNVqBSc0YRdbFdTkL0C6gtpklilhvuHQCdbgB3LBAikcRkDp+FCVkUgPC/7Rw==
-	github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-	gist.github.com ssh-dss AAAAB3NzaC1kc3MAAACBANGFW2P9xlGU3zWrymJgI/lKo//ZW2WfVtmbsUZJ5uyKArtlQOT2+WRhcg4979aFxgKdcsqAYW3/LS1T2km3jYW/vr4Uzn+dXWODVk5VlUiZ1HFOHf6s6ITcZvjvdbp6ZbpM+DuJT7Bw+h5Fx8Qt8I16oCZYmAPJRtu46o9C2zk1AAAAFQC4gdFGcSbp5Gr0Wd5Ay/jtcldMewAAAIATTgn4sY4Nem/FQE+XJlyUQptPWMem5fwOcWtSXiTKaaN0lkk2p2snz+EJvAGXGq9dTSWHyLJSM2W6ZdQDqWJ1k+cL8CARAqL+UMwF84CR0m3hj+wtVGD/J4G5kW2DBAf4/bqzP4469lT+dF2FRQ2L9JKXrCWcnhMtJUvua8dvnwAAAIB6C4nQfAA7x8oLta6tT+oCk2WQcydNsyugE8vLrHlogoWEicla6cWPk7oXSspbzUcfkjN3Qa6e74PhRkc7JdSdAlFzU3m7LMkXo1MHgkqNX8glxWNVqBSc0YRdbFdTkL0C6gtpklilhvuHQCdbgB3LBAikcRkDp+FCVkUgPC/7Rw==
-	gist.github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-	EOF
-	echo Done.
-fi
-chmod u+r,u-x,og-rwx "$known_hosts_file"
+    my $remove = 0;
+    my %u = (
+        user => $user,
+        remove => \$remove,
+        identity => undef,
+        passphrase => undef,
+        key_type => $key_type,
+        key_bits => $key_bits,
+    );
+    GetOptions(
+        'r|remove' => \$remove,
+        'd|default' => sub { $github_default = $user },
+        'i|identity=s' => \$u{key_file},
+        'p|passphrase=s' => \$u{passphrase},
+        't|key-type=s' => \$u{key_type},
+        'b|key-bits=i' => \$u{key_bits},
+        'C|key-comment=s' => \$u{key_comment},
+    ) or pod2usage(1);
+    pod2usage("invalid empty identity file for user '$user'")
+        if defined $u{identity} && ! length $u{identity};
 
-cut='----8<--------8--------8<--------8<--------8<--------'
+    if ($remove) {
+        $github_remove{$user} = 1;
+    } else {
+        push @github_accounts, $user;
+        $github_accounts{$user} = \%u;
+
+        # Resolve relative path
+        if (defined $u{key_file} && ! File::Spec->file_name_is_absolute($u{key_file})) {
+            if (-e $u{key_file}) {
+                $u{key_file} = File::Spec->rel2abs($u{key_file}, CWD);
+            } else {
+                # If the relative path contains a volume or directory,
+                # make it relative to CWD, else to SSH_DIR
+                my ($v, $d, $f) = File::Spec->splitpath($u{key_file});
+                $u{key_file} = File::Spec->rel2abs($u{key_file},
+                   (length($v) || length($d)) ? CWD : SSH_DIR);
+            }
+        }
+    }
+}
 
 
-echo "
-Here is your public key. Post it at https://github.com/account/ssh
-$cut"
-cat $key_file.pub #| sed '1s/^/# /'
-echo "$cut
-"
+my @ssh_config_lines;
 
-ssh_config=$(cat <<EOF
+if (-e SSH_CONFIG_FILE) {
+    if (open my $f, '<', SSH_CONFIG_FILE) {
+        @ssh_config_lines = <$f>;
+        close $f;
+    } else {
+        warn sprintf "can't open %s\n", SSH_CONFIG_FILE;
+    }
+}
+
+# Parse ~/.ssh/config
+
+my @hosts_patterns = ('*');
+my %users;
+my $in_ghkg = '';
+my $block = 1;
+my $clean = 1;
+my $n = 0;
+my @ghkg_blocks;
+my @github_accounts_from_config;
+
+foreach my $l (@ssh_config_lines) {
+    $n++;
+    if ($l =~ m/\A\s*#.*\bgithub-keygen\b.*\bbegin\b/i) {
+        if ($in_ghkg) {
+            $clean = '';
+            warn sprintf "github-keygen block error in '%s' at line %d\n",
+                         SSH_CONFIG_FILE, $n;
+        }
+        $in_ghkg = $n;
+        $in_ghkg-- if $n > 0 && $ssh_config_lines[$n-1] =~ /\A\Z/m;
+    } elsif ($l =~ m/\A\s*#.*\bgithub-keygen\b.*\bend\b/i) {
+        unless ($in_ghkg) {
+            $clean = '';
+            warn sprintf "github-keygen block error in '%s' at line %d\n",
+                         SSH_CONFIG_FILE, $n;
+        }
+        # Remove the github-keygen block
+        push @ghkg_blocks, [ $in_ghkg, $n ] if $clean;
+        $in_ghkg = 0;
+    } elsif ($l =~ m/\A\s*Host\s+(.*?)\s*\Z/) {
+        $block = $n;
+        %users = ();
+        @hosts_patterns = split /\s+/, $1;
+        my @github_hosts_pat = grep { /\bgithub\.com$/ } @hosts_patterns;
+        if (@github_hosts_pat) {
+            unless ($in_ghkg) {
+                warn "Github block outside github-keygen block\n";
+                $clean = '';
+            }
+            #print map(+"[$_] ", @github_hosts_pat), "\n";
+            %users = map { m/^((?!gist)[a-z_0-9]*+)(?:\.gist)?\.github.com$/ ? ($1 => undef) : () } @github_hosts_pat;
+            #print keys(%users), "\n";
+            # Ignore users which are asked to be removed
+            delete $users{$_} for grep { exists $github_remove{$_} } keys %users;
+            if ($remove_all) {
+                $github_remove{$_} = 1 for keys %users;
+            } elsif (!defined $github_default && keys(%users) == 1 && grep { $_ eq 'github.com' } @github_hosts_pat) {
+                ($github_default) = keys %users;
+            }
+        }
+    } elsif (%users && $l =~ m/^\s*IdentityFile\s+(\S+)\s*/) {
+        if (keys %users > 1) {
+            warn sprintf "multiple users detected in '%s' line %u\n",
+                             SSH_CONFIG_FILE, $block;
+            $clean = '';
+        } else {
+            my $user = (keys %users)[0];
+            if (exists $github_accounts{$user}) {
+                $github_accounts{$user}{key_file} = resolve_path($1)
+                    unless defined $github_accounts{$user}{key_file};
+                push @github_accounts_from_config, $user;
+            } elsif (! exists $github_remove{$user}) {
+                my $key_file = resolve_path($1);
+                warn sprintf "identity file '%s' for Github user '%s' doesn't exist\n",
+                             $key_file, $user
+                    unless -e $key_file;
+                $github_accounts{$user} = {
+                    # Create the user without 'key_type' so that the key is not
+                    # created if it does not exist
+                    # Rationale: the github-keygen user has not asked for this
+                    # account
+                    user => $user,
+                    key_file => $key_file,
+                };
+                push @github_accounts_from_config, $user;
+            }
+        }
+    }
+}
+
+# Delete the github-keygen blocks
+my @ssh_config_lines_orig = @ssh_config_lines;
+splice(@ssh_config_lines, $_->[0]-1, $_->[1]-$_->[0]+1) for @ghkg_blocks;
+
+warn sprintf "failed to parse some parts of %s\n",
+             SSH_CONFIG_FILE unless $clean;
+
+@github_accounts = do {
+    my %seen;
+    (
+        grep { !$seen{$_}++ }
+             @github_accounts_from_config,
+             @github_accounts
+    )
+};
+
+undef @github_accounts_from_config;
+
+
+print "Accounts: ", join(', ', @github_accounts), "\n" if @github_accounts;
+
+
+my $errors = 0;
+
+foreach my $user (@github_accounts) {
+    my $u = $github_accounts{$user};
+    $u->{key_file} = ssh_file("id_$user\@github")
+        unless defined $u->{key_file};
+
+    next if -e $u->{key_file} || ! exists $u->{key_type};
+
+    printf "Creating private key '%s' for '%s'...\n",
+           $u->{key_file}, $user;
+
+    $u->{key_comment} = hostname."/$user\@github.com";
+
+    system 'ssh-keygen',
+           '-t', delete $u->{key_type},
+           '-b', delete $u->{key_bits},
+           '-C', $u->{key_comment},
+           defined $u->{passphrase} ? ('-N', $u->{passphrase}) : (),
+           '-f', $u->{key_file};
+    $errors += (($? >> 8) != 0);
+}
+
+die "errors while creating key\n" if $errors;
+
+$errors = 0;
+
+
+
+if (@github_accounts) {
+    # To rebuild __DATA__ (if Github ever revokes its host keys):
+    #   ssh-keyscan -t dsa,rsa github.com gist.github.com
+
+    my $size = -e KNOWN_HOSTS_FILE
+             ? (stat KNOWN_HOSTS_FILE)[7]
+             : 0;
+
+    if ($size == 1994) {
+        printf "No changes in %s.\n",
+               compress_path(KNOWN_HOSTS_FILE);
+    } else {
+        printf "Saving Github hosts authentication keys in %s...\n",
+               compress_path(KNOWN_HOSTS_FILE);
+
+        if (open my $f, '>', KNOWN_HOSTS_FILE) {
+            # Read line by line (up to an empty line)
+            # to convert EOL to the platform native EOL
+            while (<DATA>) {
+                last unless /../;
+                print $f $_;
+            }
+            close $f;
+        } else {
+            warn sprintf "could not open %s: %s",
+                         compress_path(KNOWN_HOSTS_FILE),
+                         $!;
+        }
+    }
+} elsif (-e KNOWN_HOSTS_FILE) {
+    # No more Github account, so remove the hosts file
+    printf "Removing %s...\n", KNOWN_HOSTS_FILE;
+    unlink KNOWN_HOSTS_FILE;
+}
+
+# Create the new config block
+if (@github_accounts) {
+
+my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
+
+push @ssh_config_lines,
+     ( @ssh_config_lines ? ("\n") : ()),
+     split(/\n\K/, <<EOF);
 # -- github-keygen - begin --
 
 Host *.github.com
@@ -79,11 +324,11 @@ Hostname github.com
 Host *.gist.github.com
 Hostname gist.github.com
 
-Host $github_hosts *.github.com *.gist.github.com
+Host github.com gist.github.com *.github.com *.gist.github.com
 User git
 # Enforce host checks
 StrictHostKeyChecking yes
-UserKnownHostsFile ~/${known_hosts_file#$HOME/}
+UserKnownHostsFile ${known_hosts_file}
 # Hosts added later (identified by IP) will be hashed
 HashKnownHosts yes
 # GitHub has not yet (2011-05) implemented SSHFP (RFC 4255)
@@ -96,38 +341,277 @@ ForwardAgent no
 ForwardX11 no
 PermitLocalCommand no
 
-Host $github_hosts $github_user.github.com $github_user.gist.github.com
-IdentityFile ~/${key_file#$HOME/}
-
-# -- github-keygen - end --
 EOF
-)
 
-if [ -f ~/.ssh/config ] ; then
-	cat <<-EOF
-	Add the following lines to ~/.ssh/config.
-	Note: if you wanted only to add a new github account and have already done the
-	setup with $0 for an other Github account, you only have to add the
-	last two lines.
-$cut
-$ssh_config
-$cut
+sub add_identity
+{
+    my ($gh_account, @hosts) = @_;
+    push @ssh_config_lines,
+      join(' ', 'Host', @hosts) . "\n",
+      'IdentityFile '. compress_path($github_accounts{$gh_account}->{key_file}) . "\n",
+      "\n";
+}
 
-EOF
-else
-	echo "Creating ~/.ssh/config..."
-	echo "$ssh_config" > ~/.ssh/config
-	echo "Done."
-fi
+foreach my $u (@github_accounts) {
+    add_identity($u,
+             (map { "$u.$_" } GITHUB_HOSTS),
+             ($u ~~ $github_default ? (GITHUB_HOSTS) : ()),
+    );
+}
 
-chmod 600 ~/.ssh/config
+push @ssh_config_lines, "# -- github-keygen - end --\n";
 
-cat <<EOF
+}
 
-Once you have done the actions above you will be able to test with:
-    ssh -Tn github.com
-    ssh -Tn gist.github.com
-    ssh -Tn $github_user.github.com
-    ssh -Tn $github_user.gist.github.com
 
-EOF
+
+
+if (@ssh_config_lines) {
+    if (@ssh_config_lines ~~ @ssh_config_lines_orig) {
+        printf "No changes in %s.\n", compress_path(SSH_CONFIG_FILE);
+    } elsif (open my $f, '>', SSH_CONFIG_FILE) {
+        printf "Saving %s...\n", compress_path(SSH_CONFIG_FILE);
+        print Text::Diff::diff(\@ssh_config_lines_orig, \@ssh_config_lines, { STYLE => 'Unified' }) if HAS_TEXT_DIFF;
+        print $f @ssh_config_lines;
+        close $f;
+        print "Done.\n";
+    } else {
+    }
+} else {
+    if (-e SSH_CONFIG_FILE) {
+        printf "Removing %s...\n", compress_path(SSH_CONFIG_FILE);
+        print Text::Diff::diff(\@ssh_config_lines_orig, \@ssh_config_lines, { STYLE => 'Unified' }) if HAS_TEXT_DIFF;
+        unlink SSH_CONFIG_FILE
+            or warn sprintf("can't remove %s: %s\n",
+                            SSH_CONFIG_FILE, $!);
+        print "Done.\n";
+    }
+}
+
+
+__END__
+github.com ssh-dss AAAAB3NzaC1kc3MAAACBANGFW2P9xlGU3zWrymJgI/lKo//ZW2WfVtmbsUZJ5uyKArtlQOT2+WRhcg4979aFxgKdcsqAYW3/LS1T2km3jYW/vr4Uzn+dXWODVk5VlUiZ1HFOHf6s6ITcZvjvdbp6ZbpM+DuJT7Bw+h5Fx8Qt8I16oCZYmAPJRtu46o9C2zk1AAAAFQC4gdFGcSbp5Gr0Wd5Ay/jtcldMewAAAIATTgn4sY4Nem/FQE+XJlyUQptPWMem5fwOcWtSXiTKaaN0lkk2p2snz+EJvAGXGq9dTSWHyLJSM2W6ZdQDqWJ1k+cL8CARAqL+UMwF84CR0m3hj+wtVGD/J4G5kW2DBAf4/bqzP4469lT+dF2FRQ2L9JKXrCWcnhMtJUvua8dvnwAAAIB6C4nQfAA7x8oLta6tT+oCk2WQcydNsyugE8vLrHlogoWEicla6cWPk7oXSspbzUcfkjN3Qa6e74PhRkc7JdSdAlFzU3m7LMkXo1MHgkqNX8glxWNVqBSc0YRdbFdTkL0C6gtpklilhvuHQCdbgB3LBAikcRkDp+FCVkUgPC/7Rw==
+github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+gist.github.com ssh-dss AAAAB3NzaC1kc3MAAACBANGFW2P9xlGU3zWrymJgI/lKo//ZW2WfVtmbsUZJ5uyKArtlQOT2+WRhcg4979aFxgKdcsqAYW3/LS1T2km3jYW/vr4Uzn+dXWODVk5VlUiZ1HFOHf6s6ITcZvjvdbp6ZbpM+DuJT7Bw+h5Fx8Qt8I16oCZYmAPJRtu46o9C2zk1AAAAFQC4gdFGcSbp5Gr0Wd5Ay/jtcldMewAAAIATTgn4sY4Nem/FQE+XJlyUQptPWMem5fwOcWtSXiTKaaN0lkk2p2snz+EJvAGXGq9dTSWHyLJSM2W6ZdQDqWJ1k+cL8CARAqL+UMwF84CR0m3hj+wtVGD/J4G5kW2DBAf4/bqzP4469lT+dF2FRQ2L9JKXrCWcnhMtJUvua8dvnwAAAIB6C4nQfAA7x8oLta6tT+oCk2WQcydNsyugE8vLrHlogoWEicla6cWPk7oXSspbzUcfkjN3Qa6e74PhRkc7JdSdAlFzU3m7LMkXo1MHgkqNX8glxWNVqBSc0YRdbFdTkL0C6gtpklilhvuHQCdbgB3LBAikcRkDp+FCVkUgPC/7Rw==
+gist.github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+
+=head1 NAME
+
+github-keygen - Github SSH setup tool
+
+=head1 SYNOPSIS
+
+    # Get github-keygen
+    git clone https://github.com/dolmen/github-keygen
+
+    # Manage SSH keys
+    github-keygen [-R]      [-t <key-type>] [-b <key-bits>]
+                  [ <user1> [-t <key-type>] [-b <key-bits>] [-d] [-r]
+                    [ <user2> ... ] ]
+
+    # Use an account
+    git clone <user>.github.com:<repo-owner>/<repo>
+
+=head1 DESCRIPTION
+
+This script ease initial environment setup for secure Github exchanges, but it
+does much more than that:
+
+=over 4
+
+=item *
+
+Create a new SSH private key
+
+=item *
+
+Setup a very secure SSH configuration for Github, independent of your other SSH
+settings:
+
+=over 4
+
+=item -
+
+Enable only the authentication method used with Github (publickey)
+
+=item -
+
+Disable bad things that could come from the Github hosts ("Trust no-one")
+
+=back
+
+=item *
+
+Create unique host aliases for github.com/gist.github.com that you'll be able
+to use in Git URLs to connect to a particular account. This gives uses the
+flexibility to use multiple Github accounts.
+
+    <account>.github.com:<repo-owner>/<repo>.git
+    github.com:<repo-owner>/<repo>.git
+
+in addition to:
+
+    git@github.com:<repo-owner>/<repo>.git
+
+=back
+
+This script will:
+
+=over 4
+
+=item *
+
+Create a new SSH key dedicated only to your Github connections in
+F<~/.ssh/id_I<E<lt>github-accountE<gt>>@github>
+
+=item *
+
+Create the SSH configuration optimized for Github and dedicated to Github
+(do not impact your other SSH configurations) in F<~/.ssh/config> (unless the
+file already exists)
+
+=item *
+
+Install the Github SSH host authentication fingerprints in
+F<~/.ssh/github_known_hosts>
+
+=back
+
+=head1 OPTIONS
+
+=head2 GLOBAL OPTIONS
+
+Global options are given just after the command name, and before the first
+account name.
+
+=over 4
+
+=item -R
+
+Remove all accounts, except those following on the command-line.
+
+=item -t I<key-type>
+
+Set default key type for key creation. Default is C<rsa>.
+
+=item -b I<key-bits>
+
+Set default key bits for key creation. Default is C<2048>.
+
+=back
+
+=head2 ACCOUNT OPTIONS
+
+Account options are given after each account name.
+
+=over 4
+
+=item -r
+
+Remove the account from F<~/.ssh/config>. The private key will be kept, but not
+referenced anymore in F<~/.ssh/config>.
+
+=item -f I<key-file>
+
+The key is created only if it doesn't already exists.
+
+If only a filename is given, it will be relative to F<~/.ssh/>, else if a
+relative path is given it will be relative to the current directory. Absolute
+paths are kept as is.
+
+=back
+
+Key creations parameters (see L<ssh-keygen(1)>):
+
+=over 4
+
+=item -t I<key-type>
+
+=item -b I<key-bits>
+
+=item -p I<passphrase>
+
+=item -C I<comment>
+
+Default comment is C<I<hostname>/I<account>@github.com>.
+
+=back
+
+=head1 EXAMPLES
+
+    # Remove all previous gihub-keygen config
+    github-keygen -R
+
+    # Add a GitHub account
+    github-keygen account1
+
+    # Add an other GitHub account
+    github-keygen account2
+
+    # Add a third GitHub account with key file
+    github-keygen account3 -f ./id_account3
+
+    # Remove account2
+    github-keygen account2 -r
+
+    # Clone repo 'user2/project1' with account3
+    git clone account3.github.com:user2/project1.git
+    cd project1
+
+    # Add a remote for pushing with account2
+    git remote add gh-account2 account2.github.com:user2/project1.git
+
+    # Remove all except account3
+    github-keygen -R account3
+
+    # Uninstall
+    github-keygen -R
+
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+L<ssh-keygen(1)>
+
+=item *
+
+L<ssh_config(5)>
+
+=item *
+
+L<http://help.github.com/linux-set-up-git/>
+
+=item *
+
+L<http://help.github.com/troubleshooting-ssh/>
+
+=item *
+
+L<http://help.github.com/working-with-key-passphrases/>
+
+=back
+
+=head1 AUTHOR
+
+Olivier MenguE<eacute>, L<mailto:dolmen@cpan.org>.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright E<copy> 2011 Olivier MenguE<eacute>.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see L<http://www.gnu.org/licenses/>.
+
+=cut
