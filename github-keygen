@@ -72,7 +72,7 @@ my $github_default;
 
 # Parse global options
 GetOptions(
-    'R|remove-all' => \$remove_all,
+    'R|reset|remove-all' => \$remove_all,
     't|key-type=s' => \$key_type,
     'b|key-bits=i' => \$key_bits,
 ) or pod2usage(1);
@@ -87,7 +87,7 @@ while (@ARGV) {
     my $user = shift @ARGV;
     pod2usage("invalid user '$user'") unless $user =~ /^[a-z0-9_]+$/;
 
-    my $remove = $remove_all;
+    my $remove = 0;
     my %u = (
         user => $user,
         remove => \$remove,
@@ -277,17 +277,26 @@ if (@github_accounts) {
     # To rebuild __DATA__ (if Github ever revokes its host keys):
     #   ssh-keyscan -t dsa,rsa github.com gist.github.com
 
-    printf "Saving Github hosts authentication keys in %s...\n",
-           compress_path(KNOWN_HOSTS_FILE);
+    my $size = -e KNOWN_HOSTS_FILE
+             ? (stat KNOWN_HOSTS_FILE)[7]
+             : 0;
 
-    if (open my $f, '>', KNOWN_HOSTS_FILE) {
-        # Read line by line to convert EOL to the platform native EOL
-        print $f $_ while (<DATA>);
-        close $f;
+    if ($size == 1994) {
+        printf "No changes in %s.\n",
+               compress_path(KNOWN_HOSTS_FILE);
     } else {
-        warn sprintf "could not open %s: %s",
-                     compress_path(KNOWN_HOSTS_FILE),
-                     $!;
+        printf "Saving Github hosts authentication keys in %s...\n",
+               compress_path(KNOWN_HOSTS_FILE);
+
+        if (open my $f, '>', KNOWN_HOSTS_FILE) {
+            # Read line by line to convert EOL to the platform native EOL
+            print $f $_ while (<DATA>);
+            close $f;
+        } else {
+            warn sprintf "could not open %s: %s",
+                         compress_path(KNOWN_HOSTS_FILE),
+                         $!;
+        }
     }
 } elsif (-e KNOWN_HOSTS_FILE) {
     # No more Github account, so remove the hosts file
@@ -371,6 +380,7 @@ if (@ssh_config_lines) {
         unlink SSH_CONFIG_FILE
             or warn sprintf("can't remove %s: %s\n",
                             SSH_CONFIG_FILE, $!);
+        print "Done.\n";
     }
 }
 
