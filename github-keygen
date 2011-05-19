@@ -414,7 +414,68 @@ github-keygen - Github SSH setup tool
 
 =head1 DESCRIPTION
 
-See L<README.pod>
+This script ease initial environment setup for secure Github exchanges, but it
+does much more than that:
+
+=over 4
+
+=item *
+
+Create a new SSH private key
+
+=item *
+
+Setup a very secure SSH configuration for Github, independent of your other SSH
+settings:
+
+=over 4
+
+=item -
+
+Enable only the authentication method used with Github (publickey)
+
+=item -
+
+Disable bad things that could come from the Github hosts ("Trust no-one")
+
+=back
+
+=item *
+
+Create unique host aliases for github.com/gist.github.com that you'll be able
+to use in Git URLs to connect to a particular account. This gives uses the
+flexibility to use multiple Github accounts.
+
+    <account>.github.com:<repo-owner>/<repo>.git
+    github.com:<repo-owner>/<repo>.git
+
+in addition to:
+
+    git@github.com:<repo-owner>/<repo>.git
+
+=back
+
+This script will:
+
+=over 4
+
+=item *
+
+Create a new SSH key dedicated only to your Github connections in
+F<~/.ssh/id_I<E<lt>github-accountE<gt>>@github>
+
+=item *
+
+Create the SSH configuration optimized for Github and dedicated to Github
+(do not impact your other SSH configurations) in F<~/.ssh/config> (unless the
+file already exists)
+
+=item *
+
+Install the Github SSH host authentication fingerprints in
+F<~/.ssh/github_known_hosts>
+
+=back
 
 =head1 OPTIONS
 
