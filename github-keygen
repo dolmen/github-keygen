@@ -401,4 +401,156 @@ github-keygen - Github SSH setup tool
 
 =head1 SYNOPSIS
 
+    # Get github-keygen
+    git clone https://github.com/dolmen/github-keygen
+
+    # Manage SSH keys
+    github-keygen [-R]      [-t <key-type>] [-b <key-bits>]
+                  [ <user1> [-t <key-type>] [-b <key-bits>] [-d] [-r]
+                    [ <user2> ... ] ]
+
+    # Use an account
+    git clone <user>.github.com:<repo-owner>/<repo>
+
+=head1 DESCRIPTION
+
+See L<README.pod>
+
+=head1 OPTIONS
+
+=head2 GLOBAL OPTIONS
+
+Global options are given just after the command name, and before the first
+account name.
+
+=over 4
+
+=item -R
+
+Remove all accounts, except those following on the command-line.
+
+=item -t I<key-type>
+
+Set default key type for key creation. Default is C<rsa>.
+
+=item -b I<key-bits>
+
+Set default key bits for key creation. Default is C<2048>.
+
+=back
+
+=head2 ACCOUNT OPTIONS
+
+Account options are given after each account name.
+
+=over 4
+
+=item -r
+
+Remove the account from F<~/.ssh/config>. The private key will be kept, but not
+referenced anymore in F<~/.ssh/config>.
+
+=item -f I<key-file>
+
+The key is created only if it doesn't already exists.
+
+If only a filename is given, it will be relative to F<~/.ssh/>, else if a
+relative path is given it will be relative to the current directory. Absolute
+paths are kept as is.
+
+=back
+
+Key creations parameters (see L<ssh-keygen(1)>):
+
+=over 4
+
+=item -t I<key-type>
+
+=item -b I<key-bits>
+
+=item -p I<passphrase>
+
+=item -C I<comment>
+
+Default comment is C<I<hostname>/I<account>@github.com>.
+
+=back
+
+=head1 EXAMPLES
+
+    # Remove all previous gihub-keygen config
+    github-keygen -R
+
+    # Add a GitHub account
+    github-keygen account1
+
+    # Add an other GitHub account
+    github-keygen account2
+
+    # Add a third GitHub account with key file
+    github-keygen account3 -f ./id_account3
+
+    # Remove account2
+    github-keygen account2 -r
+
+    # Clone repo 'user2/project1' with account3
+    git clone account3.github.com:user2/project1.git
+    cd project1
+
+    # Add a remote for pushing with account2
+    git remote add gh-account2 account2.github.com:user2/project1.git
+
+    # Remove all except account3
+    github-keygen -R account3
+
+    # Uninstall
+    github-keygen -R
+
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+L<ssh-keygen(1)>
+
+=item *
+
+L<ssh_config(5)>
+
+=item *
+
+L<http://help.github.com/linux-set-up-git/>
+
+=item *
+
+L<http://help.github.com/troubleshooting-ssh/>
+
+=item *
+
+L<http://help.github.com/working-with-key-passphrases/>
+
+=back
+
+=head1 AUTHOR
+
+Olivier MenguE<eacute>, L<mailto:dolmen@cpan.org>.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright E<copy> 2011 Olivier MenguE<eacute>.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see L<http://www.gnu.org/licenses/>.
+
 =cut
