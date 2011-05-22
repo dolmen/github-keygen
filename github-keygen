@@ -246,6 +246,22 @@ print "Accounts: ", join(', ', @github_accounts), "\n" if @github_accounts;
 
 my $errors = 0;
 
+if (@github_accounts) {
+    if ($^O eq 'MSWin32') {
+        # Find ssh tools in msysgit
+        require Config;
+        my $pathsep = $Config::Config{path_sep};
+        foreach my $p (split /\Q$pathsep\E/, $ENV{PATH}) {
+            last if -e "$p\\ssh-keygen.exe";
+            if (-e "$p\\Git.cmd") {
+                $ENV{PATH} = "$p\\..\\bin$pathsep$ENV{PATH}";
+                last;
+            }
+        }
+    }
+}
+
+
 foreach my $user (@github_accounts) {
     my $u = $github_accounts{$user};
     $u->{key_file} = ssh_file("id_$user\@github")
