@@ -53,12 +53,19 @@ sub ssh_file($)
     File::Spec->rel2abs($_[0], SSH_DIR);
 }
 
+my %compressed_paths;
+
 sub compress_path($)
 {
-    my $path = File::Spec->canonpath(shift);
-    my $home_dir = HOME_DIR;
-    # FIXME
-    $path =~ s!^\Q$home_dir\E\b!~!;
+    my $p = shift;
+    my $path = $compressed_paths{$p};
+    unless (defined $path) {
+        $path = File::Spec->canonpath($p);
+        my $home_dir = HOME_DIR;
+        # FIXME
+        $path =~ s!^\Q$home_dir\E\b!~!;
+        $compressed_paths{$p} = $path;
+    }
     $path;
 }
 
@@ -157,16 +164,16 @@ foreach my $l (@ssh_config_lines) {
     if ($l =~ m/\A\s*#.*\bgithub-keygen\b.*\bbegin\b/i) {
         if ($in_ghkg) {
             $clean = '';
-            warn sprintf "github-keygen block error in '%s' at line %d\n",
-                         SSH_CONFIG_FILE, $n;
+            warn sprintf "github-keygen block error in %s at line %d\n",
+                         compress_path(SSH_CONFIG_FILE), $n;
         }
         $in_ghkg = $n;
         $in_ghkg-- if $n > 0 && $ssh_config_lines[$n-1] =~ /\A\Z/m;
     } elsif ($l =~ m/\A\s*#.*\bgithub-keygen\b.*\bend\b/i) {
         unless ($in_ghkg) {
             $clean = '';
-            warn sprintf "github-keygen block error in '%s' at line %d\n",
-                         SSH_CONFIG_FILE, $n;
+            warn sprintf "github-keygen block error in %s at line %d\n",
+                         compress_path(SSH_CONFIG_FILE), $n;
         }
         # Remove the github-keygen block
         push @ghkg_blocks, [ $in_ghkg, $n ] if $clean;
@@ -178,7 +185,8 @@ foreach my $l (@ssh_config_lines) {
         my @github_hosts_pat = grep { /\bgithub\.com$/ } @hosts_patterns;
         if (@github_hosts_pat) {
             unless ($in_ghkg) {
-                warn "Github block outside github-keygen block\n";
+                warn sprintf "Github block outside github-keygen block in %s line %u\n",
+                             compress_path(SSH_CONFIG_FILE), $block;
                 $clean = '';
             }
             #print map(+"[$_] ", @github_hosts_pat), "\n";
@@ -194,8 +202,8 @@ foreach my $l (@ssh_config_lines) {
         }
     } elsif (%users && $l =~ m/^\s*IdentityFile\s+(\S+)\s*/) {
         if (keys %users > 1) {
-            warn sprintf "multiple users detected in '%s' line %u\n",
-                             SSH_CONFIG_FILE, $block;
+            warn sprintf "multiple users detected in %s line %u\n",
+                             compress_path(SSH_CONFIG_FILE), $block;
             $clean = '';
         } else {
             my $user = (keys %users)[0];
@@ -205,8 +213,8 @@ foreach my $l (@ssh_config_lines) {
                 push @github_accounts_from_config, $user;
             } elsif (! exists $github_remove{$user}) {
                 my $key_file = resolve_path($1);
-                warn sprintf "identity file '%s' for Github user '%s' doesn't exist\n",
-                             $key_file, $user
+                warn sprintf "identity file %s for Github user %s doesn't exist\n",
+                             compress_path($key_file), $user
                     unless -e $key_file;
                 $github_accounts{$user} = {
                     # Create the user without 'key_type' so that the key is not
@@ -227,7 +235,7 @@ my @ssh_config_lines_orig = @ssh_config_lines;
 splice(@ssh_config_lines, $_->[0]-1, $_->[1]-$_->[0]+1) for @ghkg_blocks;
 
 warn sprintf "failed to parse some parts of %s\n",
-             SSH_CONFIG_FILE unless $clean;
+             compress_path(SSH_CONFIG_FILE) unless $clean;
 
 @github_accounts = do {
     my %seen;
@@ -269,8 +277,8 @@ foreach my $user (@github_accounts) {
 
     next if -e $u->{key_file} || ! exists $u->{key_type};
 
-    printf "Creating private key '%s' for '%s'...\n",
-           $u->{key_file}, $user;
+    printf "Creating private key %s for user %s...\n",
+           compress_path($u->{key_file}), $user;
 
     $u->{key_comment} = hostname."/$user\@github.com";
 
@@ -320,7 +328,7 @@ if (@github_accounts) {
     }
 } elsif (-e KNOWN_HOSTS_FILE) {
     # No more Github account, so remove the hosts file
-    printf "Removing %s...\n", KNOWN_HOSTS_FILE;
+    printf "Removing %s...\n", compress_path(KNOWN_HOSTS_FILE);
     unlink KNOWN_HOSTS_FILE;
 }
 
