@@ -168,7 +168,7 @@ foreach my $l (@ssh_config_lines) {
                          compress_path(SSH_CONFIG_FILE), $n;
         }
         $in_ghkg = $n;
-        $in_ghkg-- if $n > 0 && $ssh_config_lines[$n-1] =~ /\A\Z/m;
+        $in_ghkg-- if $n > 0 && $ssh_config_lines[$n-2] =~ /\A\Z/m;
     } elsif ($l =~ m/\A\s*#.*\bgithub-keygen\b.*\bend\b/i) {
         unless ($in_ghkg) {
             $clean = '';
