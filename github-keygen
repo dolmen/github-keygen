@@ -531,6 +531,11 @@ Account options are given after each account name.
 
 =over 4
 
+=item -d
+
+Set this account as the default for C<github.com>/C<gist.github.com> (when you
+do not use a host alias).
+
 =item -r
 
 Remove the account from F<~/.ssh/config>. The private key will be kept, but not
@@ -559,6 +564,10 @@ Key creations parameters (see L<ssh-keygen(1)>):
 =item -C I<comment>
 
 Default comment is C<I<hostname>/I<account>@github.com>.
+
+=item -i I<key-file>
+
+Default is F<~/.ssh/id_I<account>@github.com>.
 
 =back
 
