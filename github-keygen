@@ -98,8 +98,8 @@ while (@ARGV) {
     my %u = (
         user => $user,
         remove => \$remove,
-        identity => undef,
         passphrase => undef,
+        key_file => undef,
         key_type => $key_type,
         key_bits => $key_bits,
     );
@@ -113,7 +113,7 @@ while (@ARGV) {
         'C|key-comment=s' => \$u{key_comment},
     ) or pod2usage(1);
     pod2usage("invalid empty identity file for user '$user'")
-        if defined $u{identity} && ! length $u{identity};
+        if defined $u{key_file} && ! length $u{key_file};
 
     if ($remove) {
         $github_remove{$user} = 1;
