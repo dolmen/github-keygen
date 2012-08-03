@@ -90,7 +90,7 @@ if possible.
 
     sudo apt-get install libtext-diff-perl
 
-=item * RedHat/Fedora/OpenSuse/Mandriva/Mageia:
+=item * RedHat/Fedora:
 
     sudo yum install perl-Text-Diff
 
