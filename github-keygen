@@ -12,8 +12,7 @@ use Sys::Hostname;
 
 use constant HAS_TEXT_DIFF => eval { require Text::Diff; 1 };
 
-our $VERSION = '0.001';
-$VERSION = eval $VERSION;
+our $VERSION = '1.000';
 
 use constant {
     PROG => (File::Spec->splitpath($0))[2],
