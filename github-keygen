@@ -372,6 +372,7 @@ sub add_identity
     my ($gh_account, @hosts) = @_;
     push @ssh_config_lines,
       join(' ', 'Host', @hosts) . "\n",
+      "IdentitiesOnly yes\n",
       'IdentityFile '. compress_path($github_accounts{$gh_account}->{key_file}) . "\n",
       "\n";
 }
