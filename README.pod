@@ -73,6 +73,51 @@ F<~/.ssh/github_known_hosts>
 
 =back
 
+=head1 INSTALL
+
+Fetch the script from GitHub:
+
+    git clone https://github.com/dolmen/github-keygen.git
+    cd github-keygen
+
+Optional (but recommended to better understand what is done): install the
+L<Text::Diff> Perl module. Use the one packaged by your system distribution
+if possible.
+
+=over 4
+
+=item * Debian/Ubuntu:
+
+    sudo apt-get install libtext-diff-perl
+
+=item * RedHat/Fedora/OpenSuse/Mandriva/Mageia:
+
+    sudo yum install perl-Text-Diff
+
+=item * OpenSuse:
+
+    sudo zipper install perl-Text-Diff
+
+=item * Mandriva/Mageia/...:
+
+    sudo urpmi install perl-Text-Diff
+
+=item * CPAN:
+
+Install L<Text::Diff|https://metacpan.org/module/Text::Diff> with your favorite
+CPAN client.
+
+=back
+
+=head1 UPGRADE
+
+To upgrade your config to the latest one, update C<github-keygen> and relaunch
+it. It will update your F<~/.ssh/config> and show you the diff of what it
+changed (if you have the L<Text::Diff> perl module).
+
+    cd github-keygen
+    git pull --rebase
+    ./github-keygen
 
 =head1 AUTHOR
 
