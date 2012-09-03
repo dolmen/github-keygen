@@ -1,7 +1,9 @@
 @echo off
 :: Win32 wrapper using tools from the msysgit install
 setlocal
-for %%f in (git.cmd) do set GIT_HOME=%%~dp$PATH:f
-::echo %GIT_HOME%
+:: Add %GIT_HOME% to %PATH%: this should provide perl.exe and ssh-keygen.exe
 :: Unfortunately msysgit only bundles perl 5.8.8 and no Pod::Usage
-"%GIT_HOME%\..\bin\perl.exe" %~dpn0 %*
+:: See https://github.com/msysgit/msysgit/issues/61
+for %%f in (git.cmd) do for /D %%i in ("%%~dp$PATH:f..\bin") do path %PATH%;%%~fi
+::echo %PATH%
+perl %~dpn0 %*
