@@ -31,12 +31,13 @@ But it does much more than that:
 
 =item *
 
-This tool automates the SSH setup. Less errors due to the human. And
+This tool B<automates the SSH setup>. Less errors due to the human. And
 a high level of security.
 
 =item *
 
-It create a new SSH private key dedicated to Github exchanges. This is much better than using the same SSH key to connect to multiple hosts.
+It creates a new SSH B<private key dedicated> to Github exchanges. This is much
+better than using the same SSH key to connect to multiple hosts.
 (If you loose that key, just revoke it in you Github account, remove the key
 file, and re run C<github-keygen>).
 
@@ -52,8 +53,16 @@ computers).
 
 =item *
 
-It setups a very secure SSH configuration for Github, independent of your other
-SSH settings:
+The
+L<Github manual|https://help.github.com/articles/generating-ssh-keys> tells to
+I<remove> your existing SSH keys. But this may not be what you want. This tool
+avoids that: keep your keys and your existing SSH config: they will not be used
+for Github.
+
+=item *
+
+It setups a B<very secure SSH configuration for Github>, independent of your
+other SSH settings:
 
 =over 4
 
@@ -82,8 +91,8 @@ Disable bad things that could come from the Github hosts ("Trust no-one")
 
 It creates unique host aliases for github.com/gist.github.com that you'll be
 able to use in Git URLs (C<git remote>) to connect to a particular account.
-This gives the flexibility to use multiple Github accounts (and so a different
-SSH key for each).
+This gives the flexibility to use B<multiple Github accounts> (and so a
+different SSH key for each).
 
     <account>.github.com:<repo-owner>/<repo>.git  (for each account)
     github.com:<repo-owner>/<repo>.git            (for the default account)
