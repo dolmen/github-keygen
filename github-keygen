@@ -13,7 +13,7 @@ use Sys::Hostname;
 
 use constant HAS_TEXT_DIFF => eval { require Text::Diff; 1 };
 
-our $VERSION = '1.000';
+our $VERSION = '1.001';
 
 use constant {
     PROG => (File::Spec->splitpath($0))[2],
@@ -269,6 +269,7 @@ if (@github_accounts) {
     }
 }
 
+my $keys_created = 0;
 
 foreach my $user (@github_accounts) {
     my $u = $github_accounts{$user};
@@ -288,7 +289,28 @@ foreach my $user (@github_accounts) {
            '-C', $u->{key_comment},
            defined $u->{passphrase} ? ('-N', $u->{passphrase}) : (),
            '-f', $u->{key_file};
-    $errors += (($? >> 8) != 0);
+    if ($? >> 8) {
+	$errors++;
+	next;
+    }
+    $keys_created++;
+    if (exists $ENV{DISPLAY} && -x '/usr/bin/xclip') {
+	# Copy the first key created in the clipboard
+	if ($keys_created == 1) {
+	    # Read the public key from the file
+	    open my $pub, '<', "$u->{key_file}.pub" or next;
+	    my $pubkey = <$pub>;
+	    close $pub;
+
+	    open my $xclip, '|-', qw(xclip -selection clipboard);
+	    print $xclip $pubkey;
+	    close $xclip;
+	    print "The public key has been copied to the clipboard. You can paste it in your SSH settings at https://github.com/settings/ssh\n";
+	} else {
+	    # Help the user to copy the other keys
+	    print "You can copy the public key to the clipboard with this command:\n    xclip -sel clip < $u->{key_file}.pub\nYou can then paste it in your SSH settings at https://github.com/settings/ssh\n";
+	}
+    }
 }
 
 die "errors while creating key\n" if $errors;
