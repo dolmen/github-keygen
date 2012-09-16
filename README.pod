@@ -4,33 +4,75 @@ github-keygen - bootstrap your Github SSH configuration
 
 =head1 SYNOPSIS
 
+Unix/Linux/OS X:
+
     git clone https://github.com/dolmen/github-keygen.git
     cd github-keygen
     ./github-keygen <my-github-username>
+    cd ..
+    rm -Rf github-keygen
+
+Windows:
+
+    git clone https://github.com/dolmen/github-keygen.git
+    cd github-keygen
+    github-keygen <my-github-username>
+    cd ..
+    rd /S /Q github-keygen
 
 =head1 DESCRIPTION
 
-This script ease initial environment setup for secure Github exchanges, but it
-does much more than that:
+This script ease initial environment setup for secure Github exchanges. More
+secure that what the Github help pages advice.
+
+But it does much more than that:
 
 =over 4
 
 =item *
 
-Create a new SSH private key
+This tool automates the SSH setup. Less errors due to the human. And
+a high level of security.
 
 =item *
 
-Setup a very secure SSH configuration for Github, independent of your other SSH
-settings:
+It create a new SSH private key dedicated to Github exchanges. This is much better than using the same SSH key to connect to multiple hosts.
+(If you loose that key, just revoke it in you Github account, remove the key
+file, and re run C<github-keygen>).
+
+=item *
+
+As the process of creating an different SSH key for Github now becomes easy, it
+is now much easier to use a different SSH key for Github on each computer
+you use to publish on Github. This will help you to use the best practices in
+SSH security.
+(If you loose that computer or if it is compromised, just revoke the key in
+your Github account: you don't have to recreate a new key on all your other
+computers).
+
+=item *
+
+It setups a very secure SSH configuration for Github, independent of your other
+SSH settings:
 
 =over 4
 
-=item -
+=item *
 
 Enable only the authentication method used with Github (publickey)
 
-=item -
+=item *
+
+Use only the private key dedicated to Github (the IdentitiesOnly of SSH config)
+
+=item *
+
+Setup a dedicated F<known_hosts> file with the Github SSH hosts and enable
+strict host checking (this means that if you get SSH alerts about host key
+problem when connecting to GitHub, this is really a serious error and you
+should check that someone is not altering your network link).
+
+=item *
 
 Disable bad things that could come from the Github hosts ("Trust no-one")
 
@@ -38,12 +80,13 @@ Disable bad things that could come from the Github hosts ("Trust no-one")
 
 =item *
 
-Create unique host aliases for github.com/gist.github.com that you'll be able
-to use in Git URLs to connect to a particular account. This gives uses the
-flexibility to use multiple Github accounts.
+It creates unique host aliases for github.com/gist.github.com that you'll be
+able to use in Git URLs (C<git remote>) to connect to a particular account.
+This gives the flexibility to use multiple Github accounts (and so a different
+SSH key for each).
 
-    <account>.github.com:<repo-owner>/<repo>.git
-    github.com:<repo-owner>/<repo>.git
+    <account>.github.com:<repo-owner>/<repo>.git  (for each account)
+    github.com:<repo-owner>/<repo>.git            (for the default account)
 
 in addition to:
 
@@ -63,8 +106,7 @@ F<~/.ssh/id_I<E<lt>github-accountE<gt>>@github>
 =item *
 
 Create the SSH configuration optimized for Github and dedicated to Github
-(do not impact your other SSH configurations) in F<~/.ssh/config> (unless the
-file already exists)
+(do not impact your other SSH configurations) in F<~/.ssh/config>.
 
 =item *
 
@@ -73,7 +115,83 @@ F<~/.ssh/github_known_hosts>
 
 =back
 
+=head1 TRUST
+
+As any software that deals with security of your computer or of communications
+with others computers (operating system, antivirus, HTTPS implementation,
+password storage...), you have to trust in this software. (If you didn't ever
+ask yourself that question about the software you already use, you should!).
+
+Here are some arguments that should help you to make your choice:
+
+=over 4
+
+=item *
+
+C<github-keygen> is written in a scripting language (Perl), so the code that
+runs is the code in the script. You can audit it (or ask someone in which you
+trust to do it for you) to trust it.
+
+=item *
+
+When running, C<github-keygen> only generates files locally on your system. It
+will not connect to your Github account (or any other hosts).
+
+=item *
+
+C<github-keygen> only generates configuration files for OpenSSH. So:
+
+=over 4
+
+=item *
+
+Once you ran C<github-keygen>, you can (and you should) audit that config to
+check the changes it did to your system before connecting to any SSH hosts.
+
+=item *
+
+No parts of that configuration is something that is executable: this is just
+some data that OpenSSH will use.
+
+=item *
+
+No executable parts of C<github-keygen> will run after that (the tool itself is
+not installed in your system) and you can even delete it: the configuration it
+did will still work.
+
+=back
+
+=item *
+
+C<github-keygen> is very conservative in what it does to your SSH config (which
+means it will not corrupt what it didn't generate itself), so don't worry about
+configuration you may already have in your F<~/.ssh/config>: it will be kept as
+is. (But, anyway bug may exists, so read the license before using the software).
+
+=item *
+
+I (Olivier MenguE<eacute>) am not an expert in software security. However this
+list should show you that I care enough about security to have thought to many
+issues, and thought to design the software to have trust in it at least as much
+(in fact much more) than in other security software I use every day.
+
+=back
+
+
+I'm using the SSH configuration generated by this tool every day on multiple
+computers, so you can trust that any change on Github side that may affect that
+config will be immediately detected by the author and upgrades will be
+available quickly.
+
 =head1 INSTALL
+
+C<github-keygen> is not really the kind of software you have to install. This is
+more like a wizard that you use just once. So just get the file, run it, and
+delete it.
+
+Windows only: Unfortunately the version of perl bundled with msysgit (5.8) is
+too low. So install some perl >=5.10.1 (either
+L<StrawberryPerl|http://strawberryperl.com> or Cygwin or ActivePerl).
 
 Fetch the script from GitHub:
 
@@ -113,11 +231,17 @@ CPAN client.
 
 To upgrade your config to the latest one, update C<github-keygen> and relaunch
 it. It will update your F<~/.ssh/config> and show you the diff of what it
-changed (if you have the L<Text::Diff> perl module).
+changed (if you have installed the L<Text::Diff> perl module).
 
     cd github-keygen
     git pull --rebase
     ./github-keygen
+
+=head1 SUPPORT
+
+IRC: ask C<dolmen> on C<irc.perl.org>.
+
+Or fill an issue at Github: L<https://github.com/dolmen/github-keygen/issues>
 
 =head1 AUTHOR
 
@@ -125,7 +249,7 @@ Olivier MenguE<eacute>, L<mailto:dolmen@cpan.org>.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright E<copy> 2011 Olivier MenguE<eacute>.
+Copyright E<copy> 2012 Olivier MenguE<eacute>.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
