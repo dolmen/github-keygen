@@ -198,7 +198,7 @@ C<github-keygen> is not really the kind of software you have to install. This is
 more like a wizard that you use just once. So just get the file, run it, and
 delete it.
 
-Windows only: Unfortunately the version of perl bundled with msysgit (5.8) is
+I<Windows only>: Unfortunately the version of perl bundled with msysgit (5.8) is
 too low. So install some perl >=5.10.1 (either
 L<StrawberryPerl|http://strawberryperl.com> or Cygwin or ActivePerl).
 
@@ -207,7 +207,9 @@ Fetch the script from GitHub:
     git clone https://github.com/dolmen/github-keygen.git
     cd github-keygen
 
-=back
+Unix/Linux only: install the optional C<xclip> tool (using your package
+manager). It will be used to copy your public key to the X11 clipboard once
+created.
 
 =head1 UPGRADE
 
@@ -220,6 +222,19 @@ changed (if you have installed the L<Text::Diff> perl module).
     ./github-keygen
 
 =head1 HISTORY
+
+I<Note:> As C<github-keygen> is released with Git on Github, you can simply use
+the diff feature of Git/Github to view exactly what happened between two
+releases. And you can also have a look to the commit log.
+
+=over 4
+
+=item v1.003
+
+No change in the github-keygen code, but the fatpacked build has been tweaked
+to use a better list of packed modules. This should improve compatibility.
+
+Documentation fixes.
 
 =item v1.002
 
