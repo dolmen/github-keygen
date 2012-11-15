@@ -11,17 +11,62 @@ use Carp 'croak';
 
 # Pod::Usage is supposed to be in core since 5.6, but it is missing from perl
 # bundled in msysgit
-my @MODULES = qw(Pod/Usage.pm Text/Diff.pm);
+my @MODULES = qw(Pod/Usage.pm Algorithm/Diff.pm Text/Diff.pm);
+
+@MODULES =
+grep { !m{^(?:Config\.pm|Pod/Simple/|(?:Carp|warnings|File/Spec)(?:\.pm|/))} }
+do {
+    system join(' ', qw(fatpack trace),
+	(map { (my $x = substr($_, 0, -3)) =~ s{/}{::}; "--use=$x" } @MODULES),
+		     '</dev/null', '2>/dev/null');
+    open my $trace, '<', 'fatpacker.trace' or die $!;
+    map { chomp; $_ } <$trace>
+};
+
+unlink 'fatpacker.trace';
+
+#say for @MODULES;
+
+use Module::CoreList;
+
+@MODULES =
+    grep { (my $x = substr($_, 0, -3)) =~ s{/}{::}; $x =~ /^Pod::/ || ! $Module::CoreList::version{5.014002}{$x} } @MODULES;
+
+#say for @MODULES;
+#exit 0;
 
 # Retrieve the packlists
 my @packlists = qx(fatpack packlists-for @MODULES);
 
+#say for @packlists;
+
+
 # Fill fatlib/
-system qw(fatpack tree), @packlists;
-foreach (@MODULES) {
-    die "$_ is missing!" unless -f "fatlib/$_";
+# Unfortunately FatPacker copies whole distribution instead of just what we need
+# And it misses distribution that do not have .packlists
+#system qw(fatpack tree), @packlists;
+#foreach (@MODULES) {
+#    die "$_ is missing!" unless -f "fatlib/$_";
+#}
+
+use File::Copy 'copy';
+use File::Path qw'make_path remove_tree';
+
+remove_tree 'fatlib' or die $!;
+(-d $_ or mkdir $_) for qw(lib fatlib);
+foreach my $m (@MODULES) {
+    (my $dir = $m) =~ s{/[^/]*$}{};
+    $dir = "fatlib/$dir";
+    make_path $dir;
+
+    foreach my $I (@INC) {
+	if (-f "$I/$m") {
+	    copy "$I/$m", "$dir" or die $!;
+	    last;
+	}
+    }
 }
--d 'lib' or mkdir 'lib';
+
 
 # Create the script
 system '(echo "#!/usr/bin/env perl"; fatpack file; cat bin/github-keygen) > github-keygen';
