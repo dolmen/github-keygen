@@ -207,33 +207,6 @@ Fetch the script from GitHub:
     git clone https://github.com/dolmen/github-keygen.git
     cd github-keygen
 
-Optional (but recommended to better understand what is done): install the
-L<Text::Diff> Perl module. Use the one packaged by your system distribution
-if possible.
-
-=over 4
-
-=item * Debian/Ubuntu:
-
-    sudo apt-get install libtext-diff-perl
-
-=item * RedHat/Fedora:
-
-    sudo yum install perl-Text-Diff
-
-=item * OpenSuse:
-
-    sudo zipper install perl-Text-Diff
-
-=item * Mandriva/Mageia/...:
-
-    sudo urpmi install perl-Text-Diff
-
-=item * CPAN:
-
-Install L<Text::Diff|https://metacpan.org/module/Text::Diff> with your favorite
-CPAN client.
-
 =back
 
 =head1 UPGRADE
@@ -245,6 +218,25 @@ changed (if you have installed the L<Text::Diff> perl module).
     cd github-keygen
     git pull --rebase
     ./github-keygen
+
+=head1 HISTORY
+
+=item v1.002
+
+No functional changes, but distribution changes: branch C<master> abandonned
+and replaced by C<release> (build result) and C<devel> (source).
+
+C<github-keygen> is now L<fatpacked|https://metacpan.org/module/App::FatPacker>
+from C<bin/github-keygen> in the C<devel> branch with
+L<https://metacpan.org/module/Pod::Usage|Pod::Usage> and
+L<https://metacpan.org/module/Text::Diff|Text::Diff>, so those modules do not
+have to be installed before usage.
+
+=item v1.001 and before
+
+See the git log.
+
+=back
 
 =head1 SUPPORT
 
