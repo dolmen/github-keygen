@@ -1,0 +1,53 @@
+=head1 NAME
+
+How to constribute to C<github-keygen>?
+
+=head1 DESCRIPTION
+
+Patches are welcome!
+
+They must be built against the
+C<L<devel|https://github.com/dolmen/github-keygen/tree/devel>> branch, then
+submitted as pull requests at github.
+
+=head1 PATCHING, STEP BY STEP
+
+=over 4
+
+=item 1. Get the source
+
+    git clone --origin upstream git://github.com/dolmen/github-keygen.git
+    cd github-keygen
+    git checkout devel
+
+=item 2. Make your fix/feature
+
+    git checkout -b <my-patch> devel
+    ...
+    git commit
+
+=item 3. Setup a fork
+
+=item 3.1. L<Fork the project on github|https://github.com/dolmen/github-keygen/fork_select>
+
+=item 3.2. Link your local repo to your fork (just once)
+
+(You are using C<github-keygen> isn't it?)
+
+    git remote add github <github-user>.github.com:<github-user>/github-keygen.git
+
+=item 4. Submit your work
+
+=item 4.1 Push!
+
+    git push github <my-patch>
+
+=item 4.2 Submit a pull request on GitHub
+
+=item 5. Loop
+
+Redo step 2. and 4.
+
+=back
+
+=cut
