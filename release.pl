@@ -6,9 +6,8 @@ use warnings;
 
 # Only to fail early if the tool is missing
 use App::FatPacker ();
-use Carp;
+use Carp 'croak';
 
-#goto X;
 
 # Pod::Usage is supposed to be in core since 5.6, but it is missing from perl
 # bundled in msysgit
@@ -37,7 +36,7 @@ my $version = do {
 
 if (-e ".git/refs/tags/v$version") {
     say STDERR "version $version already released!";
-#    exit 1
+    exit 1
 }
 
 say "\$VERSION: $version";
@@ -105,17 +104,12 @@ sub git ($;@)
 }
 
 
-#my $old_tree = 
-
-X:
 
 my @new_files = (
     'github-keygen',
     @ARGV,
 );
 
-#my $devel = `git rev-parse devel`;
-#my $master = `git rev-parse master`;
 my ($devel_commit) = git 'rev-parse' => 'devel';
 say "devel: $devel_commit";
 
@@ -164,6 +158,7 @@ say "new release tree: $new_release_tree";
 
 # Create the release commit
 # TODO use the "author" of devel as the committer
+# TODO use more content in the commit message (ask interactively)
 my $new_release_commit =
     git 'commit-tree', $new_release_tree,
 		       -p => $release_commit,
@@ -172,24 +167,12 @@ my $new_release_commit =
 
 say "new release commit: $new_release_commit";
 
-git 'update-ref' => 'refs/heads/toto' => $new_release_commit, $release_commit;
-
-exit 0; # ********
+git 'update-ref' => 'refs/heads/release' => $new_release_commit, $release_commit;
 
 git tag => -a =>
 	   -m => "Release v$version",
 	   "v$version",
 	   $new_release_commit;
 
-exit 0;
-print <<'EOF';
-TODO:
-  git stash save --include-untracked 'github-keygen fatpacked for release'
-  git checkout master
-  git stash pop
-  git add github-keygen
-  ????  # Merge to mark devel as merged
-  git commit
-  v=$(bin/github-keygen -v | head -n1 | cut -d' ' -f3)
-  git tag -a -m "Version $v" "v$v"
-EOF
+say 'Done.';
+say "You can now push: git push github devel release v$version";
