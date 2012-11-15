@@ -79,12 +79,14 @@ my $version = do {
     (split / /, $line)[2]
 };
 
-if (-e ".git/refs/tags/v$version") {
-    say STDERR "version $version already released!";
-    exit 1
-}
+die "could not get \$VERSION" unless $version;
 
 say "\$VERSION: $version";
+
+if (-e ".git/refs/tags/v$version") {
+    say STDERR "version $version already released!";
+    $version = undef;
+}
 
 
 sub git ($;@)
@@ -164,6 +166,7 @@ git 'ls-tree' => $devel_commit, sub {
     $devel_tree{$file} = [ $mode, $type, $object ];
 };
 
+my %updated_files;
 my ($release_commit) = git 'rev-parse' => 'release';
 say "release: $release_commit";
 my %release_tree;
@@ -176,19 +179,26 @@ git 'ls-tree' => $release_commit, sub {
 	    && $object ne $devel_tree{$file}[2]) {
 	say "- $file: $object (updated)";
 	$release_tree{$file} = $devel_tree{$file};
+	$updated_files{$file} = 1;
     } else {
 	say "- $file: $object";
 	$release_tree{$file} = [ $mode, $type, $object ];
     }
 };
 
-# Create the objects file each new file and replace them
+# Create the objects file for each new file and replace them
 foreach my $file (@new_files) {
     # TODO
     my $object = git 'hash-object' => -w => $file;
-    say "- $file: $object (updated)";
-    $release_tree{$file}[2] = $object;
+    if ($object ne $release_tree{$file}[2]) {
+	say "- $file: $object (updated)";
+	$release_tree{$file}[2] = $object;
+	$updated_files{$file} = 1;
+    }
 }
+
+die "github-keygen updated but version unchanged!"
+    if $updated_files{'github-keygen'} && ! $version;
 
 # Build the new tree object for release
 my $new_release_tree = git mktree => -z =>
@@ -208,16 +218,18 @@ my $new_release_commit =
     git 'commit-tree', $new_release_tree,
 		       -p => $release_commit,
 		       -p => $devel_commit,
-		       -m => "Release v$version";
+		       -m => ($version ? "Release v$version" : "Update docs");
 
 say "new release commit: $new_release_commit";
 
 git 'update-ref' => 'refs/heads/release' => $new_release_commit, $release_commit;
 
-git tag => -a =>
-	   -m => "Release v$version",
-	   "v$version",
-	   $new_release_commit;
+if ($version) {
+    git tag => -a =>
+	       -m => "Release v$version",
+	       "v$version",
+	       $new_release_commit;
+}
 
 say 'Done.';
 say "You can now push: git push github devel release v$version";
