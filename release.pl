@@ -12,13 +12,14 @@ use Carp 'croak';
 # Pod::Usage is supposed to be in core since 5.6, but it is missing from perl
 # bundled in msysgit
 my @MODULES = qw(Pod/Usage.pm Algorithm/Diff.pm Text/Diff.pm);
+my $NUL = $^O eq 'MSWin32' ? 'NUL' : '/dev/null';
 
 @MODULES =
 grep { !m{^(?:Config\.pm|Pod/Simple/|(?:Carp|warnings|File/Spec)(?:\.pm|/))} }
 do {
     system join(' ', qw(fatpack trace),
 	(map { (my $x = substr($_, 0, -3)) =~ s{/}{::}; "--use=$x" } @MODULES),
-		     '</dev/null', '2>/dev/null');
+		     "<$NUL", "2>$NUL");
     open my $trace, '<', 'fatpacker.trace' or die $!;
     map { chomp; $_ } <$trace>
 };
@@ -69,11 +70,19 @@ foreach my $m (@MODULES) {
 
 
 # Create the script
-system '(echo "#!/usr/bin/env perl"; fatpack file; cat bin/github-keygen) > github-keygen';
+#system '(echo "#!/usr/bin/env perl"; fatpack file; cat bin/github-keygen) > github-keygen';
+open my $script, '>:raw', 'github-keygen';
+print $script "#!/usr/bin/env perl\n";
+close $script;
+system "fatpack file >> github-keygen";
+open $script, '>>:raw', 'github-keygen';
+copy('bin/github-keygen', $script);
+close $script;
+
 chmod 0755, 'github-keygen';
 
 my $version = do {
-    open my $version_output, '-|', './github-keygen -v' or die $!;
+    open my $version_output, '-|', 'perl github-keygen -v' or die $!;
     my $line = <$version_output>;
     chomp $line;
     (split / /, $line)[2]
