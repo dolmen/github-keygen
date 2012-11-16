@@ -15,7 +15,7 @@ my @MODULES = qw(Pod/Usage.pm Algorithm/Diff.pm Text/Diff.pm);
 my $NUL = $^O eq 'MSWin32' ? 'NUL' : '/dev/null';
 
 @MODULES =
-grep { !m{^(?:Config\.pm|Pod/Simple/|(?:Carp|warnings|File/Spec)(?:\.pm|/))} }
+grep { !m{^(?:Config\.pm|(?:Carp|warnings|File/Spec)(?:\.pm|/))} }
 do {
     system join(' ', qw(fatpack trace),
 	(map { (my $x = substr($_, 0, -3)) =~ s{/}{::}; "--use=$x" } @MODULES),
@@ -53,7 +53,7 @@ my @packlists = qx(fatpack packlists-for @MODULES);
 use File::Copy 'copy';
 use File::Path qw'make_path remove_tree';
 
-remove_tree 'fatlib' or die $!;
+-d 'fatlib' and (remove_tree 'fatlib' or die $!);
 (-d $_ or mkdir $_) for qw(lib fatlib);
 foreach my $m (@MODULES) {
     (my $dir = $m) =~ s{/[^/]*$}{};
