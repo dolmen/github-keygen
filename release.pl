@@ -145,6 +145,7 @@ sub git ($;@)
 	defined($output = <$out>) and chomp $output;
 	waitpid($pid, 0);
 	croak "git error ".($?>>8) if $? >> 8;
+	croak "no output" unless defined $output;
 	return $output
     } else { # void context
 	if ($output_cb) {
