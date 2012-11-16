@@ -20,7 +20,8 @@ use constant {
     # We can't rely on File::HomeDir because we have to reproduce OpenSSH
     # behavior, and not depend on what File::HomeDir thinks is right
     HOME_DIR => $ENV{HOME} || ((getpwent)[7]),
-    WIN32 => $^O eq 'MSWin32',
+    # msys is the special unix emulation of Unix on Win32: perl 5.8 from msysgit
+    WIN32 => $^O eq 'MSWin32' || $^O eq 'msys',
 };
 use constant SSH_DIR => File::Spec->rel2abs('.ssh', HOME_DIR);
 
@@ -41,7 +42,7 @@ sub resolve_path($)
     my $path = shift;
     if (WIN32) {
         $path =~ s!^\~(?=[/\\])! HOME_DIR !e;
-        $path =~ s!/!\\!g;
+        $path =~ s!/!\\!g if $^O ne 'msys';
     } else {
         $path =~ s!^\~(?=/)! HOME_DIR !e;
     }
@@ -80,7 +81,7 @@ use constant KNOWN_HOSTS_FILE => ssh_file('known_hosts_github');
 my $remove_all;
 my $key_type = 'rsa';
 my $key_bits = 2048;
-my $github_default;
+my $github_default = '';
 
 # Parse global options
 GetOptions(
@@ -145,7 +146,8 @@ while (@ARGV) {
 my @ssh_config_lines;
 
 if (-e SSH_CONFIG_FILE) {
-    if (open my $f, '<', SSH_CONFIG_FILE) {
+    # The :crlf layer is needed for msys
+    if (open my $f, WIN32 ? '<:crlf' : '<', SSH_CONFIG_FILE) {
         @ssh_config_lines = <$f>;
         close $f;
     } else {
@@ -195,13 +197,16 @@ foreach my $l (@ssh_config_lines) {
                 $clean = '';
             }
             #print map(+"[$_] ", @github_hosts_pat), "\n";
-            %users = map { m/^((?!gist)[a-z_0-9]*+)(?:\.gist)?\.github.com$/ ? ($1 => undef) : () } @github_hosts_pat;
+            # perl 5.10
+            #%users = map { m/^((?!gist)[a-z_0-9]*+)(?:\.gist)?\.github.com$/ ? ($1 => undef) : () } @github_hosts_pat;
+            # perl 5.8
+            %users = map { m/^([a-z_0-9]+)(?:\.gist)?\.github.com$/ && $_ ne 'gist.github.com' ? ($1 => undef) : () } @github_hosts_pat;
             #print keys(%users), "\n";
             # Ignore users which are asked to be removed
             delete $users{$_} for grep { exists $github_remove{$_} } keys %users;
             if ($remove_all) {
                 $github_remove{$_} = 1 for keys %users;
-            } elsif (!defined $github_default && keys(%users) == 1 && grep { $_ eq 'github.com' } @github_hosts_pat) {
+            } elsif ($github_default ne '' && keys(%users) == 1 && grep { $_ eq 'github.com' } @github_hosts_pat) {
                 ($github_default) = keys %users;
             }
         }
@@ -366,7 +371,8 @@ my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
 
 push @ssh_config_lines,
      ( @ssh_config_lines ? ("\n") : ()),
-     split(/\n\K/, <<EOF);
+     #split(/\n\K/, <<EOF);                       # perl 5.10
+     (map { "$_\n" } split(/\n/, <<EOF)), "\n";   # perl 5.8
 # -- github-keygen - begin --
 
 Host *.github.com
@@ -407,7 +413,7 @@ sub add_identity
 foreach my $u (@github_accounts) {
     add_identity($u,
              (map { "$u.$_" } GITHUB_HOSTS),
-             ($u ~~ $github_default ? (GITHUB_HOSTS) : ()),
+             ($u eq $github_default ? (GITHUB_HOSTS) : ()),
     );
 }
 
@@ -415,13 +421,25 @@ push @ssh_config_lines, "# -- github-keygen - end --\n";
 
 }
 
-
+# Workaround for perl 5.8
+# (smartmatch is at least good at easily comparing arrays)
+sub array_equals (\@\@)
+{
+    my ($a1, $a2) = @_;
+    return '' if $#$a1 != $#$a2;
+    for(my $i=$#$a1; $i>=0; $i--) {
+        return '' if $a1->[$i] ne $a2->[$i]
+    }
+    return 1
+}
 
 
 if (@ssh_config_lines) {
-    if (@ssh_config_lines ~~ @ssh_config_lines_orig) {
+    #if (@ssh_config_lines ~~ @ssh_config_lines_orig) {   # perl 5.10
+    if (array_equals @ssh_config_lines, @ssh_config_lines_orig) {
         printf "No changes in %s.\n", compress_path(SSH_CONFIG_FILE);
-    } elsif (open my $f, '>', SSH_CONFIG_FILE) {
+    # :crlf layer is needed explicitely on msys
+    } elsif (open my $f, WIN32 ? '>:crlf' : '>', SSH_CONFIG_FILE) {
         printf "Saving %s...\n", compress_path(SSH_CONFIG_FILE);
         print Text::Diff::diff(\@ssh_config_lines_orig, \@ssh_config_lines, { STYLE => 'Unified' }) if HAS_TEXT_DIFF;
         print $f @ssh_config_lines;
