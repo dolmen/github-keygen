@@ -4,7 +4,7 @@ github-keygen - bootstrap your Github SSH configuration
 
 =head1 SYNOPSIS
 
-Unix/Linux/OS X:
+Unix/Linux/MacOS X:
 
     git clone https://github.com/dolmen/github-keygen.git
     cd github-keygen
@@ -12,7 +12,7 @@ Unix/Linux/OS X:
     cd ..
     rm -Rf github-keygen
 
-Windows:
+Windows (with msysgit or Cygwin):
 
     git clone https://github.com/dolmen/github-keygen.git
     cd github-keygen
@@ -229,6 +229,13 @@ releases. And you can also have a look to the commit log.
 
 =over 4
 
+=item v1.004
+
+Changes for compatibility with msysgit's bundled perl (an antique 5.8.8
+with major core modules missing: C<Pod::*>). So no changes for Unix users, but
+a big improvement for all Windows+msysgit users: no need to install
+StrawberryPerl just for C<github-keygen>!
+
 =item v1.003
 
 No change in the github-keygen code, but the fatpacked build has been tweaked
@@ -252,6 +259,39 @@ have to be installed before usage.
 See the git log.
 
 =back
+
+=head1 BUGS
+
+C<github-keygen> requires a Perl runtime. It is regularly tested in the
+following environments:
+
+=over 4
+
+=item *
+
+Ubuntu with perl 5.14.2
+
+=item *
+
+Windows with StrawberryPerl (5.12.1 and above) and msysgit
+
+=item *
+
+Windows with msysgit's antique perl 5.8.8.
+
+=back
+
+Known issues:
+
+=over 4
+
+=item *
+
+on Win32, ~/.ssh/config is always written in CRLF end-of-line style. This is
+not a bug, it's a feature.
+
+=back
+
 
 =head1 SUPPORT
 
