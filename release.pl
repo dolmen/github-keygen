@@ -97,6 +97,8 @@ if (-e ".git/refs/tags/v$version") {
     $version = undef;
 }
 
+use IPC::Run 'start';
+use Symbol 'gensym';
 
 sub git ($;@)
 {
@@ -104,13 +106,12 @@ sub git ($;@)
     $output_cb = pop if ref $_[$#_] eq 'CODE';
     $input = pop if ref $_[$#_];
     my @args = @_;
-    say join(' ', '[', git => @args, ']');
-    my ($pid, $out);
-    local $SIG{PIPE} = sub { say "SIGPIPE" };
+    say join(' ', '[', git => map { / / ? qq{"$_"} : $_ } @args, ']');
+    my $h;
+    my $out = gensym; # IPC::Run needs GLOBs
     if ($input) {
-	use IPC::Open2;
-	my $in;
-	$pid = open2($out, $in, git => @args) or die $!;
+	my $in = gensym;
+	$h = start [ git => @args ], '<pipe', $in, '>pipe', $out or die $!;
 	binmode($in, ':utf8');
 	if (ref $input eq 'ARRAY') {
 	    print $in map { "$_\n" } @$input;
@@ -120,7 +121,7 @@ sub git ($;@)
 	}
 	close $in;
     } else {
-	$pid = open($out, '-|', git => @args) or die $!;
+	$h = start [ git => @args ], \undef, '>pipe', $out or die $!;
     }
     binmode($out, ':utf8');
     if (wantarray) {
@@ -136,14 +137,16 @@ sub git ($;@)
 		push @output, $_
 	    }
 	}
-	waitpid($pid, 0);
+	close $out;
+	finish $h;
 	croak "git error ".($?>>8) if $? >> 8;
 	return @output
     } elsif (defined wantarray) {
 	# Only the first line
 	my $output;
 	defined($output = <$out>) and chomp $output;
-	waitpid($pid, 0);
+	close $out;
+	finish $h;
 	croak "git error ".($?>>8) if $? >> 8;
 	croak "no output" unless defined $output;
 	return $output
@@ -154,7 +157,8 @@ sub git ($;@)
 		$output_cb->($_)
 	    }
 	}
-	waitpid($pid, 0);
+	close $out;
+	finish $h;
 	croak "git error ".($?>>8) if $? >> 8;
 	return
     }
