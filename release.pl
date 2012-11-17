@@ -211,7 +211,10 @@ foreach my $file (@new_files) {
     }
 }
 
-die "github-keygen updated but version unchanged!"
+die "no updated files!\n"
+    unless %updated_files;
+
+die "github-keygen updated but version unchanged!\n"
     if $updated_files{'github-keygen'} && ! $version;
 
 # Build the new tree object for release
