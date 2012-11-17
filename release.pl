@@ -235,7 +235,10 @@ my $new_release_commit =
     git 'commit-tree', $new_release_tree,
 		       -p => $release_commit,
 		       -p => $devel_commit,
-		       -m => ($version ? "Release v$version" : "Update docs");
+		       # For maximum compat, don't use '-m' but STDIN
+		       \($version
+			    ? "Release v$version"
+			    : "Update ".join(', ', sort keys %updated_files));
 
 say "new release commit: $new_release_commit";
 
