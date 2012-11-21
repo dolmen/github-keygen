@@ -198,9 +198,10 @@ C<github-keygen> is not really the kind of software you have to install. This is
 more like a wizard that you use just once. So just get the file, run it, and
 delete it.
 
-I<Windows only>: Unfortunately the version of perl bundled with msysgit (5.8) is
-too old. You'll need to install perl >=5.10.1 (either
-L<StrawberryPerl|http://strawberryperl.com> or Cygwin or ActivePerl).
+I<Windows only>: the tool is written in Perl, but you don't have to install
+L<StrawberryPerl|http://strawberryperl.com> (or Cygwin or ActivePerl); the perl
+bundled with L<msysgit|http://msysgit.github.com/> will be automatically
+detected and used.
 
 Fetch the script from GitHub:
 
