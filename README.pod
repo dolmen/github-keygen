@@ -308,6 +308,8 @@ Olivier MenguE<eacute>, L<mailto:dolmen@cpan.org>.
 
 L<Eric Lefevre|https://github.com/elefevre>: documentation patch.
 
+If you want like him to contribute, have a look to L<CONTRIBUTING.pod>.
+
 =head1 COPYRIGHT & LICENSE
 
 Copyright E<copy> 2012 Olivier MenguE<eacute>.
