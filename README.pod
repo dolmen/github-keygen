@@ -304,6 +304,10 @@ Or fill an issue at Github: L<https://github.com/dolmen/github-keygen/issues>
 
 Olivier MenguE<eacute>, L<mailto:dolmen@cpan.org>.
 
+=head2 Thanks
+
+L<Eric Lefevre|https://github.com/elefevre>: documentation patch.
+
 =head1 COPYRIGHT & LICENSE
 
 Copyright E<copy> 2012 Olivier MenguE<eacute>.
