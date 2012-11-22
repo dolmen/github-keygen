@@ -230,6 +230,12 @@ releases. And you can also have a look to the commit log.
 
 =over 4
 
+=item v1.005
+
+No functional changes.
+
+Updated Pod::Simple to 3.23. Updated copyright.
+
 =item v1.004
 
 Changes for compatibility with msysgit's bundled perl (an antique 5.8.8
