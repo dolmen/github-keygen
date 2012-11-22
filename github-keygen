@@ -993,8 +993,6 @@ $fatpacked{"Algorithm/Diff.pm"} = <<'ALGORITHM_DIFF';
   a contiguous section of items which should be added, deleted, replaced,
   or left unchanged.
   
-  =over 4
-  
   The following summary of all of the methods looks a lot like Perl code
   but some of the symbols have different meanings:
   
@@ -1024,6 +1022,8 @@ $fatpacked{"Algorithm/Diff.pm"} = <<'ALGORITHM_DIFF';
   
   Passing in C<undef> for an optional argument is always treated the same
   as if no argument were passed in.
+  
+  =over
   
   =item C<Next>
   
@@ -1587,7 +1587,7 @@ $fatpacked{"Algorithm/Diff.pm"} = <<'ALGORITHM_DIFF';
   with different order of events.
   
   C<traverse_balanced> might be a bit slower than C<traverse_sequences>,
-  noticable only while processing huge amounts of data.
+  noticeable only while processing huge amounts of data.
   
   The C<sdiff> function of this module 
   is implemented as call to C<traverse_balanced>.
@@ -9764,6 +9764,7 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
   use vars qw(@ISA @EXPORT %ESCAPES $VERSION);
   
   use Carp qw(carp croak);
+  use Encode qw(encode);
   use Exporter ();
   use Pod::Simple ();
   
@@ -9772,7 +9773,7 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
   # We have to export pod2text for backward compatibility.
   @EXPORT = qw(pod2text);
   
-  $VERSION = '3.14';
+  $VERSION = '3.15';
   
   ##############################################################################
   # Initialization
@@ -9985,7 +9986,8 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
   # necessary to match the input encoding unless UTF-8 output is forced.  This
   # preserves the traditional pass-through behavior of Pod::Text.
   sub output {
-      my ($self, $text) = @_;
+      my ($self, @text) = @_;
+      my $text = join ('', @text);
       $text =~ tr/\240\255/ /d;
       unless ($$self{opt_utf8} || $$self{CHECKED_ENCODING}) {
           my $encoding = $$self{encoding} || '';
@@ -9994,7 +9996,11 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
           }
           $$self{CHECKED_ENCODING} = 1;
       }
-      print { $$self{output_fh} } $text;
+      if ($$self{ENCODE}) {
+          print { $$self{output_fh} } encode ('UTF-8', $text);
+      } else {
+          print { $$self{output_fh} } $text;
+      }
   }
   
   # Output a block of code (something that isn't part of the POD text).  Called
@@ -10019,17 +10025,19 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
       # We have to redo encoding handling for each document.
       delete $$self{CHECKED_ENCODING};
   
-      # If we were given the utf8 option, set an output encoding on our file
-      # handle.  Wrap in an eval in case we're using a version of Perl too old
-      # to understand this.
-      #
-      # This is evil because it changes the global state of a file handle that
-      # we may not own.  However, we can't just blindly encode all output, since
-      # there may be a pre-applied output encoding (such as from PERL_UNICODE)
-      # and then we would double-encode.  This seems to be the least bad
-      # approach.
+      # When UTF-8 output is set, check whether our output file handle already
+      # has a PerlIO encoding layer set.  If it does not, we'll need to encode
+      # our output before printing it (handled in the output() sub).  Wrap the
+      # check in an eval to handle versions of Perl without PerlIO.
+      $$self{ENCODE} = 0;
       if ($$self{opt_utf8}) {
-          eval { binmode ($$self{output_fh}, ':encoding(UTF-8)') };
+          $$self{ENCODE} = 1;
+          eval {
+              my @layers = PerlIO::get_layers ($$self{output_fh});
+              if (grep { $_ eq 'utf8' } @layers) {
+                  $$self{ENCODE} = 0;
+              }
+          };
       }
   
       return '';
@@ -12105,7 +12113,7 @@ use Sys::Hostname;
 
 use constant HAS_TEXT_DIFF => eval { require Text::Diff; 1 };
 
-our $VERSION = '1.004';
+our $VERSION = '1.005';
 
 use constant {
     PROG => (File::Spec->splitpath($0))[2],
@@ -12771,7 +12779,7 @@ Olivier MenguE<eacute>, L<mailto:dolmen@cpan.org>.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright E<copy> 2011 Olivier MenguE<eacute>.
+Copyright E<copy> 2012 Olivier MenguE<eacute>.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
