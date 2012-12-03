@@ -230,6 +230,11 @@ releases. And you can also have a look to the commit log.
 
 =over 4
 
+=item v1.006
+
+UI improvement: when keys are created, the message about what to do with the
+key is now shown at the end, after the diff instead of before.
+
 =item v1.005
 
 No functional changes.
