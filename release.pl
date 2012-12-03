@@ -97,7 +97,7 @@ if (-e ".git/refs/tags/v$version") {
     $version = undef;
 }
 
-use IPC::Run 'start';
+use IPC::Run qw(start finish);
 use Symbol 'gensym';
 
 sub git ($;@)
