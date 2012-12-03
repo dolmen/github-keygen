@@ -279,7 +279,7 @@ if (@github_accounts) {
     }
 }
 
-my $keys_created = 0;
+my @keys_created;
 
 foreach my $user (@github_accounts) {
     my $u = $github_accounts{$user};
@@ -299,28 +299,12 @@ foreach my $user (@github_accounts) {
            '-C', $u->{key_comment},
            defined $u->{passphrase} ? ('-N', $u->{passphrase}) : (),
            '-f', $u->{key_file};
-    if ($? >> 8) {
+    if ($? >> 8 || ! (-e $u->{key_file} && -e ($u->{key_file}.".pub"))) {
 	$errors++;
 	next;
     }
-    $keys_created++;
-    if (exists $ENV{DISPLAY} && -x '/usr/bin/xclip') {
-	# Copy the first key created in the clipboard
-	if ($keys_created == 1) {
-	    # Read the public key from the file
-	    open my $pub, '<', "$u->{key_file}.pub" or next;
-	    my $pubkey = <$pub>;
-	    close $pub;
 
-	    open my $xclip, '|-', qw(xclip -selection clipboard);
-	    print $xclip $pubkey;
-	    close $xclip;
-	    print "The public key has been copied to the clipboard. You can paste it in your SSH settings at https://github.com/settings/ssh\n";
-	} else {
-	    # Help the user to copy the other keys
-	    print "You can copy the public key to the clipboard with this command:\n    xclip -sel clip < $u->{key_file}.pub\nYou can then paste it in your SSH settings at https://github.com/settings/ssh\n";
-	}
-    }
+    push @keys_created, $u->{key_file};
 }
 
 die "errors while creating key\n" if $errors;
@@ -458,6 +442,36 @@ if (@ssh_config_lines) {
     }
 }
 
+if (@keys_created) {
+    if (exists $ENV{DISPLAY} && -x '/usr/bin/xclip') {
+	# Copy the first key created to the clipboard
+	my $pub_key = shift(@keys_created).".pub";
+        # Read the public key from the file
+        open my $pub, '<', "$pub_key";
+        my $pubkey = <$pub>;
+        close $pub;
+
+        open my $xclip, '|-', qw(xclip -selection clipboard);
+        print $xclip $pubkey;
+        close $xclip;
+	printf "\n"
+             . "The public key %s has been copied to the clipboard.\n"
+             . "Paste it in your SSH settings at <https://github.com/settings/ssh>.\n",
+               compress_path($pub_key);
+	if (@keys_created) {
+	    # Help the user to copy the other keys
+	    print "\n"
+                . "You can copy the other public keys one by one to the clipboard:\n";
+            print "    xclip -sel clip < $_.pub\n" for @keys_created;
+	}
+    } elsif (@keys_created == 1) {
+        printf "\nYou now have to copy the public key %s to your SSH settings at\n<https://github.com/settings/ssh>.\n",
+               compress_path(shift @keys_created);
+    } else {
+        print "\nYou now have to copy each public key to the SSH settings at\n<https://github.com/settings/ssh>:\n";
+        printf("    %s\n", compress_path("$_.pub")) for @keys_created;
+    }
+}
 
 __END__
 github.com ssh-dss AAAAB3NzaC1kc3MAAACBANGFW2P9xlGU3zWrymJgI/lKo//ZW2WfVtmbsUZJ5uyKArtlQOT2+WRhcg4979aFxgKdcsqAYW3/LS1T2km3jYW/vr4Uzn+dXWODVk5VlUiZ1HFOHf6s6ITcZvjvdbp6ZbpM+DuJT7Bw+h5Fx8Qt8I16oCZYmAPJRtu46o9C2zk1AAAAFQC4gdFGcSbp5Gr0Wd5Ay/jtcldMewAAAIATTgn4sY4Nem/FQE+XJlyUQptPWMem5fwOcWtSXiTKaaN0lkk2p2snz+EJvAGXGq9dTSWHyLJSM2W6ZdQDqWJ1k+cL8CARAqL+UMwF84CR0m3hj+wtVGD/J4G5kW2DBAf4/bqzP4469lT+dF2FRQ2L9JKXrCWcnhMtJUvua8dvnwAAAIB6C4nQfAA7x8oLta6tT+oCk2WQcydNsyugE8vLrHlogoWEicla6cWPk7oXSspbzUcfkjN3Qa6e74PhRkc7JdSdAlFzU3m7LMkXo1MHgkqNX8glxWNVqBSc0YRdbFdTkL0C6gtpklilhvuHQCdbgB3LBAikcRkDp+FCVkUgPC/7Rw==
