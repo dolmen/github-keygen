@@ -230,6 +230,12 @@ releases. And you can also have a look to the commit log.
 
 =over 4
 
+=item v1.007
+
+Fixed a message that wrongly told to paste the I<private> key (C<'.pub'>
+forgotten). Released at the
+L<Quack and Hack 2012 Europe hackathon|http://act.yapc.eu/qh2012eu/>.
+
 =item v1.006
 
 UI improvement: when keys are created, the message about what to do with the
