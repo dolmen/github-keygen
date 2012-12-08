@@ -465,7 +465,7 @@ if (@keys_created) {
             print "    xclip -sel clip < $_.pub\n" for @keys_created;
 	}
     } elsif (@keys_created == 1) {
-        printf "\nYou now have to copy the public key %s to your SSH settings at\n<https://github.com/settings/ssh>.\n",
+        printf "\nYou now have to copy the public key %s.pub to your SSH settings at\n<https://github.com/settings/ssh>.\n",
                compress_path(shift @keys_created);
     } else {
         print "\nYou now have to copy each public key to the SSH settings at\n<https://github.com/settings/ssh>:\n";
