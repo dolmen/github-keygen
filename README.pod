@@ -216,10 +216,10 @@ created.
 
 To upgrade your config to the latest one, update C<github-keygen> and relaunch
 it. It will update your F<~/.ssh/config> and show you the diff of what it
-changed (if you have installed the L<Text::Diff> perl module).
+changed:
 
     cd github-keygen
-    git pull --rebase
+    git rebase
     ./github-keygen
 
 =head1 HISTORY
