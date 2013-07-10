@@ -31,7 +31,7 @@ unlink 'fatpacker.trace';
 use Module::CoreList;
 
 @MODULES =
-    grep { (my $x = substr($_, 0, -3)) =~ s{/}{::}; $x =~ /^Pod::/ || ! $Module::CoreList::version{5.014002}{$x} } @MODULES;
+    grep { (my $x = substr($_, 0, -3)) =~ s{/}{::}g; $x =~ /^Pod::/ || ! $Module::CoreList::version{'5.014002'}{$x} } @MODULES;
 
 #say for @MODULES;
 #exit 0;
