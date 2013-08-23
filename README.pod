@@ -216,10 +216,10 @@ created.
 
 To upgrade your config to the latest one, update C<github-keygen> and relaunch
 it. It will update your F<~/.ssh/config> and show you the diff of what it
-changed (if you have installed the L<Text::Diff> perl module).
+changed:
 
     cd github-keygen
-    git pull --rebase
+    git rebase
     ./github-keygen
 
 =head1 HISTORY
@@ -229,6 +229,13 @@ the diff feature of Git/Github to view exactly what happened between two
 releases. And you can also have a look to the commit log.
 
 =over 4
+
+=item v1.007
+
+Fixed a message that wrongly told to paste the I<private> key (C<'.pub'>
+forgotten). Fixed at the
+L<Quack and Hack 2012 Europe hackathon|http://act.yapc.eu/qh2012eu/>,
+but released (too) long later.
 
 =item v1.006
 
