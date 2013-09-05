@@ -89,6 +89,11 @@ Disable bad things that could come from the Github hosts ("Trust no-one")
 
 =item *
 
+It enables SSH connection sharing (see the B<ControlMaster> option in
+L<ssh_config(5)> and L<this blog post|http://interrobeng.com/2013/08/25/speed-up-git-5x-to-50x/>)
+
+=item *
+
 It creates unique host aliases for github.com/gist.github.com that you'll be
 able to use in Git URLs (C<git remote>) to connect to a particular account.
 This gives the flexibility to use B<multiple Github accounts> (and therefore a
@@ -230,6 +235,12 @@ releases. And you can also have a look to the commit log.
 
 =over 4
 
+=item v1.008
+
+Added connection sharing: connection to Github is kept alive for 60
+seconds. This speeds-up any script that do multiple sequential Git interactions
+with Github.
+
 =item v1.007
 
 Fixed a message that wrongly told to paste the I<private> key (C<'.pub'>
@@ -326,7 +337,10 @@ Olivier MenguE<eacute>, L<mailto:dolmen@cpan.org>.
 
 L<Eric Lefevre|https://github.com/elefevre>: documentation patch.
 
-If you want like him to contribute, have a look to L<CONTRIBUTING.pod>.
+L<Eu Beng Hee|https://github.com/ahbeng>: L<blog post about SSH connection sharing|http://interrobeng.com/2013/08/25/speed-up-git-5x-to-50x/> that inspired
+changes in 1.008.
+
+If you want to contribute, have a look to L<CONTRIBUTING.pod>.
 
 =head1 COPYRIGHT & LICENSE
 
