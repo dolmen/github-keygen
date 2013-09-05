@@ -381,6 +381,10 @@ PreferredAuthentications publickey
 ForwardAgent no
 ForwardX11 no
 PermitLocalCommand no
+# Connexion sharing for 60 seconds, for speedup
+ControlMaster auto
+ControlPath ~/.ssh/conn-%n
+ControlPersist 60s
 
 EOF
 
