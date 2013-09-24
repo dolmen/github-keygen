@@ -235,6 +235,10 @@ releases. And you can also have a look to the commit log.
 
 =over 4
 
+=item v1.009
+
+Added support for dashes in Github usernames. Thanks Pedro Figueiredo!
+
 =item v1.008
 
 Added connection sharing: connection to Github is kept alive for 60
@@ -339,6 +343,9 @@ L<Eric Lefevre|https://github.com/elefevre>: documentation patch.
 
 L<Eu Beng Hee|https://github.com/ahbeng>: L<blog post about SSH connection sharing|http://interrobeng.com/2013/08/25/speed-up-git-5x-to-50x/> that inspired
 changes in 1.008.
+
+L<Pedro Figueiredo|https://github.com/pfig>: support for Github account with
+dashes (v1.009).
 
 If you want to contribute, have a look to L<CONTRIBUTING.pod>.
 

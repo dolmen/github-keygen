@@ -12123,7 +12123,7 @@ use Sys::Hostname;
 
 use constant HAS_TEXT_DIFF => eval { require Text::Diff; 1 };
 
-our $VERSION = '1.008';
+our $VERSION = '1.009';
 
 use constant {
     PROG => (File::Spec->splitpath($0))[2],
@@ -12209,7 +12209,7 @@ my %github_remove;
 
 while (@ARGV) {
     my $user = shift @ARGV;
-    pod2usage("invalid user '$user'") unless $user =~ /^[a-z0-9_]+$/;
+    pod2usage("invalid user '$user'") unless $user =~ /^[a-z0-9_-]+$/;
 
     my $remove = 0;
     my %u = (
