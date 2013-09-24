@@ -1,6 +1,6 @@
 =head1 NAME
 
-How to constribute to C<github-keygen>?
+How to contribute to C<github-keygen>?
 
 =head1 DESCRIPTION
 
@@ -23,7 +23,12 @@ submitted as pull requests at github.
 =item 2. Make your fix/feature
 
     git checkout -b <my-patch> devel
-    ...
+
+    $EDITOR bin/github-keygen
+
+    # Test...
+    bin/github-keygen ...
+
     git commit
 
 =item 3. Setup a fork
@@ -47,6 +52,29 @@ submitted as pull requests at github.
 =item 5. Loop
 
 Redo step 2. and 4.
+
+=back
+
+=head1 FOR RELEASE MANAGER
+
+=over 4
+
+=item * Bump C<$VERSION>
+
+    git checkout devel
+    # Bump version number
+    $EDITOR/bin/github-keygen
+    # Update changelog
+    $EDITOR README.pod
+    git add bin/github-keygen README.pod
+    git commit
+
+=item * Release
+
+    git checkout devel
+    ./release.pl
+    git push origin devel release
+    git push origin --tags
 
 =back
 
