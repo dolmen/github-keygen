@@ -242,14 +242,30 @@ my $new_release_commit =
 
 say "new release commit: $new_release_commit";
 
-git 'update-ref' => 'refs/heads/release' => $new_release_commit, $release_commit;
+my $branch = git 'symbolic-ref', 'HEAD';
 
-if ($version) {
+# If we build from the 'devel' branch, update the 'release' branch
+if ($branch eq 'refs/heads/devel') {
+    git 'update-ref' => 'refs/heads/release' => $new_release_commit, $release_commit;
+
+    if ($version) {
+	git tag => -a =>
+	           -m => "Release v$version",
+		   "v$version",
+		   $new_release_commit;
+	say 'Done'.
+	say "You can now push: git push github devel release v$version";
+    } else {
+	say "You can now push: git push github devel release";
+    }
+# Else: just create a tag to the build result, so we can check it out for
+# testing
+} else {
+    $branch =~ s{^refs/(?:heads|remotes/[^/]+)/}{};
     git tag => -a =>
-	       -m => "Release v$version",
-	       "v$version",
+	       -m => "Build for branch $branch",
+	       "$branch.build",
 	       $new_release_commit;
+    say "You can now check out the build: git checkout $branch.build";
 }
 
-say 'Done.';
-say "You can now push: git push github devel release v$version";
