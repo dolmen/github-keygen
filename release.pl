@@ -171,13 +171,13 @@ my @new_files = (
     @ARGV,
 );
 
-my ($devel_commit) = git 'rev-parse' => 'devel';
-say "devel: $devel_commit";
+my ($HEAD_commit) = git 'rev-parse' => 'HEAD';
+say "HEAD: $HEAD_commit";
 
-my %devel_tree;
-git 'ls-tree' => $devel_commit, sub {
+my %HEAD_tree;
+git 'ls-tree' => $HEAD_commit, sub {
     my ($mode, $type, $object, $file) = split;
-    $devel_tree{$file} = [ $mode, $type, $object ];
+    $HEAD_tree{$file} = [ $mode, $type, $object ];
 };
 
 my %updated_files;
@@ -189,10 +189,10 @@ git 'ls-tree' => $release_commit, sub {
     # Merge files updated in devel
     if (       $type eq 'blob'        # Don't touch trees
 	    && $file ne '.gitignore'  # One .gitignore for each branch
-	    && exists $devel_tree{$file}
-	    && $object ne $devel_tree{$file}[2]) {
+	    && exists $HEAD_tree{$file}
+	    && $object ne $HEAD_tree{$file}[2]) {
 	say "- $file: $object (updated)";
-	$release_tree{$file} = $devel_tree{$file};
+	$release_tree{$file} = $HEAD_tree{$file};
 	$updated_files{$file} = 1;
     } else {
 	say "- $file: $object";
@@ -234,7 +234,7 @@ say "new release tree: $new_release_tree";
 my $new_release_commit =
     git 'commit-tree', $new_release_tree,
 		       -p => $release_commit,
-		       -p => $devel_commit,
+		       -p => $HEAD_commit,
 		       # For maximum compat, don't use '-m' but STDIN
 		       \($version
 			    ? "Release v$version"
