@@ -12123,7 +12123,7 @@ use Sys::Hostname;
 
 use constant HAS_TEXT_DIFF => eval { require Text::Diff; 1 };
 
-our $VERSION = '1.009';
+our $VERSION = '1.010';
 
 use constant {
     PROG => (File::Spec->splitpath($0))[2],
@@ -12558,7 +12558,16 @@ if (@ssh_config_lines) {
 }
 
 if (@keys_created) {
-    if (exists $ENV{DISPLAY} && -x '/usr/bin/xclip') {
+    my @clip_cmd;
+
+    # X11
+    @clip_cmd = qw</usr/bin/xclip -selection clipboard>
+        if exists $ENV{DISPLAY} && -x '/usr/bin/xclip';
+
+    # Darwin
+    @clip_cmd = qw</usr/bin/pbcopy> if -x '/usr/bin/pbcopy';
+
+    if (@clip_cmd) {
 	# Copy the first key created to the clipboard
 	my $pub_key = shift(@keys_created).".pub";
         # Read the public key from the file
@@ -12566,9 +12575,9 @@ if (@keys_created) {
         my $pubkey = <$pub>;
         close $pub;
 
-        open my $xclip, '|-', qw(xclip -selection clipboard);
-        print $xclip $pubkey;
-        close $xclip;
+        open my $clip, '|-', @clip_cmd;
+        print $clip $pubkey;
+        close $clip;
 	printf "\n"
              . "The public key %s has been copied to the clipboard.\n"
              . "Paste it in your SSH settings at <https://github.com/settings/ssh>.\n",
