@@ -235,6 +235,11 @@ releases. And you can also have a look to the commit log.
 
 =over 4
 
+=item v1.010
+
+Darwin: implemented pasting the public key to the clipboard. Thanks to Vincent
+Pit for testing!
+
 =item v1.009
 
 Added support for dashes in Github usernames. Thanks Pedro Figueiredo!
