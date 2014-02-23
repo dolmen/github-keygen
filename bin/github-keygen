@@ -281,6 +281,13 @@ if (@github_accounts) {
 
 my @keys_created;
 
+unless (-e SSH_DIR) {
+    printf "Creating %s...\n", compress_path(SSH_DIR);
+    mkdir SSH_DIR, 0700
+        or die sprintf "can't create directory '%s': %s\n",
+                compress_path(SSH_DIR), "$!";
+}
+
 foreach my $user (@github_accounts) {
     my $u = $github_accounts{$user};
     $u->{key_file} = ssh_file("id_$user\@github")
