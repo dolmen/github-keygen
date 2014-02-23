@@ -98,7 +98,8 @@ my %github_remove;
 
 while (@ARGV) {
     my $user = shift @ARGV;
-    pod2usage("invalid user '$user'") unless $user =~ /^[a-z0-9_-]+$/;
+    pod2usage("invalid user '$user'") unless $user =~ /^([a-z0-9_-]+)(?:\@github)?$/;
+    $user = $1;
 
     my $remove = 0;
     my %u = (
