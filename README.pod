@@ -235,6 +235,16 @@ releases. And you can also have a look to the commit log.
 
 =over 4
 
+=item v1.011
+
+Create ~/.ssh with rights 0700 if it doesn't exists because L<ssh-keygen(1)> will
+fail if it is missing.
+
+Add support for host C<ssh.github.com> for
+L<SSH over https port|https://help.github.com/articles/using-ssh-over-the-https-port>.
+Add C<*.ssh.github.com> host aliases for Git.
+Users should run again 'github-keygen' (without argument) to enable those new features.
+
 =item v1.010
 
 Darwin: implemented pasting the public key to the clipboard. Thanks to Vincent
