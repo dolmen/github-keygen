@@ -703,15 +703,15 @@ L<ssh_config(5)>
 
 =item *
 
-L<http://help.github.com/linux-set-up-git/>
+L<https://help.github.com/articles/set-up-git#platform-linux>
 
 =item *
 
-L<http://help.github.com/troubleshooting-ssh/>
+L<https://help.github.com/categories/56/articles>
 
 =item *
 
-L<http://help.github.com/working-with-key-passphrases/>
+L<https://help.github.com/articles/working-with-ssh-key-passphrases>
 
 =back
 
