@@ -367,14 +367,18 @@ push @ssh_config_lines,
      (map { "$_\n" } split(/\n/, <<EOF)), "\n";   # perl 5.8
 # -- github-keygen - begin --
 
-Host *.github.com
-Hostname github.com
-
-Host *.gist.github.com
+Host gist.github.com *.gist.github.com
 Hostname gist.github.com
 
-Host *.ssh.github.com
+# See https://help.github.com/articles/using-ssh-over-the-https-port
+Host ssh.github.com *.ssh.github.com
 Hostname ssh.github.com
+Port 443
+
+# This rule must stay below more specific host rules to avoid
+# "Hostname" to be set to github.com
+Host *.github.com
+Hostname github.com
 
 Host github.com gist.github.com ssh.github.com *.github.com *.gist.github.com *.ssh.github.com
 User git
@@ -396,10 +400,6 @@ PermitLocalCommand no
 ControlMaster auto
 ControlPath ~/.ssh/conn-%n
 ControlPersist 60s
-
-# See https://help.github.com/articles/using-ssh-over-the-https-port
-Host ssh.github.com *.ssh.github.com
-Port 443
 
 EOF
 
