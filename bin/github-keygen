@@ -25,7 +25,8 @@ use constant {
 };
 use constant SSH_DIR => File::Spec->rel2abs('.ssh', HOME_DIR);
 
-sub GITHUB_HOSTS() { qw(github.com gist.github.com ssh.github.com) }
+# 443.github.com is a pure SSH config alias to ssh.github.com
+sub GITHUB_HOSTS() { qw(github.com gist.github.com ssh.github.com 443.github.com) }
 
 $SIG{__WARN__} = sub {
     print STDERR PROG.": ", @_;
@@ -201,7 +202,7 @@ foreach my $l (@ssh_config_lines) {
             # perl 5.10
             #%users = map { m/^((?!gist)[a-z_0-9]*+)(?:\.gist)?\.github.com$/ ? ($1 => undef) : () } @github_hosts_pat;
             # perl 5.8
-            %users = map { m/^([a-z_0-9]+)(?:\.gist|\.ssh)?\.github.com$/ && $_ ne 'gist.github.com' && $_ ne 'ssh.github.com' ? ($1 => undef) : () } @github_hosts_pat;
+            %users = map { m/^([a-z_0-9]+)(?:\.(?:gist|ssh|443))?\.github.com$/ && $_ ne 'gist.github.com' && $_ ne 'ssh.github.com' && $_ ne '443.github.com' ? ($1 => undef) : () } @github_hosts_pat;
             #print keys(%users), "\n";
             # Ignore users which are asked to be removed
             delete $users{$_} for grep { exists $github_remove{$_} } keys %users;
@@ -371,7 +372,7 @@ Host gist.github.com *.gist.github.com
 Hostname gist.github.com
 
 # See https://help.github.com/articles/using-ssh-over-the-https-port
-Host ssh.github.com *.ssh.github.com
+Host ssh.github.com *.ssh.github.com 443.github.com *.443.github.com
 Hostname ssh.github.com
 Port 443
 
@@ -380,7 +381,7 @@ Port 443
 Host *.github.com
 Hostname github.com
 
-Host github.com gist.github.com ssh.github.com *.github.com *.gist.github.com *.ssh.github.com
+Host github.com gist.github.com ssh.github.com 443.github.com *.github.com *.gist.github.com *.ssh.github.com *.443.github.com
 User git
 # Enforce host checks
 StrictHostKeyChecking yes
