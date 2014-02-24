@@ -76,8 +76,10 @@ sub compress_path($)
     $path;
 }
 
-use constant SSH_CONFIG_FILE => ssh_file('config');
-use constant KNOWN_HOSTS_FILE => ssh_file('known_hosts_github');
+use constant {
+    SSH_CONFIG_FILE => ssh_file('config'),
+    KNOWN_HOSTS_FILE => ssh_file('known_hosts_github'),
+};
 
 my $remove_all;
 my $key_type = 'rsa';
