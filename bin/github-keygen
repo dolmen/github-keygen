@@ -205,9 +205,9 @@ foreach my $l (@ssh_config_lines) {
             #%users = map { m/^((?!gist)[a-z_0-9]*+)(?:\.gist)?\.github.com$/ ? ($1 => undef) : () } @github_hosts_pat;
             # perl 5.8
             %users = map { m/^([a-z_0-9]+)(?:\.(?:gist|ssh|443))?\.github.com$/ && $_ ne 'gist.github.com' && $_ ne 'ssh.github.com' && $_ ne '443.github.com' ? ($1 => undef) : () } @github_hosts_pat;
-            #print keys(%users), "\n";
+            next unless %users;
             # Ignore users which are asked to be removed
-            delete $users{$_} for grep { exists $github_remove{$_} } keys %users;
+            delete @users{keys %github_remove};
             if ($remove_all) {
                 $github_remove{$_} = 1 for keys %users;
             } elsif ($github_default eq '' && keys(%users) == 1 && grep { $_ eq 'github.com' } @github_hosts_pat) {
