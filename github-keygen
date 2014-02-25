@@ -5,7 +5,7 @@
 BEGIN {
 my %fatpacked;
 
-$fatpacked{"Algorithm/Diff.pm"} = <<'ALGORITHM_DIFF';
+$fatpacked{"Algorithm/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'ALGORITHM_DIFF';
   package Algorithm::Diff;
   # Skip to first "=head" line for documentation.
   use strict;
@@ -994,6 +994,8 @@ $fatpacked{"Algorithm/Diff.pm"} = <<'ALGORITHM_DIFF';
   a contiguous section of items which should be added, deleted, replaced,
   or left unchanged.
   
+  =over 4
+  
   The following summary of all of the methods looks a lot like Perl code
   but some of the symbols have different meanings:
   
@@ -1023,8 +1025,6 @@ $fatpacked{"Algorithm/Diff.pm"} = <<'ALGORITHM_DIFF';
   
   Passing in C<undef> for an optional argument is always treated the same
   as if no argument were passed in.
-  
-  =over
   
   =item C<Next>
   
@@ -1588,7 +1588,7 @@ $fatpacked{"Algorithm/Diff.pm"} = <<'ALGORITHM_DIFF';
   with different order of events.
   
   C<traverse_balanced> might be a bit slower than C<traverse_sequences>,
-  noticeable only while processing huge amounts of data.
+  noticable only while processing huge amounts of data.
   
   The C<sdiff> function of this module 
   is implemented as call to C<traverse_balanced>.
@@ -1721,7 +1721,7 @@ $fatpacked{"Algorithm/Diff.pm"} = <<'ALGORITHM_DIFF';
   =cut
 ALGORITHM_DIFF
 
-$fatpacked{"Pod/Escapes.pm"} = <<'POD_ESCAPES';
+$fatpacked{"Pod/Escapes.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_ESCAPES';
   
   require 5;
   #                        The documentation is at the end.
@@ -2445,7 +2445,7 @@ $fatpacked{"Pod/Escapes.pm"} = <<'POD_ESCAPES';
   
 POD_ESCAPES
 
-$fatpacked{"Pod/InputObjects.pm"} = <<'POD_INPUTOBJECTS';
+$fatpacked{"Pod/InputObjects.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_INPUTOBJECTS';
   #############################################################################
   # Pod/InputObjects.pm -- package which defines objects for input streams
   # and paragraphs and commands when parsing POD docs.
@@ -2460,7 +2460,7 @@ $fatpacked{"Pod/InputObjects.pm"} = <<'POD_INPUTOBJECTS';
   use strict;
   
   use vars qw($VERSION);
-  $VERSION = '1.51';  ## Current version of this package
+  $VERSION = '1.60';  ## Current version of this package
   require  5.005;    ## requires this Perl version or later
   
   #############################################################################
@@ -3390,7 +3390,7 @@ $fatpacked{"Pod/InputObjects.pm"} = <<'POD_INPUTOBJECTS';
   1;
 POD_INPUTOBJECTS
 
-$fatpacked{"Pod/Parser.pm"} = <<'POD_PARSER';
+$fatpacked{"Pod/Parser.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_PARSER';
   #############################################################################
   # Pod/Parser.pm -- package which defines a base class for parsing POD docs.
   #
@@ -3405,7 +3405,7 @@ $fatpacked{"Pod/Parser.pm"} = <<'POD_PARSER';
   
   ## These "variables" are used as local "glob aliases" for performance
   use vars qw($VERSION @ISA %myData %myOpts @input_stack);
-  $VERSION = '1.51';  ## Current version of this package
+  $VERSION = '1.60';  ## Current version of this package
   require  5.005;    ## requires this Perl version or later
   
   #############################################################################
@@ -3482,6 +3482,10 @@ $fatpacked{"Pod/Parser.pm"} = <<'POD_PARSER';
   B<Pod::Parser> parses PODs, and makes method calls to handle the various
   components of the POD. Subclasses of B<Pod::Parser> override these methods
   to translate the POD into whatever output format they desire.
+  
+  Note: This module is considered as legacy; modern Perl releases (5.18 and
+  higher) are going to remove Pod::Parser from core and use L<Pod::Simple>
+  for all things POD.
   
   =head1 QUICK OVERVIEW
   
@@ -5225,7 +5229,7 @@ $fatpacked{"Pod/Parser.pm"} = <<'POD_PARSER';
   # vim: ts=4 sw=4 et
 POD_PARSER
 
-$fatpacked{"Pod/Select.pm"} = <<'POD_SELECT';
+$fatpacked{"Pod/Select.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_SELECT';
   #############################################################################
   # Pod/Select.pm -- function to select portions of POD docs
   #
@@ -5239,7 +5243,7 @@ $fatpacked{"Pod/Select.pm"} = <<'POD_SELECT';
   use strict;
   
   use vars qw($VERSION @ISA @EXPORT $MAX_HEADING_LEVEL %myData @section_headings @selected_sections);
-  $VERSION = '1.51'; ## Current version of this package
+  $VERSION = '1.60'; ## Current version of this package
   require  5.005;    ## requires this Perl version or later
   
   #############################################################################
@@ -5976,7 +5980,7 @@ $fatpacked{"Pod/Select.pm"} = <<'POD_SELECT';
   # vim: ts=4 sw=4 et
 POD_SELECT
 
-$fatpacked{"Pod/Simple.pm"} = <<'POD_SIMPLE';
+$fatpacked{"Pod/Simple.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_SIMPLE';
   
   require 5;
   package Pod::Simple;
@@ -5997,7 +6001,7 @@ $fatpacked{"Pod/Simple.pm"} = <<'POD_SIMPLE';
   );
   
   @ISA = ('Pod::Simple::BlackBox');
-  $VERSION = '3.23';
+  $VERSION = '3.28';
   
   @Known_formatting_codes = qw(I B C L E F S X Z); 
   %Known_formatting_codes = map(($_=>1), @Known_formatting_codes);
@@ -6059,6 +6063,7 @@ $fatpacked{"Pod/Simple.pm"} = <<'POD_SIMPLE';
     'bare_output',       # For some subclasses: whether to prepend
                          #  header-code and postpend footer-code
   
+    'keep_encoding_directive',  # whether to emit =encoding
     'nix_X_codes',       # whether to ignore X<...> codes
     'merge_text',        # whether to avoid breaking a single piece of
                          #  text up into several events
@@ -6090,6 +6095,35 @@ $fatpacked{"Pod/Simple.pm"} = <<'POD_SIMPLE';
   
   sub any_errata_seen {  # good for using as an exit() value...
     return shift->{'errors_seen'} || 0;
+  }
+  
+  # Returns the encoding only if it was recognized as being handled and set
+  sub detected_encoding {
+    return shift->{'detected_encoding'};
+  }
+  
+  sub encoding {
+    my $this = shift;
+    return $this->{'encoding'} unless @_;  # GET.
+  
+    $this->_handle_encoding_line("=encoding $_[0]");
+    if ($this->{'_processed_encoding'}) {
+      delete $this->{'_processed_encoding'};
+      if(! $this->{'encoding_command_statuses'} ) {
+        DEBUG > 2 and print " CRAZY ERROR: encoding wasn't really handled?!\n";
+      } elsif( $this->{'encoding_command_statuses'}[-1] ) {
+        $this->scream( "=encoding $_[0]",
+           sprintf "Couldn't do %s: %s",
+           $this->{'encoding_command_reqs'  }[-1],
+           $this->{'encoding_command_statuses'}[-1],
+        );
+      } else {
+        DEBUG > 2 and print " (encoding successfully handled.)\n";
+      }
+      return $this->{'encoding'};
+    } else {
+      return undef;
+    }
   }
   
   #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -7014,6 +7048,12 @@ $fatpacked{"Pod/Simple.pm"} = <<'POD_SIMPLE';
           $treelet->[$i] = 'L<>';  # just make it a text node
           next;  # and move on
         }
+  
+        if( (! ref $ell->[2]  && $ell->[2] =~ /\A\s/)
+          ||(! ref $ell->[-1] && $ell->[-1] =~ /\s\z/)
+        ) {
+          $self->whine( $start_line, "L<> starts or ends with whitespace" );
+        }
        
         # Catch URLs:
   
@@ -7073,7 +7113,7 @@ $fatpacked{"Pod/Simple.pm"} = <<'POD_SIMPLE';
         # Catch some very simple and/or common cases
         if(@{$ell} == 3 and ! ref $ell->[2]) {
           my $it = $ell->[2];
-          if($it =~ m/^[-a-zA-Z0-9]+\([-a-zA-Z0-9]+\)$/s) { # man sections
+          if($it =~ m{^[^/|]+[(][-a-zA-Z0-9]+[)]$}s) { # man sections
             # Hopefully neither too broad nor too restrictive a RE
             DEBUG > 1 and print "Catching \"$it\" as manpage link.\n";
             $ell->[1]{'type'} = 'man';
@@ -7128,6 +7168,13 @@ $fatpacked{"Pod/Simple.pm"} = <<'POD_SIMPLE';
   
             DEBUG > 3 and
              print "     FOUND a '|' in it.  Splitting into [$1] + [$2]\n";
+  
+            if ($link_text[0] =~ m{[|/]}) {
+              $self->whine(
+                $start_line,
+                "alternative text '$link_text[0]' contains non-escaped | or /"
+              );
+            }
   
             unshift @link_text, splice @ell_content, 0, $j;
               # leaving only things at J and after
@@ -7232,7 +7279,7 @@ $fatpacked{"Pod/Simple.pm"} = <<'POD_SIMPLE';
         # And the E resolver will have to deal with all our treeletty things:
   
         if(@ell_content == 1 and !ref($ell_content[0])
-           and $ell_content[0] =~ m/^[-a-zA-Z0-9]+\([-a-zA-Z0-9]+\)$/s
+           and $ell_content[0] =~ m{^[^/]+[(][-a-zA-Z0-9]+[)]$}s
         ) {
           $ell->[1]{'type'}    = 'man';
           DEBUG > 3 and print "Considering this ($ell_content[0]) a man link.\n";
@@ -7540,7 +7587,7 @@ $fatpacked{"Pod/Simple.pm"} = <<'POD_SIMPLE';
   
 POD_SIMPLE
 
-$fatpacked{"Pod/Simple/BlackBox.pm"} = <<'POD_SIMPLE_BLACKBOX';
+$fatpacked{"Pod/Simple/BlackBox.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_SIMPLE_BLACKBOX';
   
   package Pod::Simple::BlackBox;
   #
@@ -7566,7 +7613,7 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = <<'POD_SIMPLE_BLACKBOX';
   use strict;
   use Carp ();
   use vars qw($VERSION );
-  $VERSION = '3.23';
+  $VERSION = '3.28';
   #use constant DEBUG => 7;
   BEGIN {
     require Pod::Simple;
@@ -7634,6 +7681,7 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = <<'POD_SIMPLE_BLACKBOX';
         if( ($line = $source_line) =~ s/^\xEF\xBB\xBF//s ) {
           DEBUG and print "UTF-8 BOM seen.  Faking a '=encoding utf8'.\n";
           $self->_handle_encoding_line( "=encoding utf8" );
+          delete $self->{'_processed_encoding'};
           $line =~ tr/\n\r//d;
           
         } elsif( $line =~ s/^\xFE\xFF//s ) {
@@ -7666,8 +7714,21 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = <<'POD_SIMPLE_BLACKBOX';
         }
       }
   
-      if(!$self->parse_characters && !$self->{'encoding'}) {
-        $self->_try_encoding_guess($line)
+      # Try to guess encoding. Inlined for performance reasons.
+      if(!$self->{'parse_characters'} && !$self->{'encoding'}
+        && ($self->{'in_pod'} || $line =~ /^=/s)
+        && $line =~ /[^\x00-\x7f]/
+      ) {
+        my $encoding = $line =~ /^[\x00-\x7f]*[\xC0-\xFD][\x80-\xBF]/ ? 'UTF-8' : 'ISO8859-1';
+        $self->_handle_encoding_line( "=encoding $encoding" );
+        $self->{'_transcoder'} && $self->{'_transcoder'}->($line);
+  
+        my ($word) = $line =~ /(\S*[^\x00-\x7f]\S*)/;
+  
+        $self->whine(
+          $self->{'line_count'},
+          "Non-ASCII character seen before =encoding in '$word'. Assuming $encoding"
+        );
       }
   
       DEBUG > 5 and print "# Parsing line: [$line]\n";
@@ -7873,6 +7934,7 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = <<'POD_SIMPLE_BLACKBOX';
       $@ && die( $enc_error =
         "Really unexpected error setting up encoding $e: $@\nAborting"
       );
+      $self->{'detected_encoding'} = $e;
   
     } else {
       my @supported = Pod::Simple::Transcode::->all_encodings;
@@ -7903,8 +7965,13 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = <<'POD_SIMPLE_BLACKBOX';
       $self->scream( $self->{'line_count'}, $enc_error );
     }
     push @{ $self->{'encoding_command_statuses'} }, $enc_error;
+    if (defined($self->{'_processed_encoding'})) {
+      # Should never happen
+      die "Nested processed encoding.";
+    }
+    $self->{'_processed_encoding'} = $orig;
   
-    return '=encoding ALREADYDONE';
+    return $line;
   }
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -7920,7 +7987,11 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = <<'POD_SIMPLE_BLACKBOX';
   
     DEBUG > 2 and print "Ogling encoding directive: =encoding $content\n";
     
-    if($content eq 'ALREADYDONE') {
+    if (defined($self->{'_processed_encoding'})) {
+      #if($content ne $self->{'_processed_encoding'}) {
+      #  Could it happen?
+      #}
+      delete $self->{'_processed_encoding'};
       # It's already been handled.  Check for errors.
       if(! $self->{'encoding_command_statuses'} ) {
         DEBUG > 2 and print " CRAZY ERROR: It wasn't really handled?!\n";
@@ -7942,28 +8013,6 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = <<'POD_SIMPLE_BLACKBOX';
     }
     
     return;
-  }
-  
-  sub _try_encoding_guess {
-    my ($self,$line) = @_;
-  
-    if(!$self->{'in_pod'}  and  $line !~ /^=/m) {
-      return;  # don't whine about non-ASCII bytes in code/comments
-    }
-  
-    return unless $line =~ /[^\x00-\x7f]/;  # Look for non-ASCII byte
-  
-    my $encoding = $line =~ /[\xC0-\xFD][\x80-\xBF]/ ? 'UTF-8' : 'ISO8859-1';
-    $self->_handle_encoding_line( "=encoding $encoding" );
-    $self->{'_transcoder'} && $self->{'_transcoder'}->($line);
-  
-    my ($word) = $line =~ /(\S*[^\x00-\x7f]\S*)/;
-  
-    $self->whine(
-      $self->{'line_count'},
-      "Non-ASCII character seen before =encoding in '$word'. Assuming $encoding"
-    );
-  
   }
   
   #~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`~`
@@ -8213,8 +8262,10 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = <<'POD_SIMPLE_BLACKBOX';
             if($item_type eq 'text') {
               # Nothing special needs doing for 'text'
             } elsif($item_type eq 'number' or $item_type eq 'bullet') {
-              die "Unknown item type $item_type"
-               unless $item_type eq 'number' or $item_type eq 'bullet';
+              $self->whine(
+                $para->[1]{'start_line'},
+                "Expected text after =item, not a $item_type"
+              );
               # Undo our clobbering:
               push @$para, $para->[1]{'~orig_content'};
               delete $para->[1]{'number'};
@@ -8343,8 +8394,8 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = <<'POD_SIMPLE_BLACKBOX';
         } elsif($para_type eq '=encoding') {
           # Not actually acted on here, but we catch errors here.
           $self->_handle_encoding_second_level($para);
-  
-          next;  # and skip
+          next unless $self->keep_encoding_directive;
+          $para_type = 'Plain';
         } elsif($para_type eq '~Verbatim') {
           $para->[0] = 'Verbatim';
           $para_type = '?Verbatim';
@@ -8821,8 +8872,10 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = <<'POD_SIMPLE_BLACKBOX';
       if($item_type eq 'text') {
         # Nothing special needs doing for 'text'
       } elsif($item_type eq 'number' or $item_type eq 'bullet') {
-        die "Unknown item type $item_type"
-         unless $item_type eq 'number' or $item_type eq 'bullet';
+        $self->whine(
+            $para->[1]{'start_line'},
+            "Expected text after =item, not a $item_type"
+        );
         # Undo our clobbering:
         push @$para, $para->[1]{'~orig_content'};
         delete $para->[1]{'number'};
@@ -9056,6 +9109,11 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = <<'POD_SIMPLE_BLACKBOX';
       if($copy[0] eq '=for') {
         $copy[0] = '=end';
       } elsif($copy[0] eq '=over') {
+        $self->whine(
+          $still_open->[1]{start_line} ,
+          "=over without closing =back"
+        );
+  
         $copy[0] = '=back';
       } else {
         die "I don't know how to auto-close an open $copy[0] region";
@@ -9556,18 +9614,18 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = <<'POD_SIMPLE_BLACKBOX';
   
 POD_SIMPLE_BLACKBOX
 
-$fatpacked{"Pod/Simple/LinkSection.pm"} = <<'POD_SIMPLE_LINKSECTION';
+$fatpacked{"Pod/Simple/LinkSection.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_SIMPLE_LINKSECTION';
   
   require 5;
   package Pod::Simple::LinkSection;
     # Based somewhat dimly on Array::Autojoin
   use vars qw($VERSION );
-  $VERSION = '3.23';
+  $VERSION = '3.28';
   
   use strict;
   use Pod::Simple::BlackBox;
   use vars qw($VERSION );
-  $VERSION = '3.23';
+  $VERSION = '3.28';
   
   use overload( # So it'll stringify nice
     '""'   => \&Pod::Simple::BlackBox::stringify_lol,
@@ -9696,7 +9754,7 @@ $fatpacked{"Pod/Simple/LinkSection.pm"} = <<'POD_SIMPLE_LINKSECTION';
   pod-people-subscribe@perl.org to subscribe.
   
   This module is managed in an open GitHub repository,
-  L<http://github.com/theory/pod-simple/>. Feel free to fork and contribute, or
+  L<https://github.com/theory/pod-simple/>. Feel free to fork and contribute, or
   to clone L<git://github.com/theory/pod-simple.git> and send patches!
   
   Patches against Pod::Simple are welcome. Please send bug reports to
@@ -9733,14 +9791,8 @@ $fatpacked{"Pod/Simple/LinkSection.pm"} = <<'POD_SIMPLE_LINKSECTION';
   =cut
 POD_SIMPLE_LINKSECTION
 
-$fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
+$fatpacked{"Pod/Text.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_TEXT';
   # Pod::Text -- Convert POD data to formatted ASCII text.
-  #
-  # Copyright 1999, 2000, 2001, 2002, 2004, 2006, 2008, 2009
-  #     Russ Allbery <rra@stanford.edu>
-  #
-  # This program is free software; you may redistribute it and/or modify it
-  # under the same terms as Perl itself.
   #
   # This module converts POD to formatted text.  It replaces the old Pod::Text
   # module that came with versions of Perl prior to 5.6.0 and attempts to match
@@ -9752,6 +9804,12 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
   # maintained outside of the Perl core as part of the podlators.  Please send
   # me any patches at the address above in addition to sending them to the
   # standard Perl mailing lists.
+  #
+  # Copyright 1999, 2000, 2001, 2002, 2004, 2006, 2008, 2009, 2012, 2013
+  #     Russ Allbery <rra@stanford.edu>
+  #
+  # This program is free software; you may redistribute it and/or modify it
+  # under the same terms as Perl itself.
   
   ##############################################################################
   # Modules and declarations
@@ -9774,7 +9832,7 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
   # We have to export pod2text for backward compatibility.
   @EXPORT = qw(pod2text);
   
-  $VERSION = '3.15';
+  $VERSION = '3.17';
   
   ##############################################################################
   # Initialization
@@ -9823,11 +9881,30 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
       %$self = (%$self, @opts);
   
       # Send errors to stderr if requested.
-      if ($$self{opt_stderr}) {
+      if ($$self{opt_stderr} and not $$self{opt_errors}) {
+          $$self{opt_errors} = 'stderr';
+      }
+      delete $$self{opt_stderr};
+  
+      # Validate the errors parameter and act on it.
+      if (not defined $$self{opt_errors}) {
+          $$self{opt_errors} = 'pod';
+      }
+      if ($$self{opt_errors} eq 'stderr' || $$self{opt_errors} eq 'die') {
           $self->no_errata_section (1);
           $self->complain_stderr (1);
-          delete $$self{opt_stderr};
+          if ($$self{opt_errors} eq 'die') {
+              $$self{complain_die} = 1;
+          }
+      } elsif ($$self{opt_errors} eq 'pod') {
+          $self->no_errata_section (0);
+          $self->complain_stderr (0);
+      } elsif ($$self{opt_errors} eq 'none') {
+          $self->no_whining (1);
+      } else {
+          croak (qq(Invalid errors setting: "$$self{errors}"));
       }
+      delete $$self{errors};
   
       # Initialize various things from our parameters.
       $$self{opt_alt}      = 0  unless defined $$self{opt_alt};
@@ -10015,7 +10092,13 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
   
   # Set up various things that have to be initialized on a per-document basis.
   sub start_document {
-      my $self = shift;
+      my ($self, $attrs) = @_;
+      if ($$attrs{contentless} && !$$self{ALWAYS_EMIT_SOMETHING}) {
+          $$self{CONTENTLESS} = 1;
+          return;
+      } else {
+          delete $$self{CONTENTLESS};
+      }
       my $margin = $$self{opt_indent} + $$self{opt_margin};
   
       # Initialize a few per-document variables.
@@ -10034,14 +10117,24 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
       if ($$self{opt_utf8}) {
           $$self{ENCODE} = 1;
           eval {
-              my @layers = PerlIO::get_layers ($$self{output_fh});
-              if (grep { $_ eq 'utf8' } @layers) {
+              my @options = (output => 1, details => 1);
+              my $flag = (PerlIO::get_layers ($$self{output_fh}, @options))[-1];
+              if ($flag & PerlIO::F_UTF8 ()) {
                   $$self{ENCODE} = 0;
               }
           };
       }
   
       return '';
+  }
+  
+  # Handle the end of the document.  The only thing we do is handle dying on POD
+  # errors, since Pod::Parser currently doesn't.
+  sub end_document {
+      my ($self) = @_;
+      if ($$self{complain_die} && $self->errors_seen) {
+          croak ("POD document had syntax errors");
+      }
   }
   
   ##############################################################################
@@ -10319,6 +10412,8 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
       if ($$attrs{type} eq 'url') {
           if (not defined($$attrs{to}) or $$attrs{to} eq $text) {
               return "<$text>";
+          } elsif ($$self{opt_nourls}) {
+              return $text;
           } else {
               return "$text <$$attrs{to}>";
           }
@@ -10415,6 +10510,17 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
       $self->parse_from_file (@_);
   }
   
+  # Pod::Simple's parse_file doesn't set output_fh.  Wrap the call and do so
+  # ourself unless it was already set by the caller, since our documentation has
+  # always said that this should work.
+  sub parse_file {
+      my ($self, $in) = @_;
+      unless (defined $$self{output_fh}) {
+          $self->output_fh (\*STDOUT);
+      }
+      return $self->SUPER::parse_file ($in);
+  }
+  
   ##############################################################################
   # Module return value and documentation
   ##############################################################################
@@ -10422,12 +10528,12 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
   1;
   __END__
   
+  =for stopwords
+  alt stderr Allbery Sean Burke's Christiansen UTF-8 pre-Unicode utf8 nourls
+  
   =head1 NAME
   
   Pod::Text - Convert POD data to formatted ASCII text
-  
-  =for stopwords
-  alt stderr Allbery Sean Burke's Christiansen UTF-8 pre-Unicode utf8
   
   =head1 SYNOPSIS
   
@@ -10468,6 +10574,16 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
   in the output.  Useful for viewing code documented with POD blocks with the
   POD rendered and the code left intact.
   
+  =item errors
+  
+  How to report errors.  C<die> says to throw an exception on any POD
+  formatting error.  C<stderr> says to report errors on standard error, but
+  not to throw an exception.  C<pod> says to include a POD ERRORS section
+  in the resulting documentation summarizing the errors.  C<none> ignores
+  POD errors entirely, as much as possible.
+  
+  The default is C<output>.
+  
   =item indent
   
   The number of spaces to indent regular text, and the default indentation for
@@ -10488,6 +10604,22 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
   for all text, including headings, not the amount by which regular text is
   indented; for the latter, see the I<indent> option.  To set the right
   margin, see the I<width> option.
+  
+  =item nourls
+  
+  Normally, LZ<><> formatting codes with a URL but anchor text are formatted
+  to show both the anchor text and the URL.  In other words:
+  
+      L<foo|http://example.com/>
+  
+  is formatted as:
+  
+      foo <http://example.com/>
+  
+  This option, if set to a true value, suppresses the URL when anchor text
+  is given, so this example would be formatted as just C<foo>.  This can
+  produce less cluttered output in cases where the URLs are not particularly
+  important.
   
   =item quotes
   
@@ -10510,7 +10642,9 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
   =item stderr
   
   Send error messages about invalid POD to standard error instead of
-  appending a POD ERRORS section to the generated output.
+  appending a POD ERRORS section to the generated output.  This is
+  equivalent to setting C<errors> to C<stderr> if C<errors> is not already
+  set.  It is supported for backward compatibility.
   
   =item utf8
   
@@ -10552,10 +10686,20 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
   (F) Pod::Text was invoked via the compatibility mode pod2text() interface
   and the input file it was given could not be opened.
   
+  =item Invalid errors setting "%s"
+  
+  (F) The C<errors> parameter to the constructor was set to an unknown value.
+  
   =item Invalid quote specification "%s"
   
-  (F) The quote specification given (the quotes option to the constructor) was
-  invalid.  A quote specification must be one, two, or four characters long.
+  (F) The quote specification given (the C<quotes> option to the
+  constructor) was invalid.  A quote specification must be one, two, or four
+  characters long.
+  
+  =item POD document had syntax errors
+  
+  (F) The POD document being formatted had syntax errors and the C<errors>
+  option was set to C<die>.
   
   =back
   
@@ -10613,8 +10757,8 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
   
   =head1 COPYRIGHT AND LICENSE
   
-  Copyright 1999, 2000, 2001, 2002, 2004, 2006, 2008, 2009 Russ Allbery
-  <rra@stanford.edu>.
+  Copyright 1999, 2000, 2001, 2002, 2004, 2006, 2008, 2009, 2012, 2013 Russ
+  Allbery <rra@stanford.edu>.
   
   This program is free software; you may redistribute it and/or modify it
   under the same terms as Perl itself.
@@ -10622,7 +10766,7 @@ $fatpacked{"Pod/Text.pm"} = <<'POD_TEXT';
   =cut
 POD_TEXT
 
-$fatpacked{"Pod/Usage.pm"} = <<'POD_USAGE';
+$fatpacked{"Pod/Usage.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_USAGE';
   #############################################################################
   # Pod/Usage.pm -- print usage messages for the running script.
   #
@@ -10636,8 +10780,311 @@ $fatpacked{"Pod/Usage.pm"} = <<'POD_USAGE';
   use strict;
   
   use vars qw($VERSION @ISA @EXPORT);
-  $VERSION = '1.51';  ## Current version of this package
+  $VERSION = '1.61';  ## Current version of this package
   require  5.005;    ## requires this Perl version or later
+  
+  #use diagnostics;
+  use Carp;
+  use Config;
+  use Exporter;
+  use File::Spec;
+  
+  @EXPORT = qw(&pod2usage);
+  BEGIN {
+      $Pod::Usage::Formatter ||=
+        ( $] >= 5.005_58 ? 'Pod::Text' : 'Pod::PlainText');
+      eval "require $Pod::Usage::Formatter";
+      die $@ if $@;
+      @ISA = ( $Pod::Usage::Formatter );
+  }
+  
+  require Pod::Select;
+  
+  ##---------------------------------------------------------------------------
+  
+  ##---------------------------------
+  ## Function definitions begin here
+  ##---------------------------------
+  
+  sub pod2usage {
+      local($_) = shift;
+      my %opts;
+      ## Collect arguments
+      if (@_ > 0) {
+          ## Too many arguments - assume that this is a hash and
+          ## the user forgot to pass a reference to it.
+          %opts = ($_, @_);
+      }
+      elsif (!defined $_) {
+        $_ = '';
+      }
+      elsif (ref $_) {
+          ## User passed a ref to a hash
+          %opts = %{$_}  if (ref($_) eq 'HASH');
+      }
+      elsif (/^[-+]?\d+$/) {
+          ## User passed in the exit value to use
+          $opts{'-exitval'} =  $_;
+      }
+      else {
+          ## User passed in a message to print before issuing usage.
+          $_  and  $opts{'-message'} = $_;
+      }
+  
+      ## Need this for backward compatibility since we formerly used
+      ## options that were all uppercase words rather than ones that
+      ## looked like Unix command-line options.
+      ## to be uppercase keywords)
+      %opts = map {
+          my ($key, $val) = ($_, $opts{$_});
+          $key =~ s/^(?=\w)/-/;
+          $key =~ /^-msg/i   and  $key = '-message';
+          $key =~ /^-exit/i  and  $key = '-exitval';
+          lc($key) => $val;
+      } (keys %opts);
+  
+      ## Now determine default -exitval and -verbose values to use
+      if ((! defined $opts{'-exitval'}) && (! defined $opts{'-verbose'})) {
+          $opts{'-exitval'} = 2;
+          $opts{'-verbose'} = 0;
+      }
+      elsif (! defined $opts{'-exitval'}) {
+          $opts{'-exitval'} = ($opts{'-verbose'} > 0) ? 1 : 2;
+      }
+      elsif (! defined $opts{'-verbose'}) {
+          $opts{'-verbose'} = (lc($opts{'-exitval'}) eq 'noexit' ||
+                               $opts{'-exitval'} < 2);
+      }
+  
+      ## Default the output file
+      $opts{'-output'} = (lc($opts{'-exitval'}) eq 'noexit' ||
+                          $opts{'-exitval'} < 2) ? \*STDOUT : \*STDERR
+              unless (defined $opts{'-output'});
+      ## Default the input file
+      $opts{'-input'} = $0  unless (defined $opts{'-input'});
+  
+      ## Look up input file in path if it doesnt exist.
+      unless ((ref $opts{'-input'}) || (-e $opts{'-input'})) {
+          my $basename = $opts{'-input'};
+          my $pathsep = ($^O =~ /^(?:dos|os2|MSWin32)$/i) ? ';'
+                              : (($^O eq 'MacOS' || $^O eq 'VMS') ? ',' :  ':');
+          my $pathspec = $opts{'-pathlist'} || $ENV{PATH} || $ENV{PERL5LIB};
+  
+          my @paths = (ref $pathspec) ? @$pathspec : split($pathsep, $pathspec);
+          for my $dirname (@paths) {
+              $_ = File::Spec->catfile($dirname, $basename)  if length;
+              last if (-e $_) && ($opts{'-input'} = $_);
+          }
+      }
+  
+      ## Now create a pod reader and constrain it to the desired sections.
+      my $parser = new Pod::Usage(USAGE_OPTIONS => \%opts);
+      if ($opts{'-verbose'} == 0) {
+          $parser->select('(?:SYNOPSIS|USAGE)\s*');
+      }
+      elsif ($opts{'-verbose'} == 1) {
+          my $opt_re = '(?i)' .
+                       '(?:OPTIONS|ARGUMENTS)' .
+                       '(?:\s*(?:AND|\/)\s*(?:OPTIONS|ARGUMENTS))?';
+          $parser->select( '(?:SYNOPSIS|USAGE)\s*', $opt_re, "DESCRIPTION/$opt_re" );
+      }
+      elsif ($opts{'-verbose'} >= 2 && $opts{'-verbose'} != 99) {
+          $parser->select('.*');
+      }
+      elsif ($opts{'-verbose'} == 99) {
+          my $sections = $opts{'-sections'};
+          $parser->select( (ref $sections) ? @$sections : $sections );
+          $opts{'-verbose'} = 1;
+      }
+  
+      ## Check for perldoc
+      my $progpath = File::Spec->catfile($Config{scriptdirexp} 
+  	|| $Config{scriptdir}, 'perldoc');
+  
+      my $version = sprintf("%vd",$^V);
+      if ($Config{versiononly} and $Config{startperl} =~ /\Q$version\E$/ ) {
+        $progpath .= $version;
+      }
+      $opts{'-noperldoc'} = 1 unless -e $progpath;
+  
+      ## Now translate the pod document and then exit with the desired status
+      if (      !$opts{'-noperldoc'}
+           and  $opts{'-verbose'} >= 2
+           and  !ref($opts{'-input'})
+           and  $opts{'-output'} == \*STDOUT )
+      {
+         ## spit out the entire PODs. Might as well invoke perldoc
+         print { $opts{'-output'} } ($opts{'-message'}, "\n") if($opts{'-message'});
+         if(defined $opts{-input} && $opts{-input} =~ /^\s*(\S.*?)\s*$/) {
+           # the perldocs back to 5.005 should all have -F
+  	 # without -F there are warnings in -T scripts
+           system($progpath, '-F', $1);
+           if($?) {
+             # RT16091: fall back to more if perldoc failed
+             system(($Config{pager} || $ENV{PAGER} || '/bin/more'), $1);
+           }
+         } else {
+           croak "Unspecified input file or insecure argument.\n";
+         }
+      }
+      else {
+         $parser->parse_from_file($opts{'-input'}, $opts{'-output'});
+      }
+  
+      exit($opts{'-exitval'})  unless (lc($opts{'-exitval'}) eq 'noexit');
+  }
+  
+  ##---------------------------------------------------------------------------
+  
+  ##-------------------------------
+  ## Method definitions begin here
+  ##-------------------------------
+  
+  sub new {
+      my $this = shift;
+      my $class = ref($this) || $this;
+      my %params = @_;
+      my $self = {%params};
+      bless $self, $class;
+      if ($self->can('initialize')) {
+          $self->initialize();
+      } else {
+          # pass through options to Pod::Text
+          my %opts;
+         	for (qw(alt code indent loose margin quotes sentence stderr utf8 width)) {
+              my $val = $params{USAGE_OPTIONS}{"-$_"};
+              $opts{$_} = $val if defined $val;
+          }
+          $self = $self->SUPER::new(%opts);
+          %$self = (%$self, %params);
+      }
+      return $self;
+  }
+  
+  sub select {
+      my ($self, @sections) = @_;
+      if ($ISA[0]->can('select')) {
+          $self->SUPER::select(@sections);
+      } else {
+          # we're using Pod::Simple - need to mimic the behavior of Pod::Select
+          my $add = ($sections[0] eq '+') ? shift(@sections) : '';
+          ## Reset the set of sections to use
+          unless (@sections) {
+            delete $self->{USAGE_SELECT} unless ($add);
+            return;
+          }
+          $self->{USAGE_SELECT} = []
+            unless ($add && $self->{USAGE_SELECT});
+          my $sref = $self->{USAGE_SELECT};
+          ## Compile each spec
+          for my $spec (@sections) {
+            my $cs = Pod::Select::_compile_section_spec($spec);
+            if ( defined $cs ) {
+              ## Store them in our sections array
+              push(@$sref, $cs);
+            } else {
+              carp qq{Ignoring section spec "$spec"!\n};
+            }
+          }
+      }
+  }
+  
+  # Override Pod::Text->seq_i to return just "arg", not "*arg*".
+  sub seq_i { return $_[1] }
+  
+  # This overrides the Pod::Text method to do something very akin to what
+  # Pod::Select did as well as the work done below by preprocess_paragraph.
+  # Note that the below is very, very specific to Pod::Text.
+  sub _handle_element_end {
+      my ($self, $element) = @_;
+      if ($element eq 'head1') {
+          $self->{USAGE_HEADINGS} = [ $$self{PENDING}[-1][1] ];
+          if ($self->{USAGE_OPTIONS}->{-verbose} < 2) {
+              $$self{PENDING}[-1][1] =~ s/^\s*SYNOPSIS\s*$/USAGE/;
+          }
+      } elsif ($element =~ /^head(\d+)$/ && $1) { # avoid 0
+          my $idx = $1 - 1;
+          $self->{USAGE_HEADINGS} = [] unless($self->{USAGE_HEADINGS});
+          $self->{USAGE_HEADINGS}->[$idx] = $$self{PENDING}[-1][1];
+      }
+      if ($element =~ /^head\d+$/) {
+          $$self{USAGE_SKIPPING} = 1;
+          if (!$$self{USAGE_SELECT} || !@{ $$self{USAGE_SELECT} }) {
+              $$self{USAGE_SKIPPING} = 0;
+          } else {
+              my @headings = @{$$self{USAGE_HEADINGS}};
+              for my $section_spec ( @{$$self{USAGE_SELECT}} ) {
+                  my $match = 1;
+                  for (my $i = 0; $i < $Pod::Select::MAX_HEADING_LEVEL; ++$i) {
+                      $headings[$i] = '' unless defined $headings[$i];
+                      my $regex   = $section_spec->[$i];
+                      my $negated = ($regex =~ s/^\!//);
+                      $match  &= ($negated ? ($headings[$i] !~ /${regex}/)
+                                           : ($headings[$i] =~ /${regex}/));
+                      last unless ($match);
+                  } # end heading levels
+                  if ($match) {
+                    $$self{USAGE_SKIPPING} = 0;
+                    last;
+                  }
+              } # end sections
+          }
+  
+          # Try to do some lowercasing instead of all-caps in headings, and use
+          # a colon to end all headings.
+          if($self->{USAGE_OPTIONS}->{-verbose} < 2) {
+              local $_ = $$self{PENDING}[-1][1];
+              s{([A-Z])([A-Z]+)}{((length($2) > 2) ? $1 : lc($1)) . lc($2)}ge;
+              s/\s*$/:/  unless (/:\s*$/);
+              $_ .= "\n";
+              $$self{PENDING}[-1][1] = $_;
+          }
+      }
+      if ($$self{USAGE_SKIPPING} && $element !~ m/^over-/) {
+          pop @{ $$self{PENDING} };
+      } else {
+          $self->SUPER::_handle_element_end($element);
+      }
+  }
+  
+  # required for Pod::Simple API
+  sub start_document {
+      my $self = shift;
+      $self->SUPER::start_document();
+      my $msg = $self->{USAGE_OPTIONS}->{-message}  or  return 1;
+      my $out_fh = $self->output_fh();
+      print $out_fh "$msg\n";
+  }
+  
+  # required for old Pod::Parser API
+  sub begin_pod {
+      my $self = shift;
+      $self->SUPER::begin_pod();  ## Have to call superclass
+      my $msg = $self->{USAGE_OPTIONS}->{-message}  or  return 1;
+      my $out_fh = $self->output_handle();
+      print $out_fh "$msg\n";
+  }
+  
+  sub preprocess_paragraph {
+      my $self = shift;
+      local $_ = shift;
+      my $line = shift;
+      ## See if this is a heading and we arent printing the entire manpage.
+      if (($self->{USAGE_OPTIONS}->{-verbose} < 2) && /^=head/) {
+          ## Change the title of the SYNOPSIS section to USAGE
+          s/^=head1\s+SYNOPSIS\s*$/=head1 USAGE/;
+          ## Try to do some lowercasing instead of all-caps in headings
+          s{([A-Z])([A-Z]+)}{((length($2) > 2) ? $1 : lc($1)) . lc($2)}ge;
+          ## Use a colon to end all headings
+          s/\s*$/:/  unless (/:\s*$/);
+          $_ .= "\n";
+      }
+      return  $self->SUPER::preprocess_paragraph($_);
+  }
+  
+  1; # keep require happy
+  
+  __END__
   
   =head1 NAME
   
@@ -10774,11 +11221,20 @@ $fatpacked{"Pod/Usage.pm"} = <<'POD_USAGE';
   
   =back
   
+  =head2 Formatting base class
+  
+  The default text formatter depends on the Perl version (L<Pod::Text> or 
+  L<Pod::PlainText> for Perl versions E<lt> 5.005_58). The base class for
+  Pod::Usage can be defined by pre-setting C<$Pod::Usage::Formatter> I<before>
+  loading Pod::Usage, e.g.:
+  
+      BEGIN { $Pod::Usage::Formatter = 'Pod::Text::Termcap'; }
+      use Pod::Usage qw(pod2usage);
+  
   =head2 Pass-through options
   
-  The following options are passed through to the underlying text formatter
-  (L<Pod::Text> or L<Pod::PlainText> for Perl versions E<lt> 5.005_58). See 
-  the manual pages of these modules for more information.
+  The following options are passed through to the underlying text formatter.
+  See the manual pages of these modules for more information.
   
     alt code indent loose margin quotes sentence stderr utf8 width
   
@@ -11047,7 +11503,11 @@ $fatpacked{"Pod/Usage.pm"} = <<'POD_USAGE';
   In the pathological case that a script is called via a relative path
   I<and> the script itself changes the current working directory
   (see L<perlfunc/chdir>) I<before> calling pod2usage, Pod::Usage will
-  fail even on robust platforms. Don't do that.
+  fail even on robust platforms. Don't do that. Or use L<FindBin> to locate
+  the script:
+  
+      use FindBin;
+      pod2usage(-input => $FindBin::Bin . "/" . $FindBin::Script);
   
   =head1 AUTHOR
   
@@ -11067,312 +11527,16 @@ $fatpacked{"Pod/Usage.pm"} = <<'POD_USAGE';
   
   =head1 SEE ALSO
   
-  B<Pod::Usage> is part of the L<Pod::Parser> distribution.
+  B<Pod::Usage> is now a standalone distribution.
   
-  L<Pod::Parser>, L<Getopt::Long>, L<Pod::Find>
+  L<Pod::Parser>, L<Pod::Perldoc>, L<Getopt::Long>, L<Pod::Find>, L<FindBin>,
+  L<Pod::Text>, L<Pod::PlainText>, L<Pod::Text::Termcap>
   
   =cut
   
-  #############################################################################
-  
-  #use diagnostics;
-  use Carp;
-  use Config;
-  use Exporter;
-  use File::Spec;
-  
-  @EXPORT = qw(&pod2usage);
-  BEGIN {
-      if ( $] >= 5.005_58 ) {
-         require Pod::Text;
-         @ISA = qw( Pod::Text );
-      }
-      else {
-         require Pod::PlainText;
-         @ISA = qw( Pod::PlainText );
-      }
-  }
-  
-  require Pod::Select;
-  
-  ##---------------------------------------------------------------------------
-  
-  ##---------------------------------
-  ## Function definitions begin here
-  ##---------------------------------
-  
-  sub pod2usage {
-      local($_) = shift;
-      my %opts;
-      ## Collect arguments
-      if (@_ > 0) {
-          ## Too many arguments - assume that this is a hash and
-          ## the user forgot to pass a reference to it.
-          %opts = ($_, @_);
-      }
-      elsif (!defined $_) {
-        $_ = '';
-      }
-      elsif (ref $_) {
-          ## User passed a ref to a hash
-          %opts = %{$_}  if (ref($_) eq 'HASH');
-      }
-      elsif (/^[-+]?\d+$/) {
-          ## User passed in the exit value to use
-          $opts{'-exitval'} =  $_;
-      }
-      else {
-          ## User passed in a message to print before issuing usage.
-          $_  and  $opts{'-message'} = $_;
-      }
-  
-      ## Need this for backward compatibility since we formerly used
-      ## options that were all uppercase words rather than ones that
-      ## looked like Unix command-line options.
-      ## to be uppercase keywords)
-      %opts = map {
-          my ($key, $val) = ($_, $opts{$_});
-          $key =~ s/^(?=\w)/-/;
-          $key =~ /^-msg/i   and  $key = '-message';
-          $key =~ /^-exit/i  and  $key = '-exitval';
-          lc($key) => $val;
-      } (keys %opts);
-  
-      ## Now determine default -exitval and -verbose values to use
-      if ((! defined $opts{'-exitval'}) && (! defined $opts{'-verbose'})) {
-          $opts{'-exitval'} = 2;
-          $opts{'-verbose'} = 0;
-      }
-      elsif (! defined $opts{'-exitval'}) {
-          $opts{'-exitval'} = ($opts{'-verbose'} > 0) ? 1 : 2;
-      }
-      elsif (! defined $opts{'-verbose'}) {
-          $opts{'-verbose'} = (lc($opts{'-exitval'}) eq 'noexit' ||
-                               $opts{'-exitval'} < 2);
-      }
-  
-      ## Default the output file
-      $opts{'-output'} = (lc($opts{'-exitval'}) eq 'noexit' ||
-                          $opts{'-exitval'} < 2) ? \*STDOUT : \*STDERR
-              unless (defined $opts{'-output'});
-      ## Default the input file
-      $opts{'-input'} = $0  unless (defined $opts{'-input'});
-  
-      ## Look up input file in path if it doesnt exist.
-      unless ((ref $opts{'-input'}) || (-e $opts{'-input'})) {
-          my $basename = $opts{'-input'};
-          my $pathsep = ($^O =~ /^(?:dos|os2|MSWin32)$/i) ? ';'
-                              : (($^O eq 'MacOS' || $^O eq 'VMS') ? ',' :  ':');
-          my $pathspec = $opts{'-pathlist'} || $ENV{PATH} || $ENV{PERL5LIB};
-  
-          my @paths = (ref $pathspec) ? @$pathspec : split($pathsep, $pathspec);
-          for my $dirname (@paths) {
-              $_ = File::Spec->catfile($dirname, $basename)  if length;
-              last if (-e $_) && ($opts{'-input'} = $_);
-          }
-      }
-  
-      ## Now create a pod reader and constrain it to the desired sections.
-      my $parser = new Pod::Usage(USAGE_OPTIONS => \%opts);
-      if ($opts{'-verbose'} == 0) {
-          $parser->select('(?:SYNOPSIS|USAGE)\s*');
-      }
-      elsif ($opts{'-verbose'} == 1) {
-          my $opt_re = '(?i)' .
-                       '(?:OPTIONS|ARGUMENTS)' .
-                       '(?:\s*(?:AND|\/)\s*(?:OPTIONS|ARGUMENTS))?';
-          $parser->select( '(?:SYNOPSIS|USAGE)\s*', $opt_re, "DESCRIPTION/$opt_re" );
-      }
-      elsif ($opts{'-verbose'} >= 2 && $opts{'-verbose'} != 99) {
-          $parser->select('.*');
-      }
-      elsif ($opts{'-verbose'} == 99) {
-          my $sections = $opts{'-sections'};
-          $parser->select( (ref $sections) ? @$sections : $sections );
-          $opts{'-verbose'} = 1;
-      }
-  
-      ## Now translate the pod document and then exit with the desired status
-      if (      !$opts{'-noperldoc'}
-           and  $opts{'-verbose'} >= 2
-           and  !ref($opts{'-input'})
-           and  $opts{'-output'} == \*STDOUT )
-      {
-         ## spit out the entire PODs. Might as well invoke perldoc
-         my $progpath = File::Spec->catfile($Config{scriptdirexp} 
-  	       || $Config{scriptdir}, 'perldoc');
-         print { $opts{'-output'} } ($opts{'-message'}, "\n") if($opts{'-message'});
-         if(defined $opts{-input} && $opts{-input} =~ /^\s*(\S.*?)\s*$/) {
-           # the perldocs back to 5.005 should all have -F
-  	 # without -F there are warnings in -T scripts
-           system($progpath, '-F', $1);
-           if($?) {
-             # RT16091: fall back to more if perldoc failed
-             system(($Config{pager} || $ENV{PAGER} || '/bin/more'), $1);
-           }
-         } else {
-           croak "Unspecified input file or insecure argument.\n";
-         }
-      }
-      else {
-         $parser->parse_from_file($opts{'-input'}, $opts{'-output'});
-      }
-  
-      exit($opts{'-exitval'})  unless (lc($opts{'-exitval'}) eq 'noexit');
-  }
-  
-  ##---------------------------------------------------------------------------
-  
-  ##-------------------------------
-  ## Method definitions begin here
-  ##-------------------------------
-  
-  sub new {
-      my $this = shift;
-      my $class = ref($this) || $this;
-      my %params = @_;
-      my $self = {%params};
-      bless $self, $class;
-      if ($self->can('initialize')) {
-          $self->initialize();
-      } else {
-          # pass through options to Pod::Text
-          my %opts;
-         	for (qw(alt code indent loose margin quotes sentence stderr utf8 width)) {
-              my $val = $params{USAGE_OPTIONS}{"-$_"};
-              $opts{$_} = $val if defined $val;
-          }
-          $self = $self->SUPER::new(%opts);
-          %$self = (%$self, %params);
-      }
-      return $self;
-  }
-  
-  sub select {
-      my ($self, @sections) = @_;
-      if ($ISA[0]->can('select')) {
-          $self->SUPER::select(@sections);
-      } else {
-          # we're using Pod::Simple - need to mimic the behavior of Pod::Select
-          my $add = ($sections[0] eq '+') ? shift(@sections) : '';
-          ## Reset the set of sections to use
-          unless (@sections) {
-            delete $self->{USAGE_SELECT} unless ($add);
-            return;
-          }
-          $self->{USAGE_SELECT} = []
-            unless ($add && $self->{USAGE_SELECT});
-          my $sref = $self->{USAGE_SELECT};
-          ## Compile each spec
-          for my $spec (@sections) {
-            my $cs = Pod::Select::_compile_section_spec($spec);
-            if ( defined $cs ) {
-              ## Store them in our sections array
-              push(@$sref, $cs);
-            } else {
-              carp qq{Ignoring section spec "$spec"!\n};
-            }
-          }
-      }
-  }
-  
-  # Override Pod::Text->seq_i to return just "arg", not "*arg*".
-  sub seq_i { return $_[1] }
-  
-  # This overrides the Pod::Text method to do something very akin to what
-  # Pod::Select did as well as the work done below by preprocess_paragraph.
-  # Note that the below is very, very specific to Pod::Text.
-  sub _handle_element_end {
-      my ($self, $element) = @_;
-      if ($element eq 'head1') {
-          $self->{USAGE_HEADINGS} = [ $$self{PENDING}[-1][1] ];
-          if ($self->{USAGE_OPTIONS}->{-verbose} < 2) {
-              $$self{PENDING}[-1][1] =~ s/^\s*SYNOPSIS\s*$/USAGE/;
-          }
-      } elsif ($element =~ /^head(\d+)$/ && $1) { # avoid 0
-          my $idx = $1 - 1;
-          $self->{USAGE_HEADINGS} = [] unless($self->{USAGE_HEADINGS});
-          $self->{USAGE_HEADINGS}->[$idx] = $$self{PENDING}[-1][1];
-      }
-      if ($element =~ /^head\d+$/) {
-          $$self{USAGE_SKIPPING} = 1;
-          if (!$$self{USAGE_SELECT} || !@{ $$self{USAGE_SELECT} }) {
-              $$self{USAGE_SKIPPING} = 0;
-          } else {
-              my @headings = @{$$self{USAGE_HEADINGS}};
-              for my $section_spec ( @{$$self{USAGE_SELECT}} ) {
-                  my $match = 1;
-                  for (my $i = 0; $i < $Pod::Select::MAX_HEADING_LEVEL; ++$i) {
-                      $headings[$i] = '' unless defined $headings[$i];
-                      my $regex   = $section_spec->[$i];
-                      my $negated = ($regex =~ s/^\!//);
-                      $match  &= ($negated ? ($headings[$i] !~ /${regex}/)
-                                           : ($headings[$i] =~ /${regex}/));
-                      last unless ($match);
-                  } # end heading levels
-                  if ($match) {
-                    $$self{USAGE_SKIPPING} = 0;
-                    last;
-                  }
-              } # end sections
-          }
-  
-          # Try to do some lowercasing instead of all-caps in headings, and use
-          # a colon to end all headings.
-          if($self->{USAGE_OPTIONS}->{-verbose} < 2) {
-              local $_ = $$self{PENDING}[-1][1];
-              s{([A-Z])([A-Z]+)}{((length($2) > 2) ? $1 : lc($1)) . lc($2)}ge;
-              s/\s*$/:/  unless (/:\s*$/);
-              $_ .= "\n";
-              $$self{PENDING}[-1][1] = $_;
-          }
-      }
-      if ($$self{USAGE_SKIPPING} && $element !~ m/^over-/) {
-          pop @{ $$self{PENDING} };
-      } else {
-          $self->SUPER::_handle_element_end($element);
-      }
-  }
-  
-  # required for Pod::Simple API
-  sub start_document {
-      my $self = shift;
-      $self->SUPER::start_document();
-      my $msg = $self->{USAGE_OPTIONS}->{-message}  or  return 1;
-      my $out_fh = $self->output_fh();
-      print $out_fh "$msg\n";
-  }
-  
-  # required for old Pod::Parser API
-  sub begin_pod {
-      my $self = shift;
-      $self->SUPER::begin_pod();  ## Have to call superclass
-      my $msg = $self->{USAGE_OPTIONS}->{-message}  or  return 1;
-      my $out_fh = $self->output_handle();
-      print $out_fh "$msg\n";
-  }
-  
-  sub preprocess_paragraph {
-      my $self = shift;
-      local $_ = shift;
-      my $line = shift;
-      ## See if this is a heading and we arent printing the entire manpage.
-      if (($self->{USAGE_OPTIONS}->{-verbose} < 2) && /^=head/) {
-          ## Change the title of the SYNOPSIS section to USAGE
-          s/^=head1\s+SYNOPSIS\s*$/=head1 USAGE/;
-          ## Try to do some lowercasing instead of all-caps in headings
-          s{([A-Z])([A-Z]+)}{((length($2) > 2) ? $1 : lc($1)) . lc($2)}ge;
-          ## Use a colon to end all headings
-          s/\s*$/:/  unless (/:\s*$/);
-          $_ .= "\n";
-      }
-      return  $self->SUPER::preprocess_paragraph($_);
-  }
-  
-  1; # keep require happy
 POD_USAGE
 
-$fatpacked{"Text/Diff.pm"} = <<'TEXT_DIFF';
+$fatpacked{"Text/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEXT_DIFF';
   package Text::Diff;
   
   use 5.00503;
@@ -12090,24 +12254,37 @@ TEXT_DIFF
 
 s/^  //mg for values %fatpacked;
 
-unshift @INC, sub {
-  if (my $fat = $fatpacked{$_[1]}) {
-    if ($] < 5.008) {
-      return sub {
-        return 0 unless length $fat;
-        $fat =~ s/^([^\n]*\n?)//;
-        $_ = $1;
-        return 1;
-      };
-    }
-    open my $fh, '<', \$fat
-      or die "FatPacker error loading $_[1] (could be a perl installation issue?)";
-    return $fh;
-  }
-  return
-};
+my $class = 'FatPacked::'.(0+\%fatpacked);
+no strict 'refs';
+*{"${class}::files"} = sub { keys %{$_[0]} };
 
-} # END OF FATPACK CODE
+if ($] < 5.008) {
+  *{"${class}::INC"} = sub {
+     if (my $fat = $_[0]{$_[1]}) {
+       return sub {
+         return 0 unless length $fat;
+         $fat =~ s/^([^\n]*\n?)//;
+         $_ = $1;
+         return 1;
+       };
+     }
+     return;
+  };
+}
+
+else {
+  *{"${class}::INC"} = sub {
+    if (my $fat = $_[0]{$_[1]}) {
+      open my $fh, '<', \$fat
+        or die "FatPacker error loading $_[1] (could be a perl installation issue?)";
+      return $fh;
+    }
+    return;
+  };
+}
+
+unshift @INC, bless \%fatpacked, $class;
+  } # END OF FATPACK CODE
 
 #!/usr/bin/env perl
 
@@ -12123,7 +12300,7 @@ use Sys::Hostname;
 
 use constant HAS_TEXT_DIFF => eval { require Text::Diff; 1 };
 
-our $VERSION = '1.010';
+our $VERSION = '1.011';
 
 use constant {
     PROG => (File::Spec->splitpath($0))[2],
@@ -12136,7 +12313,8 @@ use constant {
 };
 use constant SSH_DIR => File::Spec->rel2abs('.ssh', HOME_DIR);
 
-sub GITHUB_HOSTS() { qw(github.com gist.github.com) }
+# 443.github.com is a pure SSH config alias to ssh.github.com
+sub GITHUB_HOSTS() { qw(github.com gist.github.com ssh.github.com 443.github.com) }
 
 $SIG{__WARN__} = sub {
     print STDERR PROG.": ", @_;
@@ -12186,8 +12364,10 @@ sub compress_path($)
     $path;
 }
 
-use constant SSH_CONFIG_FILE => ssh_file('config');
-use constant KNOWN_HOSTS_FILE => ssh_file('known_hosts_github');
+use constant {
+    SSH_CONFIG_FILE => ssh_file('config'),
+    KNOWN_HOSTS_FILE => ssh_file('known_hosts_github'),
+};
 
 my $remove_all;
 my $key_type = 'rsa';
@@ -12209,7 +12389,8 @@ my %github_remove;
 
 while (@ARGV) {
     my $user = shift @ARGV;
-    pod2usage("invalid user '$user'") unless $user =~ /^[a-z0-9_-]+$/;
+    pod2usage("invalid user '$user'") unless $user =~ /^([a-z0-9_-]+)(?:\@github)?$/;
+    $user = $1;
 
     my $remove = 0;
     my %u = (
@@ -12311,13 +12492,13 @@ foreach my $l (@ssh_config_lines) {
             # perl 5.10
             #%users = map { m/^((?!gist)[a-z_0-9]*+)(?:\.gist)?\.github.com$/ ? ($1 => undef) : () } @github_hosts_pat;
             # perl 5.8
-            %users = map { m/^([a-z_0-9]+)(?:\.gist)?\.github.com$/ && $_ ne 'gist.github.com' ? ($1 => undef) : () } @github_hosts_pat;
-            #print keys(%users), "\n";
+            %users = map { m/^([a-z_0-9]+)(?:\.(?:gist|ssh|443))?\.github.com$/ && $_ ne 'gist.github.com' && $_ ne 'ssh.github.com' && $_ ne '443.github.com' ? ($1 => undef) : () } @github_hosts_pat;
+            next unless %users;
             # Ignore users which are asked to be removed
-            delete $users{$_} for grep { exists $github_remove{$_} } keys %users;
+            delete @users{keys %github_remove};
             if ($remove_all) {
                 $github_remove{$_} = 1 for keys %users;
-            } elsif ($github_default ne '' && keys(%users) == 1 && grep { $_ eq 'github.com' } @github_hosts_pat) {
+            } elsif ($github_default eq '' && keys(%users) == 1 && grep { $_ eq 'github.com' } @github_hosts_pat) {
                 ($github_default) = keys %users;
             }
         }
@@ -12392,6 +12573,13 @@ if (@github_accounts) {
 
 my @keys_created;
 
+unless (-e SSH_DIR) {
+    printf "Creating %s...\n", compress_path(SSH_DIR);
+    mkdir SSH_DIR, 0700
+        or die sprintf "can't create directory '%s': %s\n",
+                compress_path(SSH_DIR), "$!";
+}
+
 foreach my $user (@github_accounts) {
     my $u = $github_accounts{$user};
     $u->{key_file} = ssh_file("id_$user\@github")
@@ -12426,13 +12614,13 @@ $errors = 0;
 
 if (@github_accounts) {
     # To rebuild __DATA__ (if Github ever revokes its host keys):
-    #   ssh-keyscan -t dsa,rsa github.com gist.github.com
+    #   ssh-keyscan -t dsa,rsa github.com gist.github.com ssh.github.com
 
     my $size = -e KNOWN_HOSTS_FILE
              ? (stat KNOWN_HOSTS_FILE)[7]
              : 0;
 
-    if ($size == 1994) {
+    if ($size == 3006) {
         printf "No changes in %s.\n",
                compress_path(KNOWN_HOSTS_FILE);
     } else {
@@ -12470,13 +12658,20 @@ push @ssh_config_lines,
      (map { "$_\n" } split(/\n/, <<EOF)), "\n";   # perl 5.8
 # -- github-keygen - begin --
 
+Host gist.github.com *.gist.github.com
+Hostname gist.github.com
+
+# See https://help.github.com/articles/using-ssh-over-the-https-port
+Host ssh.github.com *.ssh.github.com 443.github.com *.443.github.com
+Hostname ssh.github.com
+Port 443
+
+# This rule must stay below more specific host rules to avoid
+# "Hostname" to be set to github.com
 Host *.github.com
 Hostname github.com
 
-Host *.gist.github.com
-Hostname gist.github.com
-
-Host github.com gist.github.com *.github.com *.gist.github.com
+Host github.com gist.github.com ssh.github.com 443.github.com *.github.com *.gist.github.com *.ssh.github.com *.443.github.com
 User git
 # Enforce host checks
 StrictHostKeyChecking yes
@@ -12602,6 +12797,8 @@ github.com ssh-dss AAAAB3NzaC1kc3MAAACBANGFW2P9xlGU3zWrymJgI/lKo//ZW2WfVtmbsUZJ5
 github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
 gist.github.com ssh-dss AAAAB3NzaC1kc3MAAACBANGFW2P9xlGU3zWrymJgI/lKo//ZW2WfVtmbsUZJ5uyKArtlQOT2+WRhcg4979aFxgKdcsqAYW3/LS1T2km3jYW/vr4Uzn+dXWODVk5VlUiZ1HFOHf6s6ITcZvjvdbp6ZbpM+DuJT7Bw+h5Fx8Qt8I16oCZYmAPJRtu46o9C2zk1AAAAFQC4gdFGcSbp5Gr0Wd5Ay/jtcldMewAAAIATTgn4sY4Nem/FQE+XJlyUQptPWMem5fwOcWtSXiTKaaN0lkk2p2snz+EJvAGXGq9dTSWHyLJSM2W6ZdQDqWJ1k+cL8CARAqL+UMwF84CR0m3hj+wtVGD/J4G5kW2DBAf4/bqzP4469lT+dF2FRQ2L9JKXrCWcnhMtJUvua8dvnwAAAIB6C4nQfAA7x8oLta6tT+oCk2WQcydNsyugE8vLrHlogoWEicla6cWPk7oXSspbzUcfkjN3Qa6e74PhRkc7JdSdAlFzU3m7LMkXo1MHgkqNX8glxWNVqBSc0YRdbFdTkL0C6gtpklilhvuHQCdbgB3LBAikcRkDp+FCVkUgPC/7Rw==
 gist.github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+[ssh.github.com]:443 ssh-dss AAAAB3NzaC1kc3MAAACBANGFW2P9xlGU3zWrymJgI/lKo//ZW2WfVtmbsUZJ5uyKArtlQOT2+WRhcg4979aFxgKdcsqAYW3/LS1T2km3jYW/vr4Uzn+dXWODVk5VlUiZ1HFOHf6s6ITcZvjvdbp6ZbpM+DuJT7Bw+h5Fx8Qt8I16oCZYmAPJRtu46o9C2zk1AAAAFQC4gdFGcSbp5Gr0Wd5Ay/jtcldMewAAAIATTgn4sY4Nem/FQE+XJlyUQptPWMem5fwOcWtSXiTKaaN0lkk2p2snz+EJvAGXGq9dTSWHyLJSM2W6ZdQDqWJ1k+cL8CARAqL+UMwF84CR0m3hj+wtVGD/J4G5kW2DBAf4/bqzP4469lT+dF2FRQ2L9JKXrCWcnhMtJUvua8dvnwAAAIB6C4nQfAA7x8oLta6tT+oCk2WQcydNsyugE8vLrHlogoWEicla6cWPk7oXSspbzUcfkjN3Qa6e74PhRkc7JdSdAlFzU3m7LMkXo1MHgkqNX8glxWNVqBSc0YRdbFdTkL0C6gtpklilhvuHQCdbgB3LBAikcRkDp+FCVkUgPC/7Rw==
+[ssh.github.com]:443 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
 
 =head1 NAME
 
@@ -12798,15 +12995,15 @@ L<ssh_config(5)>
 
 =item *
 
-L<http://help.github.com/linux-set-up-git/>
+L<https://help.github.com/articles/set-up-git#platform-linux>
 
 =item *
 
-L<http://help.github.com/troubleshooting-ssh/>
+L<https://help.github.com/categories/56/articles>
 
 =item *
 
-L<http://help.github.com/working-with-key-passphrases/>
+L<https://help.github.com/articles/working-with-ssh-key-passphrases>
 
 =back
 
