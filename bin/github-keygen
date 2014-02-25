@@ -210,7 +210,7 @@ foreach my $l (@ssh_config_lines) {
             delete $users{$_} for grep { exists $github_remove{$_} } keys %users;
             if ($remove_all) {
                 $github_remove{$_} = 1 for keys %users;
-            } elsif ($github_default ne '' && keys(%users) == 1 && grep { $_ eq 'github.com' } @github_hosts_pat) {
+            } elsif ($github_default eq '' && keys(%users) == 1 && grep { $_ eq 'github.com' } @github_hosts_pat) {
                 ($github_default) = keys %users;
             }
         }
