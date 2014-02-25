@@ -245,6 +245,10 @@ L<SSH over https port|https://help.github.com/articles/using-ssh-over-the-https-
 Add C<*.ssh.github.com> host aliases for Git.
 Users should run again 'github-keygen' (without argument) to enable those new features.
 
+Fixed [issue #13](https://github.com/dolmen/github-keygen/issues/13): default Github
+account set with `--default` option was lost when running again github-keygen without
+repeating the setting. The issue existed since v1.004.
+
 =item v1.010
 
 Darwin: implemented pasting the public key to the clipboard. Thanks to Vincent
