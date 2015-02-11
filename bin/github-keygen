@@ -385,6 +385,8 @@ Hostname github.com
 
 Host github.com gist.github.com ssh.github.com 443.github.com *.github.com *.gist.github.com *.ssh.github.com *.443.github.com
 User git
+# Force SSH2
+Protocol 2
 # Enforce host checks
 StrictHostKeyChecking yes
 UserKnownHostsFile ${known_hosts_file}
