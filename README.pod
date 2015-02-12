@@ -38,8 +38,9 @@ a high level of security.
 
 It creates a new SSH B<private key dedicated> to Github exchanges. This is much
 better than using the same SSH key to connect to multiple hosts.
-(If you loose that key, just revoke it in you Github account, remove the key
-file, and re run C<github-keygen>).
+(If you loose that key, just revoke it in
+L<your Github account SSH settings|https://github.com/settings/ssh>, remove the
+key file, and re run C<github-keygen>).
 
 =item *
 
@@ -48,8 +49,8 @@ is now much easier to use a different SSH key for Github on each computer
 you use to publish on Github. This will help you to use the best practices in
 SSH security.
 (If you lose that computer or if it is compromised, just revoke the key in
-your Github account: you don't have to recreate a new key on all your other
-computers).
+L<your Github account SSH settings|https://github.com/settings/ssh>:
+you don't have to recreate a new key on all your other computers).
 
 =item *
 
@@ -80,6 +81,11 @@ Setup a dedicated F<known_hosts> file with the Github SSH hosts and enable
 strict host checking (this means that if you get SSH alerts about host key
 problem when connecting to GitHub, this is really a serious error and you
 should check that someone is not altering your network link).
+
+=item *
+
+Use stronger encryption algorithms than your default SSH setup (following
+L<@stribika advices|https://stribika.github.io/2015/01/04/secure-secure-shell.html>);
 
 =item *
 
@@ -235,6 +241,14 @@ releases. And you can also have a look to the commit log.
 
 =over 4
 
+=item v1.020
+
+B<Improve SSH encryption> by selecting L<stronger algorithms recommended by
+@stribika|https://stribika.github.io/2015/01/04/secure-secure-shell.html>:
+C<aes256-ctr> instead of C<aes128-ctr>, and C<hmac-sha2-512> instead of C<hmac-sha1>.
+
+Open the ~/.ssh/known_hosts_github with mode 0600 before initializing/updating it.
+
 =item v1.011
 
 Create ~/.ssh with rights 0700 if it doesn't exists because L<ssh-keygen(1)> will
@@ -370,7 +384,7 @@ If you want to contribute, have a look to L<CONTRIBUTING.pod>.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright E<copy> 2012 Olivier MenguE<eacute>.
+Copyright E<copy> 2011-2015 Olivier MenguE<eacute>.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
