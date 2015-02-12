@@ -84,6 +84,11 @@ should check that someone is not altering your network link).
 
 =item *
 
+Use stronger encryption algorithms than your default SSH setup (following
+L<@stribika advices|https://stribika.github.io/2015/01/04/secure-secure-shell.html>);
+
+=item *
+
 Disable bad things that could come from the Github hosts ("Trust no-one")
 
 =back
@@ -235,6 +240,12 @@ the diff feature of Git/Github to view exactly what happened between two
 releases. And you can also have a look to the commit log.
 
 =over 4
+
+=item v1.020
+
+B<Improve SSH encryption> by selecting L<stronger algorithms recommended by
+@stribika|https://stribika.github.io/2015/01/04/secure-secure-shell.html>:
+C<aes256-ctr> instead of C<aes128-ctr>, and C<hmac-sha2-512> instead of C<hmac-sha1>.
 
 =item v1.011
 
