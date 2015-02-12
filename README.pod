@@ -247,6 +247,8 @@ B<Improve SSH encryption> by selecting L<stronger algorithms recommended by
 @stribika|https://stribika.github.io/2015/01/04/secure-secure-shell.html>:
 C<aes256-ctr> instead of C<aes128-ctr>, and C<hmac-sha2-512> instead of C<hmac-sha1>.
 
+Open the ~/.ssh/known_hosts_github with mode 0600 before initializing/updating it.
+
 =item v1.011
 
 Create ~/.ssh with rights 0700 if it doesn't exists because L<ssh-keygen(1)> will

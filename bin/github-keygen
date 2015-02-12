@@ -339,6 +339,7 @@ if (@github_accounts) {
         printf "Saving Github hosts authentication keys in %s...\n",
                compress_path(KNOWN_HOSTS_FILE);
 
+        chmod 0600, KNOWN_HOSTS_FILE if $size;
         if (open my $f, '>', KNOWN_HOSTS_FILE) {
             # Read line by line (up to an empty line)
             # to convert EOL to the platform native EOL
