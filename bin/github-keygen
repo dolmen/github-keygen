@@ -397,6 +397,12 @@ VerifyHostKeyDNS no
 # Enable only the required authentication
 PubkeyAuthentication yes
 PreferredAuthentications publickey
+# Select algorithms recommended by Stribika
+#  See https://stribika.github.io/2015/01/04/secure-secure-shell.html
+#  Last in each list is the minimum supported by Github
+KexAlgorithms curve25519-sha256\@libssh.org,diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1
+Ciphers chacha20-poly1305\@openssh.com,aes256-gcm\@openssh.com,aes128-gcm\@openssh.com,aes256-ctr
+MACs hmac-sha2-512-etm\@openssh.com,hmac-sha2-256-etm\@openssh.com,hmac-ripemd160-etm\@openssh.com,umac-128-etm\@openssh.com,hmac-sha2-512
 # Trust no one, especially the remote
 ForwardAgent no
 ForwardX11 no
