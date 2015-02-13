@@ -363,11 +363,11 @@ if (@github_accounts) {
 # Create the new config block
 if (@github_accounts) {
 
-my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
+    my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
 
-my @ghkg_config_lines =
-     #split(/\n\K/, <<EOF);                       # perl 5.10
-     ((map { "$_\n" } split(/\n/, <<EOF)), "\n");   # perl 5.8
+    my @ghkg_config_lines =
+         #split(/\n\K/, <<EOF);                       # perl 5.10
+         ((map { "$_\n" } split(/\n/, <<EOF)), "\n");   # perl 5.8
 # -- github-keygen - begin --
 
 Host gist.github.com *.gist.github.com
@@ -414,29 +414,23 @@ ControlPersist 60s
 
 EOF
 
-sub add_identity
-{
-    my ($gh_account, @hosts) = @_;
-    push @ghkg_config_lines,
-      join(' ', 'Host', @hosts) . "\n",
-      "IdentitiesOnly yes\n",
-      'IdentityFile '. compress_path($github_accounts{$gh_account}->{key_file}) . "\n",
-      "\n";
-}
+    foreach my $u (@github_accounts) {
+        push @ghkg_config_lines,
+            join(' ',
+                'Host',
+                (map { "$u.$_" } GITHUB_HOSTS),
+                ($u eq $github_default ? (GITHUB_HOSTS) : ()),
+            ) . "\n",
+            "IdentitiesOnly yes\n",
+            'IdentityFile '. compress_path($github_accounts{$u}->{key_file}) . "\n",
+            "\n";
+    }
 
-foreach my $u (@github_accounts) {
-    add_identity($u,
-             (map { "$u.$_" } GITHUB_HOSTS),
-             ($u eq $github_default ? (GITHUB_HOSTS) : ()),
-    );
-}
+    push @ghkg_config_lines, "# -- github-keygen - end --\n";
 
-push @ghkg_config_lines, "# -- github-keygen - end --\n";
-
-push @ssh_config_lines,
-     ( @ssh_config_lines ? ("\n") : ()),
-     @ghkg_config_lines;
-
+    push @ssh_config_lines,
+         ( @ssh_config_lines ? ("\n") : ()),
+         @ghkg_config_lines;
 }
 
 # Workaround for perl 5.8
