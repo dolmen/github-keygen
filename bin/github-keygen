@@ -428,6 +428,36 @@ EOF
 
     push @ghkg_config_lines, "# -- github-keygen - end --\n";
 
+    # Check against the man page that all the options we plan to use are supported
+    # on this machine
+    my $manfile;
+    if (-x '/usr/bin/man' && ($manfile = qx{man -w ssh_config 2>/dev/null})) {
+        chomp $manfile;
+        #print "ssh_config: $manfile\n";
+        my $fh;
+        if ($manfile =~ /\.gz$/) {
+            open $fh, '-|', "zgrep '\\.It Cm' '$manfile'";
+        } else {
+            open $fh, '<', $manfile;
+        }
+        if ($fh) {
+            my %supported_options;
+            while (<$fh>) {
+                $supported_options{lc $1}++ if /^\.It Cm ([A-Z]\S+)/
+            }
+            close $fh;
+            if (scalar(keys %supported_options) > 1) {
+                foreach (@ghkg_config_lines) {
+                    next unless /^([A-Z]\S+)/;
+                    unless (exists $supported_options{lc $1}) {
+                        warn "ssh option '$1' is not available";
+                        s/^/##/;
+                    }
+                }
+            }
+        }
+    }
+
     push @ssh_config_lines,
          ( @ssh_config_lines ? ("\n") : ()),
          @ghkg_config_lines;
