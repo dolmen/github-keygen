@@ -365,9 +365,7 @@ if (@github_accounts) {
 
     my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
 
-    my @ghkg_config_lines =
-         #split(/\n\K/, <<EOF);                       # perl 5.10
-         ((map { "$_\n" } split(/\n/, <<EOF)), "\n");   # perl 5.8
+    my @ghkg_config_lines = map { "$_\n" } split /\n/, <<EOF;
 Host gist.github.com *.gist.github.com
 HostName gist.github.com
 
@@ -409,19 +407,18 @@ PermitLocalCommand no
 ControlMaster auto
 ControlPath ~/.ssh/conn-%n
 ControlPersist 60s
-
 EOF
 
     foreach my $u (@github_accounts) {
         push @ghkg_config_lines,
+            "\n",
             join(' ',
                 'Host',
                 (map { "$u.$_" } GITHUB_HOSTS),
                 ($u eq $github_default ? (GITHUB_HOSTS) : ()),
             ) . "\n",
             "IdentitiesOnly yes\n",
-            'IdentityFile '. compress_path($github_accounts{$u}->{key_file}) . "\n",
-            "\n";
+            'IdentityFile '. compress_path($github_accounts{$u}->{key_file}) . "\n";
     }
 
 
@@ -460,6 +457,7 @@ EOF
         "# -- github-keygen - begin --\n",
         "\n",
         @ghkg_config_lines,
+        "\n",
         "# -- github-keygen - end --\n";
 }
 
