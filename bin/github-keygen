@@ -368,8 +368,6 @@ if (@github_accounts) {
     my @ghkg_config_lines =
          #split(/\n\K/, <<EOF);                       # perl 5.10
          ((map { "$_\n" } split(/\n/, <<EOF)), "\n");   # perl 5.8
-# -- github-keygen - begin --
-
 Host gist.github.com *.gist.github.com
 HostName gist.github.com
 
@@ -426,7 +424,6 @@ EOF
             "\n";
     }
 
-    push @ghkg_config_lines, "# -- github-keygen - end --\n";
 
     # Check against the man page that all the options we plan to use are supported
     # on this machine
@@ -459,8 +456,11 @@ EOF
     }
 
     push @ssh_config_lines,
-         ( @ssh_config_lines ? ("\n") : ()),
-         @ghkg_config_lines;
+        ( @ssh_config_lines ? ("\n") : ()),
+        "# -- github-keygen - begin --\n",
+        "\n",
+        @ghkg_config_lines,
+        "# -- github-keygen - end --\n";
 }
 
 # Workaround for perl 5.8
