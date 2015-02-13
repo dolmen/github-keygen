@@ -365,10 +365,9 @@ if (@github_accounts) {
 
 my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
 
-push @ssh_config_lines,
-     ( @ssh_config_lines ? ("\n") : ()),
+my @ghkg_config_lines =
      #split(/\n\K/, <<EOF);                       # perl 5.10
-     (map { "$_\n" } split(/\n/, <<EOF)), "\n";   # perl 5.8
+     ((map { "$_\n" } split(/\n/, <<EOF)), "\n");   # perl 5.8
 # -- github-keygen - begin --
 
 Host gist.github.com *.gist.github.com
@@ -418,7 +417,7 @@ EOF
 sub add_identity
 {
     my ($gh_account, @hosts) = @_;
-    push @ssh_config_lines,
+    push @ghkg_config_lines,
       join(' ', 'Host', @hosts) . "\n",
       "IdentitiesOnly yes\n",
       'IdentityFile '. compress_path($github_accounts{$gh_account}->{key_file}) . "\n",
@@ -432,7 +431,11 @@ foreach my $u (@github_accounts) {
     );
 }
 
-push @ssh_config_lines, "# -- github-keygen - end --\n";
+push @ghkg_config_lines, "# -- github-keygen - end --\n";
+
+push @ssh_config_lines,
+     ( @ssh_config_lines ? ("\n") : ()),
+     @ghkg_config_lines;
 
 }
 
