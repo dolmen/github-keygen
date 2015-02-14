@@ -241,6 +241,11 @@ releases. And you can also have a look to the commit log.
 
 =over 4
 
+=item v1.021
+
+Config: use the official case for the C<HostName> option (instead of
+C<Hostname>).
+
 =item v1.020
 
 B<Improve SSH encryption> by selecting L<stronger algorithms recommended by
