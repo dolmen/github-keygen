@@ -251,6 +251,10 @@ now look in the L<ssh_config(5)> man page for the list of supported options
 and unavailable options are then commented with '##'. If the man page is not
 found, we still use all options.
 
+On msys platform (bash in L<msysgit|https://msysgit.github.io/>), the
+C<ControlMaster> option of OpenSSH doesn't work because msys lacks support for
+passing file descriptors. So we now disable this option on this platform.
+
 =item v1.020
 
 B<Improve SSH encryption> by selecting L<stronger algorithms recommended by

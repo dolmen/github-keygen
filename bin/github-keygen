@@ -463,6 +463,13 @@ EOF
         }
     }
 
+    # OpenSSH 6.6.1p1 from msysgit:
+    # msys does not support passing file descriptors and ControlMaster relies
+    # on that, so we comment all Control options
+    if ($^O eq 'msys') {
+        s/^Control/##Control/ for @ghkg_config_lines;
+    }
+
     push @ssh_config_lines,
         ( @ssh_config_lines ? ("\n") : ()),
         "# -- github-keygen - begin --\n",
