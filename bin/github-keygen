@@ -363,14 +363,9 @@ if (@github_accounts) {
 # Create the new config block
 if (@github_accounts) {
 
-my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
+    my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
 
-push @ssh_config_lines,
-     ( @ssh_config_lines ? ("\n") : ()),
-     #split(/\n\K/, <<EOF);                       # perl 5.10
-     (map { "$_\n" } split(/\n/, <<EOF)), "\n";   # perl 5.8
-# -- github-keygen - begin --
-
+    my @ghkg_config_lines = map { "$_\n" } split /\n/, <<EOF;
 Host gist.github.com *.gist.github.com
 HostName gist.github.com
 
@@ -412,28 +407,76 @@ PermitLocalCommand no
 ControlMaster auto
 ControlPath ~/.ssh/conn-%n
 ControlPersist 60s
-
 EOF
 
-sub add_identity
-{
-    my ($gh_account, @hosts) = @_;
+    foreach my $u (@github_accounts) {
+        push @ghkg_config_lines,
+            "\n",
+            join(' ',
+                'Host',
+                (map { "$u.$_" } GITHUB_HOSTS),
+                ($u eq $github_default ? (GITHUB_HOSTS) : ()),
+            ) . "\n",
+            "IdentitiesOnly yes\n",
+            'IdentityFile '. compress_path($github_accounts{$u}->{key_file}) . "\n";
+    }
+
+
+    # Check against the man page that all the options we plan to use are supported
+    # on this machine
+    my $manfile;
+    if (-x '/usr/bin/man' && ($manfile = qx{man -w ssh_config 2>/dev/null})) {
+        chomp $manfile;
+    } else {
+        # On msysgit the man page is installed despites /usr/bin/man isn't
+        foreach ('', '.gz') {
+            my $f = "/usr/share/man/man5/ssh_config.5$_";
+            if (-f $f) {
+                $manfile = $f;
+                last;
+            }
+        }
+    }
+    if ($manfile) {
+        #print "ssh_config.5: $manfile\n";
+        my $fh;
+        if ($manfile =~ /\.gz$/) {
+            open $fh, '-|', "zgrep '\\.It Cm' '$manfile'";
+        } else {
+            open $fh, '<', $manfile;
+        }
+        if ($fh) {
+            my %supported_options;
+            while (<$fh>) {
+                $supported_options{lc $1}++ if /^\.It Cm ([A-Z]\S+)/
+            }
+            close $fh;
+            if (scalar(keys %supported_options) > 1) {
+                foreach (@ghkg_config_lines) {
+                    next unless /^([A-Z]\S+)/;
+                    unless (exists $supported_options{lc $1}) {
+                        warn "ssh option '$1' is not available";
+                        s/^/##/;
+                    }
+                }
+            }
+        }
+    }
+
+    # OpenSSH 6.6.1p1 from msysgit:
+    # msys does not support passing file descriptors and ControlMaster relies
+    # on that, so we comment all Control options
+    if ($^O eq 'msys') {
+        s/^Control/##Control/ for @ghkg_config_lines;
+    }
+
     push @ssh_config_lines,
-      join(' ', 'Host', @hosts) . "\n",
-      "IdentitiesOnly yes\n",
-      'IdentityFile '. compress_path($github_accounts{$gh_account}->{key_file}) . "\n",
-      "\n";
-}
-
-foreach my $u (@github_accounts) {
-    add_identity($u,
-             (map { "$u.$_" } GITHUB_HOSTS),
-             ($u eq $github_default ? (GITHUB_HOSTS) : ()),
-    );
-}
-
-push @ssh_config_lines, "# -- github-keygen - end --\n";
-
+        ( @ssh_config_lines ? ("\n") : ()),
+        "# -- github-keygen - begin --\n",
+        "\n",
+        @ghkg_config_lines,
+        "\n",
+        "# -- github-keygen - end --\n";
 }
 
 # Workaround for perl 5.8
