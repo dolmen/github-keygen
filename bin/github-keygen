@@ -427,7 +427,18 @@ EOF
     my $manfile;
     if (-x '/usr/bin/man' && ($manfile = qx{man -w ssh_config 2>/dev/null})) {
         chomp $manfile;
-        #print "ssh_config: $manfile\n";
+    } else {
+        # On msysgit the man page is installed despites /usr/bin/man isn't
+        foreach ('', '.gz') {
+            my $f = "/usr/share/man/man5/ssh_config.5$_";
+            if (-f $f) {
+                $manfile = $f;
+                last;
+            }
+        }
+    }
+    if ($manfile) {
+        #print "ssh_config.5: $manfile\n";
         my $fh;
         if ($manfile =~ /\.gz$/) {
             open $fh, '-|', "zgrep '\\.It Cm' '$manfile'";
