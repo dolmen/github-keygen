@@ -275,7 +275,7 @@ if (@github_accounts) {
         my $pathsep = $Config::Config{path_sep};
         foreach my $p (split /\Q$pathsep\E/, $ENV{PATH}) {
             last if -e "$p\\ssh-keygen.exe";
-            if (-e "$p\\Git.cmd") {
+            if (-e "$p\\Git.cmd" || -e "$p\\Git.exe") {
                 $ENV{PATH} = "$p\\..\\bin$pathsep$ENV{PATH}";
                 last;
             }
