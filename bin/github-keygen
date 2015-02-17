@@ -363,6 +363,45 @@ if (@github_accounts) {
 # Create the new config block
 if (@github_accounts) {
 
+    # Algorithms subset recommended by Stribika
+    #  See https://stribika.github.io/2015/01/04/secure-secure-shell.html
+    #  Last in each list is the minimum supported by Github
+    my %algorithms = (
+        # Ciphers: ssh -Q cipher
+        cipher => [ qw<
+            chacha20-poly1305@openssh.com
+            aes256-gcm@openssh.com
+            aes128-gcm@openssh.com
+            aes256-ctr
+        > ],
+        # MACs: ssh -Q mac
+        mac => [ qw<
+            hmac-sha2-512-etm@openssh.com
+            hmac-sha2-256-etm@openssh.com
+            hmac-ripemd160-etm@openssh.com
+            umac-128-etm@openssh.com
+            hmac-sha2-512
+        > ],
+        # KexAlgorithms: ssh -Q kex
+        kex => [ qw<
+            curve25519-sha256@libssh.org
+            diffie-hellman-group-exchange-sha256
+            diffie-hellman-group-exchange-sha1
+            diffie-hellman-group14-sha1
+        > ],
+    );
+    # Filter each list against what is supported by the ssh client
+    while (my ($kind, $algos) = each %algorithms) {
+        open my $ssh_Q, '-|', 'ssh', '-Q', $kind;
+        if ($ssh_Q) {
+            my %supported = map { chomp; ($_ => 1) } <$ssh_Q>;
+            $algorithms{$kind} = join(',', grep { $supported{$_} } @$algos);
+        } else {
+            warn "ssh -Q $kind: failure ($!)";
+            $algorithms{$kind} = join(',', @$algos);
+        }
+    }
+
     my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
 
     my @ghkg_config_lines = map { "$_\n" } split /\n/, <<EOF;
@@ -396,9 +435,9 @@ PreferredAuthentications publickey
 # Select algorithms recommended by Stribika
 #  See https://stribika.github.io/2015/01/04/secure-secure-shell.html
 #  Last in each list is the minimum supported by Github
-KexAlgorithms curve25519-sha256\@libssh.org,diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1
-Ciphers chacha20-poly1305\@openssh.com,aes256-gcm\@openssh.com,aes128-gcm\@openssh.com,aes256-ctr
-MACs hmac-sha2-512-etm\@openssh.com,hmac-sha2-256-etm\@openssh.com,hmac-ripemd160-etm\@openssh.com,umac-128-etm\@openssh.com,hmac-sha2-512
+KexAlgorithms $algorithms{kex}
+Ciphers $algorithms{cipher}
+MACs $algorithms{mac}
 # Trust no one, especially the remote
 ForwardAgent no
 ForwardX11 no
