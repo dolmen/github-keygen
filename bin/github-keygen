@@ -17,12 +17,12 @@ our $VERSION = '1.020';
 use constant {
     PROG => (File::Spec->splitpath($0))[2],
     CWD => Cwd::getcwd,
-    # We can't rely on File::HomeDir because we have to reproduce OpenSSH
-    # behavior, and not depend on what File::HomeDir thinks is right
-    HOME_DIR => $ENV{HOME} || ((getpwent)[7]),
     # msys is the special unix emulation of Unix on Win32: perl 5.8 from msysgit
     WIN32 => $^O eq 'MSWin32' || $^O eq 'msys',
 };
+# We can't rely on File::HomeDir because we have to reproduce OpenSSH
+# behavior, and not depend on what File::HomeDir thinks is right
+use constant HOME_DIR => $ENV{HOME} || (WIN32 ? $ENV{USERPROFILE} : (getpwent)[7]);
 use constant SSH_DIR => File::Spec->rel2abs('.ssh', HOME_DIR);
 
 # 443.github.com is a pure SSH config alias to ssh.github.com
