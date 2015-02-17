@@ -2,3 +2,5 @@ id_*
 fatlib
 github-keygen
 fatpacker.trace
+*~
+.*.sw?
