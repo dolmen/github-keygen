@@ -261,6 +261,9 @@ against the lists reported by C<ssh -Q E<lt>cipher|mac|kexE<gt>>. This restores
 compatibility with old OpenSSH version such as 6.6.1p1 bundled with msysgit
 that does not support ciphers named C<aes*-gcm@openssh.com>.
 
+Various fixes/workarounds to restore full support of the old SSH (4.6p1) that
+is bundled with msysgit (Git on Win32).
+
 =item v1.020
 
 B<Improve SSH encryption> by selecting L<stronger algorithms recommended by
