@@ -382,7 +382,7 @@ if (@github_accounts) {
             (qw< chacha20-poly1305@openssh.com >)
              x!! ($SSH_VERSION >= 0x5000),
             (qw< aes256-gcm@openssh.com aes128-gcm@openssh.com >)
-             x!! ($SSH_VERSION > 0x6611),
+             x!! ($SSH_VERSION >= 0x5000 && $^O ne 'msys'),
             'aes256-ctr',
         ],
         # MACs: ssh -Q mac

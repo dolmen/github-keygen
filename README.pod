@@ -85,7 +85,7 @@ should check that someone is not altering your network link).
 =item *
 
 Use stronger encryption algorithms than your default SSH setup (following
-L<@stribika advices|https://stribika.github.io/2015/01/04/secure-secure-shell.html>);
+L<@stribika advices|https://stribika.github.io/2015/01/04/secure-secure-shell.html>; this is a "best effort" that depends on your OpenSSH being recent enough);
 
 =item *
 
@@ -258,7 +258,7 @@ passing file descriptors. So we now disable this option on this platform.
 We filter our L<lists of
 algorithms|https://stribika.github.io/2015/01/04/secure-secure-shell.html>
 against the lists reported by C<ssh -Q E<lt>cipher|mac|kexE<gt>>. This restores
-compatibility with old OpenSSH version such as 6.6.1p1 bundled with msysgit
+compatibility with OpenSSH versions such as 6.6.1p1 bundled with msysgit
 that does not support ciphers named C<aes*-gcm@openssh.com>.
 
 Various fixes/workarounds to restore full support of the old SSH (4.6p1) that
