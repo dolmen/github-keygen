@@ -371,17 +371,20 @@ if (@github_accounts) {
         ($V[0] << 12) | ($V[1] << 8) | (($V[2] || 0) << 4) | $V[3]
     };
 
+    #printf "OpenSSH %04X\n", $SSH_VERSION;
+
     # Algorithms subset recommended by Stribika
     #  See https://stribika.github.io/2015/01/04/secure-secure-shell.html
     #  Last in each list is the minimum supported by Github
     my %algorithms = (
         # Ciphers: ssh -Q cipher
-        cipher => [ qw<
-            chacha20-poly1305@openssh.com
-            aes256-gcm@openssh.com
-            aes128-gcm@openssh.com
-            aes256-ctr
-        > ],
+        cipher => [
+            (qw< chacha20-poly1305@openssh.com >)
+             x!! ($SSH_VERSION >= 0x5000),
+            (qw< aes256-gcm@openssh.com aes128-gcm@openssh.com >)
+             x!! ($SSH_VERSION > 0x6611),
+            'aes256-ctr',
+        ],
         # MACs: ssh -Q mac
         mac => [ qw<
             hmac-sha2-512-etm@openssh.com
@@ -509,11 +512,15 @@ EOF
         }
     }
 
-    # OpenSSH 6.6.1p1 from msysgit:
+    # OpenSSH 6.6.1p1 from msys:
     # msys does not support passing file descriptors and ControlMaster relies
     # on that, so we comment all Control options
     if ($^O eq 'msys') {
-        s/^Control/##Control/ for @ghkg_config_lines;
+        s/^(Control)/##$1/ for @ghkg_config_lines;
+    }
+    # OpenSSH 4.6p1 from msysgit: keep the poor algorithms list
+    if ($SSH_VERSION < 0x5000) {
+        s/^(KexAlgorithms|MACs|Control(?:Persist|Path)) /##$1 / for @ghkg_config_lines;
     }
 
     push @ssh_config_lines,
