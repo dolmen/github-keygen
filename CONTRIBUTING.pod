@@ -63,7 +63,7 @@ Redo step 2. and 4.
 
     git checkout devel
     # Bump version number
-    $EDITOR/bin/github-keygen
+    $EDITOR bin/github-keygen
     # Update changelog
     $EDITOR README.pod
     git add bin/github-keygen README.pod
