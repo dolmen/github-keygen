@@ -11,7 +11,13 @@
 requires 'Text::Diff';
 requires 'Pod::Usage';
 
-# Stuff for the maitainer to make releases (see release.pl)
+on test => sub {
+    # xt/
+    requires 'Test::More';
+    requires 'Test::Pod';
+};
+
+# Stuff for the maintainer to make releases (see release.pl)
 on develop => sub {
     requires 'App::FatPacker';
     requires 'Module::CoreList';

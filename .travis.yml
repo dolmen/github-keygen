@@ -19,6 +19,8 @@ notifications:
     email: false
 install:
     - cpanm --installdeps $(perl -e '$^V ge v5.10 && print "--with-develop"') . || { cat ~/.cpanm/build.log ; false ; }
+    - cpanm App::Prove || { cat ~/.cpanm/build.log ; false ; }
 script:
     - perl -c bin/github-keygen
+    - prove xt/
     - perl -e 'exit !($^V lt v5.10)' || perl -c release.pl
