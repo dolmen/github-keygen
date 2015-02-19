@@ -17,12 +17,12 @@ our $VERSION = '1.020';
 use constant {
     PROG => (File::Spec->splitpath($0))[2],
     CWD => Cwd::getcwd,
-    # We can't rely on File::HomeDir because we have to reproduce OpenSSH
-    # behavior, and not depend on what File::HomeDir thinks is right
-    HOME_DIR => $ENV{HOME} || ((getpwent)[7]),
     # msys is the special unix emulation of Unix on Win32: perl 5.8 from msysgit
     WIN32 => $^O eq 'MSWin32' || $^O eq 'msys',
 };
+# We can't rely on File::HomeDir because we have to reproduce OpenSSH
+# behavior, and not depend on what File::HomeDir thinks is right
+use constant HOME_DIR => $ENV{HOME} || (WIN32 ? $ENV{USERPROFILE} : (getpwent)[7]);
 use constant SSH_DIR => File::Spec->rel2abs('.ssh', HOME_DIR);
 
 # 443.github.com is a pure SSH config alias to ssh.github.com
@@ -275,7 +275,7 @@ if (@github_accounts) {
         my $pathsep = $Config::Config{path_sep};
         foreach my $p (split /\Q$pathsep\E/, $ENV{PATH}) {
             last if -e "$p\\ssh-keygen.exe";
-            if (-e "$p\\Git.cmd") {
+            if (-e "$p\\Git.cmd" || -e "$p\\Git.exe") {
                 $ENV{PATH} = "$p\\..\\bin$pathsep$ENV{PATH}";
                 last;
             }
@@ -363,17 +363,28 @@ if (@github_accounts) {
 # Create the new config block
 if (@github_accounts) {
 
+    my $SSH_V = `ssh -V 2>&1`;
+    # '6.6.1p1' => 0x6611
+    # '4.6p1'   => 0x4601
+    my $SSH_VERSION = do {
+        my @V = $SSH_V =~ /^OpenSSH_([0-9]+)\.([0-9]+)(?:\.([0-9]+))?p([0-9]+)/;
+        ($V[0] << 12) | ($V[1] << 8) | (($V[2] || 0) << 4) | $V[3]
+    };
+
+    #printf "OpenSSH %04X\n", $SSH_VERSION;
+
     # Algorithms subset recommended by Stribika
     #  See https://stribika.github.io/2015/01/04/secure-secure-shell.html
     #  Last in each list is the minimum supported by Github
     my %algorithms = (
         # Ciphers: ssh -Q cipher
-        cipher => [ qw<
-            chacha20-poly1305@openssh.com
-            aes256-gcm@openssh.com
-            aes128-gcm@openssh.com
-            aes256-ctr
-        > ],
+        cipher => [
+            (qw< chacha20-poly1305@openssh.com >)
+             x!! ($SSH_VERSION >= 0x5000),
+            (qw< aes256-gcm@openssh.com aes128-gcm@openssh.com >)
+             x!! ($SSH_VERSION >= 0x5000 && $^O ne 'msys'),
+            'aes256-ctr',
+        ],
         # MACs: ssh -Q mac
         mac => [ qw<
             hmac-sha2-512-etm@openssh.com
@@ -392,12 +403,11 @@ if (@github_accounts) {
     );
     # Filter each list against what is supported by the ssh client
     while (my ($kind, $algos) = each %algorithms) {
-        open my $ssh_Q, '-|', 'ssh', '-Q', $kind;
-        if ($ssh_Q) {
+        if ($SSH_VERSION > 0x5000 && !open my $ssh_Q, '-|', "ssh -Q $kind") {
             my %supported = map { chomp; ($_ => 1) } <$ssh_Q>;
             $algorithms{$kind} = join(',', grep { $supported{$_} } @$algos);
         } else {
-            warn "ssh -Q $kind: failure ($!)";
+            #warn "ssh -Q $kind: failure ($!)";
             $algorithms{$kind} = join(',', @$algos);
         }
     }
@@ -502,11 +512,15 @@ EOF
         }
     }
 
-    # OpenSSH 6.6.1p1 from msysgit:
+    # OpenSSH 6.6.1p1 from msys:
     # msys does not support passing file descriptors and ControlMaster relies
     # on that, so we comment all Control options
     if ($^O eq 'msys') {
-        s/^Control/##Control/ for @ghkg_config_lines;
+        s/^(Control)/##$1/ for @ghkg_config_lines;
+    }
+    # OpenSSH 4.6p1 from msysgit: keep the poor algorithms list
+    if ($SSH_VERSION < 0x5000) {
+        s/^(KexAlgorithms|MACs|Control(?:Persist|Path)) /##$1 / for @ghkg_config_lines;
     }
 
     push @ssh_config_lines,
