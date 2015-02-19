@@ -188,7 +188,8 @@ git 'ls-tree' => $release_commit, sub {
     my ($mode, $type, $object, $file) = split / |\t/;
     # Merge files updated in devel
     if (       $type eq 'blob'        # Don't touch trees
-	    && $file ne '.gitignore'  # One .gitignore for each branch
+	    # Those files stay in 'devel' branch
+	    && $file !~ /^(?:\.gitignore|cpanfile)\z/
 	    && exists $HEAD_tree{$file}
 	    && $object ne $HEAD_tree{$file}[2]) {
 	say "- $file: $object (updated)";
