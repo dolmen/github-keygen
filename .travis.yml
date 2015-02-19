@@ -1,0 +1,25 @@
+language: perl
+perl:
+    - "5.8"
+    - "5.10"
+    - "5.12"
+    - "5.14"
+    - "5.16"
+    - "5.18"
+    - "5.20"
+notifications:
+    #on_success: change
+    on_success: always
+    on_failure: always
+    irc:
+        channels:
+            - "irc.perl.org#angel-PS1"
+        template:
+            - "github-keygen/%{branch}: %{message} %{build_url}"
+    email: false
+install:
+    # TODO use the 'cpanfile'
+    - cpanm Text::Diff Pod::Usage App::FatPacker || { cat ~/.cpanm/build.log ; false ; }
+script:
+    - perl -c bin/github-keygen
+    - perl -e 'exit !($^V ge v5.10)' && perl -c release.pl
