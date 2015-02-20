@@ -7,6 +7,12 @@ use warnings;
 # Only to fail early if the tool is missing
 use App::FatPacker ();
 use Carp 'croak';
+use Getopt::Long;
+
+my $DRY_RUN;
+
+GetOptions('n|dry-run|just-print' => \$DRY_RUN)
+    or die "usage: $0 [-n]\n";
 
 
 # Pod::Usage is supposed to be in core since 5.6, but it is missing from perl
@@ -192,7 +198,7 @@ git 'ls-tree' => $release_commit, sub {
 	    && $file !~ /^(?:\.gitignore|cpanfile|\.travis\.yml)\z/
 	    && exists $HEAD_tree{$file}
 	    && $object ne $HEAD_tree{$file}[2]) {
-	say "- $file: $object (updated)";
+	say "- $file: $object (updating)";
 	$release_tree{$file} = $HEAD_tree{$file};
 	$updated_files{$file} = 1;
     } else {
@@ -206,7 +212,7 @@ foreach my $file (@new_files) {
     # TODO
     my $object = git 'hash-object' => -w => $file;
     if ($object ne $release_tree{$file}[2]) {
-	say "- $file: $object (updated)";
+	say "- $file: $object (updating)";
 	$release_tree{$file}[2] = $object;
 	$updated_files{$file} = 1;
     }
@@ -217,6 +223,11 @@ die "no updated files!\n"
 
 die "github-keygen updated but version unchanged!\n"
     if $updated_files{'github-keygen'} && ! $version;
+
+if ($DRY_RUN) {
+    say "Dry run done.";
+    exit 0
+}
 
 # Build the new tree object for release
 my $new_release_tree = git mktree => -z =>
