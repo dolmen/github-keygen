@@ -198,11 +198,11 @@ git 'ls-tree' => $release_commit, sub {
 	    && $file !~ /^(?:\.gitignore|cpanfile|\.travis\.yml)\z/
 	    && exists $HEAD_tree{$file}
 	    && $object ne $HEAD_tree{$file}[2]) {
-	say "- $file: $object (updating)";
+	printf "- %s %-20s (updating)\n", $object, $file;
 	$release_tree{$file} = $HEAD_tree{$file};
 	$updated_files{$file} = 1;
     } else {
-	say "- $file: $object";
+	say "- $object $file";
 	$release_tree{$file} = [ $mode, $type, $object ];
     }
 };
@@ -212,7 +212,7 @@ foreach my $file (@new_files) {
     # TODO
     my $object = git 'hash-object' => -w => $file;
     if ($object ne $release_tree{$file}[2]) {
-	say "- $file: $object (updating)";
+	printf "- %s %-20s (updating)\n", $object, $file;
 	$release_tree{$file}[2] = $object;
 	$updated_files{$file} = 1;
     }
@@ -225,7 +225,7 @@ die "github-keygen updated but version unchanged!\n"
     if $updated_files{'github-keygen'} && ! $version;
 
 if ($DRY_RUN) {
-    say "Dry run done.";
+    say "Stop before doing real suff.";
     exit 0
 }
 
