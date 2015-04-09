@@ -265,6 +265,10 @@ that does not support ciphers named C<aes*-gcm@openssh.com>.
 Various fixes/workarounds to restore full support of the old SSH (4.6p1) that
 is bundled with msysgit (Git on Win32).
 
+Store the C<ControlPath> in C<$XDG_RUNTIME_DIR> (see the
+L<XDG Base Directory Specification|http://standards.freedesktop.org/basedir-spec/latest/ar01s03.html>
+if available.
+
 =item v1.020
 
 B<Improve SSH encryption> by selecting L<stronger algorithms recommended by
