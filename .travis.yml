@@ -23,5 +23,5 @@ install:
     - ssh -V
 script:
     - perl -c bin/github-keygen
-    - prove xt/
+    - prove -v xt/
     - perl -e 'exit !($^V lt v5.10)' || perl -c release.pl
