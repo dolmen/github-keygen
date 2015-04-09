@@ -20,6 +20,7 @@ notifications:
 install:
     - cpanm --installdeps $(perl -e '$^V ge v5.10 && print "--with-develop"') . || { cat ~/.cpanm/build.log ; false ; }
     - cpanm App::Prove || { cat ~/.cpanm/build.log ; false ; }
+    - ssh -V
 script:
     - perl -c bin/github-keygen
     - prove xt/
