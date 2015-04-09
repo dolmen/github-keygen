@@ -15,6 +15,7 @@ on test => sub {
     # xt/
     requires 'Test::More';
     requires 'Test::Pod';
+    requires 'Test::Spelling';
 };
 
 # Stuff for the maintainer to make releases (see release.pl)
