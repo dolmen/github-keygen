@@ -73,7 +73,8 @@ Enable only the authentication method used with Github (C<publickey>)
 
 =item *
 
-Use only the private key dedicated to Github (the IdentitiesOnly of SSH config)
+Use only the private key dedicated to Github (the C<IdentitiesOnly> of SSH
+config)
 
 =item *
 
@@ -95,7 +96,7 @@ Disable bad things that could come from the Github hosts ("Trust no-one")
 
 =item *
 
-It enables SSH connection sharing (see the B<ControlMaster> option in
+It enables SSH connection sharing (see the C<ControlMaster> option in
 L<ssh_config(5)> and L<this blog post|http://interrobeng.com/2013/08/25/speed-up-git-5x-to-50x/>)
 
 =item *
@@ -138,7 +139,7 @@ F<~/.ssh/github_known_hosts>
 =head1 TRUST
 
 As with any software that deals with the security of your computer or of communications
-with other computers (operating system, antivirus, HTTPS implementation,
+with other computers (operating system, anti-virus, HTTPS implementation,
 password storage...), you have to be able to trust it. (If you haven't ever
 asked yourself that question about the software you already use, you should!)
 
