@@ -360,14 +360,6 @@ if (@github_accounts) {
     unlink KNOWN_HOSTS_FILE;
 }
 
-my $ControlPath_dir = '~/.ssh/';
-if (my $rt_dir = $ENV{XDG_RUNTIME_DIR}) {
-    use filetest 'access'; # Stricter check, but _ can't be used
-    if (-d $rt_dir && -x $rt_dir && -w $rt_dir) {
-        $ControlPath_dir = $rt_dir;
-    }
-}
-
 # Create the new config block
 if (@github_accounts) {
 
@@ -424,6 +416,15 @@ if (@github_accounts) {
     }
 
     my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
+
+    # Store ControlPath in XDG_RUNTIME_DIR
+    my $ControlPath_dir = '~/.ssh';
+    if (my $rt_dir = $ENV{XDG_RUNTIME_DIR}) {
+        use filetest 'access'; # Stricter check, but _ can't be used
+        if (-d $rt_dir && -x $rt_dir && -w $rt_dir) {
+            $ControlPath_dir = $rt_dir;
+        }
+    }
 
     my @ghkg_config_lines = map { "$_\n" } split /\n/, <<EOF;
 Host gist.github.com *.gist.github.com
