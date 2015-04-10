@@ -17,6 +17,9 @@ notifications:
         template:
             - "github-keygen/%{branch}: %{message} %{build_url}"
     email: false
+before_install:
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq aspell
 install:
     - cpanm --installdeps $(perl -e '$^V ge v5.10 && print "--with-develop"') . || { cat ~/.cpanm/build.log ; false ; }
     - cpanm App::Prove || { cat ~/.cpanm/build.log ; false ; }
