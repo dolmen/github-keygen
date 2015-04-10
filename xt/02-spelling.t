@@ -4,6 +4,8 @@ use warnings;
 use Test::More;
 use Test::Spelling;
 
+plan skip_all => 'No working spellchecker' unless has_working_spellchecker;
+
 local $TODO = 'Test::Spelling is broken (no UTF-8 support)';
 
 add_stopwords <DATA>;
