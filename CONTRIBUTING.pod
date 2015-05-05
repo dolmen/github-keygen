@@ -8,7 +8,7 @@ Patches are welcome!
 
 They must be built against the
 C<L<devel|https://github.com/dolmen/github-keygen/tree/devel>> branch, then
-submitted as pull requests at github.
+submitted as pull requests at GitHub.
 
 The documentation is written using the
 L<POD|http://perldoc.perl.org/perlpod.html> format.
