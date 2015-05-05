@@ -23,7 +23,13 @@ L<POD|http://perldoc.perl.org/perlpod.html> format.
     cd github-keygen
     git checkout devel
 
-=item 2. Make your fix/feature
+=item 2. Install build dependencies
+
+Not required for doc patches.
+
+    curl -L https://cpanmin.us | perl - --installdeps --with-develop .
+
+=item 3. Make your fix/feature
 
     git checkout -b <my-patch> devel
 
@@ -34,27 +40,27 @@ L<POD|http://perldoc.perl.org/perlpod.html> format.
 
     git commit
 
-=item 3. Setup a fork
+=item 4. Setup a fork
 
-=item 3.1. L<Fork the project on GitHub|https://github.com/dolmen/github-keygen/>
+=item 4.1. L<Fork the project on GitHub|https://github.com/dolmen/github-keygen/>
 
-=item 3.2. Link your local repo to your fork (just once)
+=item 4.2. Link your local repo to your fork (just once)
 
 (You are using C<github-keygen> isn't it?)
 
     git remote add github <github-user>.github.com:<github-user>/github-keygen.git
 
-=item 4. Submit your work
+=item 5. Submit your work
 
-=item 4.1 Push!
+=item 5.1 Push!
 
     git push github <my-patch>
 
-=item 4.2 Submit a pull request on GitHub
+=item 5.2 Submit a pull request on GitHub
 
-=item 5. Loop
+=item 6. Loop
 
-Redo step 2. and 4.
+Redo from step 3.
 
 =back
 
