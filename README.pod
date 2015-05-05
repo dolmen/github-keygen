@@ -242,7 +242,7 @@ releases. And you can also have a look to the commit log.
 
 =over 4
 
-=item v1.021
+=item v1.100
 
 Config: use the official case for the C<HostName> option (instead of
 C<Hostname>).
@@ -268,6 +268,8 @@ is bundled with msysgit (Git on Win32).
 Store the C<ControlPath> in C<$XDG_RUNTIME_DIR> (see the
 L<XDG Base Directory Specification|http://standards.freedesktop.org/basedir-spec/latest/ar01s03.html>)
 if available.
+
+Doc fixes: change "Github" to "GitHub".
 
 =item v1.020
 
