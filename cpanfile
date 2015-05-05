@@ -16,6 +16,7 @@ on test => sub {
     requires 'Test::More';
     requires 'Test::Pod';
     requires 'Test::Spelling';
+    requires 'Test::Pod::No404s';
 };
 
 # Stuff for the maintainer to make releases (see release.pl)
