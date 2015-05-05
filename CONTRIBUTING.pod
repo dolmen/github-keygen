@@ -36,7 +36,7 @@ L<POD|http://perldoc.perl.org/perlpod.html> format.
 
 =item 3. Setup a fork
 
-=item 3.1. L<Fork the project on github|https://github.com/dolmen/github-keygen/fork_select>
+=item 3.1. L<Fork the project on GitHub|https://github.com/dolmen/github-keygen/>
 
 =item 3.2. Link your local repo to your fork (just once)
 
