@@ -21,6 +21,7 @@ on test => sub {
 
 # Stuff for the maintainer to make releases (see release.pl)
 on develop => sub {
+    requires 'App::Prove';
     requires 'App::FatPacker';
     requires 'Module::CoreList';
     requires 'File::Copy';

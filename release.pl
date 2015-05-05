@@ -8,12 +8,19 @@ use warnings;
 use App::FatPacker ();
 use Carp 'croak';
 use Getopt::Long;
+use App::Prove ();
 
 my $DRY_RUN;
 
 GetOptions('n|dry-run|just-print' => \$DRY_RUN)
     or die "usage: $0 [-n]\n";
 
+
+# Run author tests
+for (App::Prove->new) {
+    $_->process_args(qw< -v xt >);
+    $_->run || exit 1
+}
 
 # Pod::Usage is supposed to be in core since 5.6, but it is missing from perl
 # bundled in msysgit
