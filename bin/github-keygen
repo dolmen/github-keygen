@@ -706,8 +706,8 @@ file already exists)
 
 =item *
 
-Install the Github SSH host authentication fingerprints in
-F<~/.ssh/github_known_hosts>
+Install the GitHub SSH host authentication fingerprints in
+F<~/.ssh/known_hosts_github>
 
 =back
 
