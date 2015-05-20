@@ -1,0 +1,30 @@
+# Note that this file is named ".appveyor.yml", not "appveyor.yml"
+# so it must be explicitely defined in AppVeyor settings
+
+version: 1.0.{build}
+
+install:
+- perl -V
+- 'echo Starting install at: & time /t'
+# Install Strawberry Perl from Chocolatey
+- cinst -y strawberryperl
+- path
+- path C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;%PATH%
+- perl -V
+- cpan App::cpanminus
+- cpanm --installdeps --with-develop
+- cpanm App::Prove
+- 'echo End intall at: & time /t'
+
+
+# Use test_script instead
+build: off
+
+test_script:
+- perl -c bin/github-keygen
+- prove -v xt/
+- perl -c release.pl
+
+verbosity: minimal
+
+
