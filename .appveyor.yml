@@ -13,7 +13,7 @@ install:
 - perl -V
 - cpan App::cpanminus
 - cpanm Win32::Symlink
-- perl -MWin32::Symlink -S cpanm --installdeps --with-develop . || type %USERPROFILE%\.cpanm\work\latest\build.log
+- perl -MWin32::Symlink -S cpanm --installdeps --with-develop . || type %USERPROFILE%\.cpanm\latest-build\build.log
 - cpanm App::Prove
 - 'echo End intall at: & time /t'
 
