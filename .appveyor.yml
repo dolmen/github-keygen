@@ -25,6 +25,3 @@ test_script:
 - prove -v xt/
 - perl -c release.pl
 
-verbosity: minimal
-
-
