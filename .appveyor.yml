@@ -12,7 +12,7 @@ install:
 - path C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;%PATH%
 - perl -V
 - cpan App::cpanminus
-- cpanm --installdeps --with-develop
+- cpanm --installdeps --with-develop .
 - cpanm App::Prove
 - 'echo End intall at: & time /t'
 
