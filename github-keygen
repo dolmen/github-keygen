@@ -7290,7 +7290,7 @@ $fatpacked{"Pod/Usage.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_U
   use strict;
   
   use vars qw($VERSION @ISA @EXPORT);
-  $VERSION = '1.64';  ## Current version of this package
+  $VERSION = '1.67';  ## Current version of this package
   require  5.006;    ## requires this Perl version or later
   
   #use diagnostics;
@@ -7407,7 +7407,8 @@ $fatpacked{"Pod/Usage.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_U
       }
   
       ## Check for perldoc
-      my $progpath = File::Spec->catfile($Config{scriptdirexp} 
+      my $progpath = $opts{perldoc} ? $opts{perldoc} :
+          File::Spec->catfile($Config{scriptdirexp} 
   	|| $Config{scriptdir}, 'perldoc');
   
       my $version = sprintf("%vd",$^V);
@@ -7427,7 +7428,9 @@ $fatpacked{"Pod/Usage.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_U
          if(defined $opts{-input} && $opts{-input} =~ /^\s*(\S.*?)\s*$/) {
            # the perldocs back to 5.005 should all have -F
   	 # without -F there are warnings in -T scripts
-           system($progpath, '-F', $1);
+           my @perldoc_cmd = ( $progpath, '-F', $1 );
+           unshift @perldoc_cmd, $opts{'-perlcmd'} if $opts{'-perlcmd'};
+           system(@perldoc_cmd);
            if($?) {
              # RT16091: fall back to more if perldoc failed
              system(($Config{pager} || $ENV{PAGER} || '/bin/more'), $1);
@@ -7542,10 +7545,13 @@ $fatpacked{"Pod/Usage.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_U
   
   # Override Pod::Text->seq_i to return just "arg", not "*arg*".
   sub seq_i { return $_[1] }
+  # Override Pod::Text->cmd_i to return just "arg", not "*arg*".
+  # newer version based on Pod::Simple
+  sub cmd_i { return $_[2] }
   
   # This overrides the Pod::Text method to do something very akin to what
   # Pod::Select did as well as the work done below by preprocess_paragraph.
-  # Note that the below is very, very specific to Pod::Text.
+  # Note that the below is very, very specific to Pod::Text and Pod::Simple.
   sub _handle_element_end {
       my ($self, $element) = @_;
       if ($element eq 'head1') {
@@ -7557,6 +7563,8 @@ $fatpacked{"Pod/Usage.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_U
           my $idx = $1 - 1;
           $self->{USAGE_HEADINGS} = [] unless($self->{USAGE_HEADINGS});
           $self->{USAGE_HEADINGS}->[$idx] = $$self{PENDING}[-1][1];
+          # we have to get rid of the lower headings
+          splice(@{$self->{USAGE_HEADINGS}},$idx+1);
       }
       if ($element =~ /^head\d+$/) {
           $$self{USAGE_SKIPPING} = 1;
@@ -7591,7 +7599,7 @@ $fatpacked{"Pod/Usage.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_U
               $$self{PENDING}[-1][1] = $_;
           }
       }
-      if ($$self{USAGE_SKIPPING} && $element !~ m/^over-/) {
+      if ($$self{USAGE_SKIPPING} && $element !~ m/^over-|^[BCFILSZ]$/) {
           pop @{ $$self{PENDING} };
       } else {
           $self->SUPER::_handle_element_end($element);
@@ -7662,10 +7670,14 @@ $fatpacked{"Pod/Usage.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_U
     pod2usage(   -msg     => $message_text ,
                  -exitval => $exit_status  ,  
                  -verbose => $verbose_level,  
-                 -output  => $filehandle   );
+                 -output  => $filehandle );
   
     pod2usage(   -verbose => 2,
-                 -noperldoc => 1  )
+                 -noperldoc => 1  );
+  
+    pod2usage(   -verbose => 2,
+                 -perlcmd => $path_to_perl,
+                 -perldoc => $path_to_perldoc );
   
   =head1 ARGUMENTS
   
@@ -7697,49 +7709,73 @@ $fatpacked{"Pod/Usage.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_U
   
   =over 4
   
-  =item C<-message>
+  =item C<-message> I<string>
   
-  =item C<-msg>
+  =item C<-msg> I<string>
   
   The text of a message to print immediately prior to printing the
   program's usage message. 
   
-  =item C<-exitval>
+  =item C<-exitval> I<value>
   
   The desired exit status to pass to the B<exit()> function.
   This should be an integer, or else the string "NOEXIT" to
   indicate that control should simply be returned without
   terminating the invoking process.
   
-  =item C<-verbose>
+  =item C<-verbose> I<value>
   
-  The desired level of "verboseness" to use when printing the usage
-  message. If the corresponding value is 0, then only the "SYNOPSIS"
-  section of the pod documentation is printed. If the corresponding value
-  is 1, then the "SYNOPSIS" section, along with any section entitled
-  "OPTIONS", "ARGUMENTS", or "OPTIONS AND ARGUMENTS" is printed.  If the
-  corresponding value is 2 or more then the entire manpage is printed.
+  The desired level of "verboseness" to use when printing the usage message.
+  If the value is 0, then only the "SYNOPSIS" section of the pod documentation
+  is printed. If the value is 1, then the "SYNOPSIS" section, along with any
+  section entitled "OPTIONS", "ARGUMENTS", or "OPTIONS AND ARGUMENTS" is
+  printed. If the corresponding value is 2 or more then the entire manpage is
+  printed, using L<perldoc> if available; otherwise L<Pod::Text> is used for
+  the formatting. For better readability, the all-capital headings are
+  downcased, e.g. C<SYNOPSIS> =E<gt> C<Synopsis>.
   
   The special verbosity level 99 requires to also specify the -sections
   parameter; then these sections are extracted and printed.
   
-  =item C<-sections>
+  =item C<-sections> I<spec>
   
-  A string representing a selection list for sections to be printed
-  when -verbose is set to 99, e.g. C<"NAME|SYNOPSIS|DESCRIPTION|VERSION">.
+  There are two ways to specify the selection. Either a string (scalar) 
+  representing a selection regexp for sections to be printed when -verbose
+  is set to 99, e.g.
+  
+    "NAME|SYNOPSIS|DESCRIPTION|VERSION"
+  
+  With the above regexp all content following (and including) any of the
+  given C<=head1> headings will be shown. It is possible to restrict the 
+  output to particular subsections only, e.g.:
+  
+    "DESCRIPTION/Algorithm"
+  
+  This will output only the C<=head2 Algorithm> heading and content within
+  the C<=head1 DESCRIPTION> section. The regexp binding is stronger than the
+  section separator, such that e.g.:
+  
+    "DESCRIPTION|OPTIONS|ENVIORNMENT/Caveats"
+  
+  will print any C<=head2 Caveats> section (only) within any of the three
+  C<=head1> sections.
   
   Alternatively, an array reference of section specifications can be used:
   
-    pod2usage(-verbose => 99, 
-              -sections => [ qw(fred fred/subsection) ] );
+    pod2usage(-verbose => 99, -sections => [
+      qw(DESCRIPTION DESCRIPTION/Introduction) ] );
   
-  =item C<-output>
+  This will print only the content of C<=head1 DESCRIPTION> and the 
+  C<=head2 Introduction> sections, but no other C<=head2>, and no other
+  C<=head1> either.
+  
+  =item C<-output> I<handle>
   
   A reference to a filehandle, or the pathname of a file to which the
   usage message should be written. The default is C<\*STDERR> unless the
   exit value is less than 2 (in which case the default is C<\*STDOUT>).
   
-  =item C<-input>
+  =item C<-input> I<handle>
   
   A reference to a filehandle, or the pathname of a file from which the
   invoking script's pod documentation should be read.  It defaults to the
@@ -7751,7 +7787,7 @@ $fatpacked{"Pod/Usage.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_U
     use Pod::Find qw(pod_where);
     pod2usage( -input => pod_where({-inc => 1}, __PACKAGE__) );
   
-  =item C<-pathlist>
+  =item C<-pathlist> I<string>
   
   A list of directory paths. If the input file does not exist, then it
   will be searched for in the given directory list (in the order the
@@ -7769,16 +7805,36 @@ $fatpacked{"Pod/Usage.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_U
   L<perldoc> and uses the simple text formatter (L<Pod::Text>) to 
   output the POD.
   
+  =item C<-perlcmd>
+  
+  By default, Pod::Usage will call L<perldoc> when -verbose >= 2 is
+  specified. In case of special or unusual Perl installations,
+  the -perlcmd option may be used to supply the path to a L<perl> executable
+  which should run L<perldoc>.
+  
+  =item C<-perldoc>
+  
+  By default, Pod::Usage will call L<perldoc> when -verbose >= 2 is
+  specified. In case L<perldoc> is not installed where the L<perl> interpreter
+  thinks it is (see L<Config>), the -perldoc option may be used to supply
+  the correct path to L<perldoc>.
+  
   =back
   
   =head2 Formatting base class
   
-  The default text formatter is L<Pod::Text>.  The base class for Pod::Usage can
+  The default text formatter is L<Pod::Text>. The base class for Pod::Usage can
   be defined by pre-setting C<$Pod::Usage::Formatter> I<before>
   loading Pod::Usage, e.g.:
   
       BEGIN { $Pod::Usage::Formatter = 'Pod::Text::Termcap'; }
       use Pod::Usage qw(pod2usage);
+  
+  Pod::Usage uses L<Pod::Simple>'s _handle_element_end() method to implement
+  the section selection, and in case of verbosity < 2 it down-cases the
+  all-caps headings to first capital letter and rest lowercase, and adds
+  a colon/newline at the end of the headings, for better readability. Same for
+  verbosity = 99.
   
   =head2 Pass-through options
   
@@ -8868,17 +8924,17 @@ use Sys::Hostname;
 
 use constant HAS_TEXT_DIFF => eval { require Text::Diff; 1 };
 
-our $VERSION = '1.020';
+our $VERSION = '1.100';
 
 use constant {
     PROG => (File::Spec->splitpath($0))[2],
     CWD => Cwd::getcwd,
-    # We can't rely on File::HomeDir because we have to reproduce OpenSSH
-    # behavior, and not depend on what File::HomeDir thinks is right
-    HOME_DIR => $ENV{HOME} || ((getpwent)[7]),
     # msys is the special unix emulation of Unix on Win32: perl 5.8 from msysgit
     WIN32 => $^O eq 'MSWin32' || $^O eq 'msys',
 };
+# We can't rely on File::HomeDir because we have to reproduce OpenSSH
+# behavior, and not depend on what File::HomeDir thinks is right
+use constant HOME_DIR => $ENV{HOME} || (WIN32 ? $ENV{USERPROFILE} : (getpwent)[7]);
 use constant SSH_DIR => File::Spec->rel2abs('.ssh', HOME_DIR);
 
 # 443.github.com is a pure SSH config alias to ssh.github.com
@@ -9052,7 +9108,7 @@ foreach my $l (@ssh_config_lines) {
         my @github_hosts_pat = grep { /\bgithub\.com$/ } @hosts_patterns;
         if (@github_hosts_pat) {
             unless ($in_ghkg) {
-                warn sprintf "Github block outside github-keygen block in %s line %u\n",
+                warn sprintf "GitHub block outside github-keygen block in %s line %u\n",
                              compress_path(SSH_CONFIG_FILE), $block;
                 $clean = '';
             }
@@ -9083,7 +9139,7 @@ foreach my $l (@ssh_config_lines) {
                 push @github_accounts_from_config, $user;
             } elsif (! exists $github_remove{$user}) {
                 my $key_file = resolve_path($1);
-                warn sprintf "identity file %s for Github user %s doesn't exist\n",
+                warn sprintf "identity file %s for GitHub user %s doesn't exist\n",
                              compress_path($key_file), $user
                     unless -e $key_file;
                 $github_accounts{$user} = {
@@ -9131,7 +9187,7 @@ if (@github_accounts) {
         my $pathsep = $Config::Config{path_sep};
         foreach my $p (split /\Q$pathsep\E/, $ENV{PATH}) {
             last if -e "$p\\ssh-keygen.exe";
-            if (-e "$p\\Git.cmd") {
+            if (-e "$p\\Git.cmd" || -e "$p\\Git.exe") {
                 $ENV{PATH} = "$p\\..\\bin$pathsep$ENV{PATH}";
                 last;
             }
@@ -9181,7 +9237,7 @@ $errors = 0;
 
 
 if (@github_accounts) {
-    # To rebuild __DATA__ (if Github ever revokes its host keys):
+    # To rebuild __DATA__ (if GitHub ever revokes its host keys):
     #   ssh-keyscan -t dsa,rsa github.com gist.github.com ssh.github.com
 
     my $size = -e KNOWN_HOSTS_FILE
@@ -9192,7 +9248,7 @@ if (@github_accounts) {
         printf "No changes in %s.\n",
                compress_path(KNOWN_HOSTS_FILE);
     } else {
-        printf "Saving Github hosts authentication keys in %s...\n",
+        printf "Saving GitHub hosts authentication keys in %s...\n",
                compress_path(KNOWN_HOSTS_FILE);
 
         chmod 0600, KNOWN_HOSTS_FILE if $size;
@@ -9211,7 +9267,7 @@ if (@github_accounts) {
         }
     }
 } elsif (-e KNOWN_HOSTS_FILE) {
-    # No more Github account, so remove the hosts file
+    # No more GitHub account, so remove the hosts file
     printf "Removing %s...\n", compress_path(KNOWN_HOSTS_FILE);
     unlink KNOWN_HOSTS_FILE;
 }
@@ -9219,26 +9275,82 @@ if (@github_accounts) {
 # Create the new config block
 if (@github_accounts) {
 
-my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
+    my $SSH_V = `ssh -V 2>&1`;
+    # '6.6.1p1' => 0x6611
+    # '4.6p1'   => 0x4601
+    my $SSH_VERSION = do {
+        my @V = $SSH_V =~ /^OpenSSH_([0-9]+)\.([0-9]+)(?:\.([0-9]+))?p([0-9]+)/;
+        ($V[0] << 12) | ($V[1] << 8) | (($V[2] || 0) << 4) | $V[3]
+    };
 
-push @ssh_config_lines,
-     ( @ssh_config_lines ? ("\n") : ()),
-     #split(/\n\K/, <<EOF);                       # perl 5.10
-     (map { "$_\n" } split(/\n/, <<EOF)), "\n";   # perl 5.8
-# -- github-keygen - begin --
+    #printf "OpenSSH %04X\n", $SSH_VERSION;
 
+    # Algorithms subset recommended by Stribika
+    #  See https://stribika.github.io/2015/01/04/secure-secure-shell.html
+    #  Last in each list is the minimum supported by GitHub
+    # TODO: some algorithms are imported by OpenSSH from OpenSSL at runtime
+    #       so we could check the output of `openssl list-cipher-algorithms`
+    #       in the case `ssh -Q cipher` is not implemented (old OpenSSH).
+    my %algorithms = (
+        # Ciphers: ssh -Q cipher
+        cipher => [
+            (qw< chacha20-poly1305@openssh.com >)
+             x!! ($SSH_VERSION >= 0x5000),
+            (qw< aes256-gcm@openssh.com aes128-gcm@openssh.com >)
+             x!! ($SSH_VERSION >= 0x5000 && $^O ne 'msys'),
+            'aes256-ctr',
+        ],
+        # MACs: ssh -Q mac
+        mac => [ qw<
+            hmac-sha2-512-etm@openssh.com
+            hmac-sha2-256-etm@openssh.com
+            hmac-ripemd160-etm@openssh.com
+            umac-128-etm@openssh.com
+            hmac-sha2-512
+        > ],
+        # KexAlgorithms: ssh -Q kex
+        kex => [ qw<
+            curve25519-sha256@libssh.org
+            diffie-hellman-group-exchange-sha256
+            diffie-hellman-group-exchange-sha1
+            diffie-hellman-group14-sha1
+        > ],
+    );
+    # Filter each list against what is supported by the ssh client
+    while (my ($kind, $algos) = each %algorithms) {
+        if ($SSH_VERSION > 0x5000 && !open my $ssh_Q, '-|', "ssh -Q $kind") {
+            my %supported = map { chomp; ($_ => 1) } <$ssh_Q>;
+            $algorithms{$kind} = join(',', grep { $supported{$_} } @$algos);
+        } else {
+            #warn "ssh -Q $kind: failure ($!)";
+            $algorithms{$kind} = join(',', @$algos);
+        }
+    }
+
+    my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
+
+    # Store ControlPath in XDG_RUNTIME_DIR
+    my $ControlPath_dir = '~/.ssh';
+    if (my $rt_dir = $ENV{XDG_RUNTIME_DIR}) {
+        use filetest 'access'; # Stricter check, but _ can't be used
+        if (-d $rt_dir && -x $rt_dir && -w $rt_dir) {
+            $ControlPath_dir = $rt_dir;
+        }
+    }
+
+    my @ghkg_config_lines = map { "$_\n" } split /\n/, <<EOF;
 Host gist.github.com *.gist.github.com
-Hostname gist.github.com
+HostName gist.github.com
 
 # See https://help.github.com/articles/using-ssh-over-the-https-port
 Host ssh.github.com *.ssh.github.com 443.github.com *.443.github.com
-Hostname ssh.github.com
+HostName ssh.github.com
 Port 443
 
 # This rule must stay below more specific host rules to avoid
-# "Hostname" to be set to github.com
+# "HostName" to be set to github.com
 Host *.github.com
-Hostname github.com
+HostName github.com
 
 Host github.com gist.github.com ssh.github.com 443.github.com *.github.com *.gist.github.com *.ssh.github.com *.443.github.com
 User git
@@ -9256,40 +9368,92 @@ PubkeyAuthentication yes
 PreferredAuthentications publickey
 # Select algorithms recommended by Stribika
 #  See https://stribika.github.io/2015/01/04/secure-secure-shell.html
-#  Last in each list is the minimum supported by Github
-KexAlgorithms curve25519-sha256\@libssh.org,diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1
-Ciphers chacha20-poly1305\@openssh.com,aes256-gcm\@openssh.com,aes128-gcm\@openssh.com,aes256-ctr
-MACs hmac-sha2-512-etm\@openssh.com,hmac-sha2-256-etm\@openssh.com,hmac-ripemd160-etm\@openssh.com,umac-128-etm\@openssh.com,hmac-sha2-512
+#  Last in each list is the minimum supported by GitHub
+KexAlgorithms $algorithms{kex}
+Ciphers $algorithms{cipher}
+MACs $algorithms{mac}
 # Trust no one, especially the remote
 ForwardAgent no
 ForwardX11 no
 PermitLocalCommand no
 # Connexion sharing for 60 seconds, for speedup
 ControlMaster auto
-ControlPath ~/.ssh/conn-%n
+ControlPath ${ControlPath_dir}/conn-%n
 ControlPersist 60s
-
 EOF
 
-sub add_identity
-{
-    my ($gh_account, @hosts) = @_;
+    foreach my $u (@github_accounts) {
+        push @ghkg_config_lines,
+            "\n",
+            join(' ',
+                'Host',
+                (map { "$u.$_" } GITHUB_HOSTS),
+                ($u eq $github_default ? (GITHUB_HOSTS) : ()),
+            ) . "\n",
+            "IdentitiesOnly yes\n",
+            'IdentityFile '. compress_path($github_accounts{$u}->{key_file}) . "\n";
+    }
+
+
+    # Check against the man page that all the options we plan to use are supported
+    # on this machine
+    my $manfile;
+    if (-x '/usr/bin/man' && ($manfile = qx{man -w ssh_config 2>/dev/null})) {
+        chomp $manfile;
+    } else {
+        # On msysgit the man page is installed despites /usr/bin/man isn't
+        foreach ('', '.gz') {
+            my $f = "/usr/share/man/man5/ssh_config.5$_";
+            if (-f $f) {
+                $manfile = $f;
+                last;
+            }
+        }
+    }
+    if ($manfile) {
+        #print "ssh_config.5: $manfile\n";
+        my $fh;
+        if ($manfile =~ /\.gz$/) {
+            open $fh, '-|', "zgrep '\\.It Cm' '$manfile'";
+        } else {
+            open $fh, '<', $manfile;
+        }
+        if ($fh) {
+            my %supported_options;
+            while (<$fh>) {
+                $supported_options{lc $1}++ if /^\.It Cm ([A-Z]\S+)/
+            }
+            close $fh;
+            if (scalar(keys %supported_options) > 1) {
+                foreach (@ghkg_config_lines) {
+                    next unless /^([A-Z]\S+)/;
+                    unless (exists $supported_options{lc $1}) {
+                        warn "ssh option '$1' is not available";
+                        s/^/##/;
+                    }
+                }
+            }
+        }
+    }
+
+    # OpenSSH 6.6.1p1 from msys:
+    # msys does not support passing file descriptors and ControlMaster relies
+    # on that, so we comment all Control options
+    if ($^O eq 'msys') {
+        s/^(Control)/##$1/ for @ghkg_config_lines;
+    }
+    # OpenSSH 4.6p1 from msysgit: keep the poor algorithms list
+    if ($SSH_VERSION < 0x5000) {
+        s/^(KexAlgorithms|MACs|Control(?:Persist|Path)) /##$1 / for @ghkg_config_lines;
+    }
+
     push @ssh_config_lines,
-      join(' ', 'Host', @hosts) . "\n",
-      "IdentitiesOnly yes\n",
-      'IdentityFile '. compress_path($github_accounts{$gh_account}->{key_file}) . "\n",
-      "\n";
-}
-
-foreach my $u (@github_accounts) {
-    add_identity($u,
-             (map { "$u.$_" } GITHUB_HOSTS),
-             ($u eq $github_default ? (GITHUB_HOSTS) : ()),
-    );
-}
-
-push @ssh_config_lines, "# -- github-keygen - end --\n";
-
+        ( @ssh_config_lines ? ("\n") : ()),
+        "# -- github-keygen - begin --\n",
+        "\n",
+        @ghkg_config_lines,
+        "\n",
+        "# -- github-keygen - end --\n";
 }
 
 # Workaround for perl 5.8
@@ -9379,7 +9543,7 @@ gist.github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQ
 
 =head1 NAME
 
-github-keygen - Github SSH setup tool
+github-keygen - GitHub SSH setup tool
 
 =head1 SYNOPSIS
 
@@ -9396,7 +9560,7 @@ github-keygen - Github SSH setup tool
 
 =head1 DESCRIPTION
 
-This script ease initial environment setup for secure Github exchanges, but it
+This script ease initial environment setup for secure GitHub exchanges, but it
 does much more than that:
 
 =over 4
@@ -9407,18 +9571,18 @@ Create a new SSH private key
 
 =item *
 
-Setup a very secure SSH configuration for Github, independent of your other SSH
+Setup a very secure SSH configuration for GitHub, independent of your other SSH
 settings:
 
 =over 4
 
 =item -
 
-Enable only the authentication method used with Github (publickey)
+Enable only the authentication method used with GitHub (publickey)
 
 =item -
 
-Disable bad things that could come from the Github hosts ("Trust no-one")
+Disable bad things that could come from the GitHub hosts ("Trust no-one")
 
 =back
 
@@ -9426,7 +9590,7 @@ Disable bad things that could come from the Github hosts ("Trust no-one")
 
 Create unique host aliases for github.com/gist.github.com that you'll be able
 to use in Git URLs to connect to a particular account. This gives uses the
-flexibility to use multiple Github accounts.
+flexibility to use multiple GitHub accounts.
 
     <account>.github.com:<repo-owner>/<repo>.git
     github.com:<repo-owner>/<repo>.git
@@ -9443,19 +9607,19 @@ This script will:
 
 =item *
 
-Create a new SSH key dedicated only to your Github connections in
+Create a new SSH key dedicated only to your GitHub connections in
 F<~/.ssh/id_I<E<lt>github-accountE<gt>>@github>
 
 =item *
 
-Create the SSH configuration optimized for Github and dedicated to Github
+Create the SSH configuration optimized for GitHub and dedicated to GitHub
 (do not impact your other SSH configurations) in F<~/.ssh/config> (unless the
 file already exists)
 
 =item *
 
-Install the Github SSH host authentication fingerprints in
-F<~/.ssh/github_known_hosts>
+Install the GitHub SSH host authentication fingerprints in
+F<~/.ssh/known_hosts_github>
 
 =back
 

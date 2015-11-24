@@ -1,6 +1,6 @@
 =head1 NAME
 
-github-keygen - bootstrap your Github SSH configuration
+github-keygen - bootstrap your GitHub SSH configuration
 
 =head1 SYNOPSIS
 
@@ -22,8 +22,8 @@ Windows (with msysgit or Cygwin):
 
 =head1 DESCRIPTION
 
-This script makes it easy to create an initial environment setup for secure Github exchanges. More
-secure that what the Github help pages recommends.
+This script makes it easy to create an initial environment setup for secure
+GitHub exchanges. More secure that what the GitHub help pages recommends.
 
 But it does much more than that:
 
@@ -36,48 +36,49 @@ a high level of security.
 
 =item *
 
-It creates a new SSH B<private key dedicated> to Github exchanges. This is much
+It creates a new SSH B<private key dedicated> to GitHub exchanges. This is much
 better than using the same SSH key to connect to multiple hosts.
 (If you loose that key, just revoke it in
-L<your Github account SSH settings|https://github.com/settings/ssh>, remove the
+L<your GitHub account SSH settings|https://github.com/settings/ssh>, remove the
 key file, and re run C<github-keygen>).
 
 =item *
 
-As the process of creating an different SSH key for Github now becomes easy, it
-is now much easier to use a different SSH key for Github on each computer
-you use to publish on Github. This will help you to use the best practices in
+As the process of creating an different SSH key for GitHub now becomes easy, it
+is now much easier to use a different SSH key for GitHub on each computer
+you use to publish on GitHub. This will help you to use the best practices in
 SSH security.
 (If you lose that computer or if it is compromised, just revoke the key in
-L<your Github account SSH settings|https://github.com/settings/ssh>:
+L<your GitHub account SSH settings|https://github.com/settings/ssh>:
 you don't have to recreate a new key on all your other computers).
 
 =item *
 
 The
-L<Github manual|https://help.github.com/articles/generating-ssh-keys> tells to
+L<GitHub manual|https://help.github.com/articles/generating-ssh-keys> tells to
 I<remove> your existing SSH keys. But this may not be what you want. This tool
 avoids that: keep your keys and your existing SSH config; they will not be used
-for Github.
+for GitHub.
 
 =item *
 
-It setups a B<very secure SSH configuration for Github>, independent of your
+It setups a B<very secure SSH configuration for GitHub>, independent of your
 other SSH settings:
 
 =over 4
 
 =item *
 
-Enable only the authentication method used with Github (publickey)
+Enable only the authentication method used with GitHub (C<publickey>)
 
 =item *
 
-Use only the private key dedicated to Github (the IdentitiesOnly of SSH config)
+Use only the private key dedicated to GitHub (the C<IdentitiesOnly> of SSH
+config)
 
 =item *
 
-Setup a dedicated F<known_hosts> file with the Github SSH hosts and enable
+Setup a dedicated F<known_hosts> file with the GitHub SSH hosts and enable
 strict host checking (this means that if you get SSH alerts about host key
 problem when connecting to GitHub, this is really a serious error and you
 should check that someone is not altering your network link).
@@ -85,24 +86,24 @@ should check that someone is not altering your network link).
 =item *
 
 Use stronger encryption algorithms than your default SSH setup (following
-L<@stribika advices|https://stribika.github.io/2015/01/04/secure-secure-shell.html>);
+L<@stribika advices|https://stribika.github.io/2015/01/04/secure-secure-shell.html>; this is a "best effort" that depends on your OpenSSH being recent enough);
 
 =item *
 
-Disable bad things that could come from the Github hosts ("Trust no-one")
+Disable bad things that could come from the GitHub hosts ("Trust no-one")
 
 =back
 
 =item *
 
-It enables SSH connection sharing (see the B<ControlMaster> option in
+It enables SSH connection sharing (see the C<ControlMaster> option in
 L<ssh_config(5)> and L<this blog post|http://interrobeng.com/2013/08/25/speed-up-git-5x-to-50x/>)
 
 =item *
 
 It creates unique host aliases for github.com/gist.github.com that you'll be
 able to use in Git URLs (C<git remote>) to connect to a particular account.
-This gives the flexibility to use B<multiple Github accounts> (and therefore a
+This gives the flexibility to use B<multiple GitHub accounts> (and therefore a
 different SSH key for each).
 
     <account>.github.com:<repo-owner>/<repo>.git  (for each account)
@@ -120,25 +121,25 @@ This script will:
 
 =item *
 
-Create a new SSH key dedicated only to your Github connections in
+Create a new SSH key dedicated only to your GitHub connections in
 F<~/.ssh/id_I<E<lt>github-accountE<gt>>@github>
 
 =item *
 
-Create the SSH configuration optimized for Github and dedicated to Github
+Create the SSH configuration optimized for GitHub and dedicated to GitHub
 (does not impact your other SSH configurations) in F<~/.ssh/config>.
 
 =item *
 
-Install the Github SSH host authentication fingerprints in
-F<~/.ssh/github_known_hosts>
+Install the GitHub SSH host authentication fingerprints in
+F<~/.ssh/known_hosts_github>
 
 =back
 
 =head1 TRUST
 
 As with any software that deals with the security of your computer or of communications
-with other computers (operating system, antivirus, HTTPS implementation,
+with other computers (operating system, anti-virus, HTTPS implementation,
 password storage...), you have to be able to trust it. (If you haven't ever
 asked yourself that question about the software you already use, you should!)
 
@@ -155,7 +156,7 @@ trust to do it for you) to trust it.
 =item *
 
 When running, C<github-keygen> only generates files locally on your system. It
-will not connect to your Github account (or other hosts).
+will not connect to your GitHub account (or other hosts).
 
 =item *
 
@@ -199,7 +200,7 @@ issues, and thought to design the software to have trust in it at least as much
 
 
 I'm using the SSH configuration generated by this tool every day on multiple
-computers, so you can trust that any change on Github side that may affect that
+computers, so you can trust that any change on GitHub side that may affect that
 config will be immediately detected by the author and upgrades will be
 made available quickly.
 
@@ -235,11 +236,40 @@ changed:
 
 =head1 HISTORY
 
-I<Note:> As C<github-keygen> is released with Git on Github, you can simply use
-the diff feature of Git/Github to view exactly what happened between two
+I<Note:> As C<github-keygen> is released with Git on GitHub, you can simply use
+the diff feature of Git/GitHub to view exactly what happened between two
 releases. And you can also have a look to the commit log.
 
 =over 4
+
+=item v1.100
+
+Config: use the official case for the C<HostName> option (instead of
+C<Hostname>).
+
+For the best compatibility of the SSH configuration with old SSH versions, we
+now look in the L<ssh_config(5)> man page for the list of supported options
+and unavailable options are then commented with '##'. If the man page is not
+found, we still use all options.
+
+On msys platform (bash in L<msysgit|https://msysgit.github.io/>), the
+C<ControlMaster> option of OpenSSH doesn't work because msys lacks support for
+passing file descriptors. So we now disable this option on this platform.
+
+We filter our L<lists of
+algorithms|https://stribika.github.io/2015/01/04/secure-secure-shell.html>
+against the lists reported by C<ssh -Q E<lt>cipher|mac|kexE<gt>>. This restores
+compatibility with OpenSSH versions such as 6.6.1p1 bundled with msysgit
+that does not support ciphers named C<aes*-gcm@openssh.com>.
+
+Various fixes/workarounds to restore full support of the old SSH (4.6p1) that
+is bundled with msysgit (Git on Win32).
+
+Store the C<ControlPath> in C<$XDG_RUNTIME_DIR> (see the
+L<XDG Base Directory Specification|http://standards.freedesktop.org/basedir-spec/latest/ar01s03.html>)
+if available.
+
+Doc fixes: change "Github" to "GitHub".
 
 =item v1.020
 
@@ -247,21 +277,23 @@ B<Improve SSH encryption> by selecting L<stronger algorithms recommended by
 @stribika|https://stribika.github.io/2015/01/04/secure-secure-shell.html>:
 C<aes256-ctr> instead of C<aes128-ctr>, and C<hmac-sha2-512> instead of C<hmac-sha1>.
 
-Open the ~/.ssh/known_hosts_github with mode 0600 before initializing/updating it.
+Open the F<~/.ssh/known_hosts_github> with mode 0600 before
+initializing/updating it.
 
 =item v1.011
 
-Create ~/.ssh with rights 0700 if it doesn't exists because L<ssh-keygen(1)> will
-fail if it is missing.
+Create F<~/.ssh> with rights 0700 if it doesn't exists because L<ssh-keygen(1)>
+will fail if it is missing.
 
 Add support for host C<ssh.github.com> for
 L<SSH over https port|https://help.github.com/articles/using-ssh-over-the-https-port>.
 Add C<*.ssh.github.com> host aliases for Git.
-Users should run again 'github-keygen' (without argument) to enable those new features.
+Users should run again C<github-keygen> (without argument) to enable those new
+features.
 
-Fixed [issue #13](https://github.com/dolmen/github-keygen/issues/13): default Github
-account set with `--default` option was lost when running again github-keygen without
-repeating the setting. The issue existed since v1.004.
+Fixed L<issue #13|https://github.com/dolmen/github-keygen/issues/13>: default
+GitHub account set with `--default` option was lost when running again
+C<github-keygen> without repeating the setting. The issue existed since v1.004.
 
 =item v1.010
 
@@ -270,13 +302,13 @@ Pit for testing!
 
 =item v1.009
 
-Added support for dashes in Github usernames. Thanks Pedro Figueiredo!
+Added support for dashes in GitHub usernames. Thanks Pedro Figueiredo!
 
 =item v1.008
 
-Added connection sharing: connection to Github is kept alive for 60
+Added connection sharing: connection to GitHub is kept alive for 60
 seconds. This speeds-up any script that do multiple sequential Git interactions
-with Github.
+with GitHub.
 
 =item v1.007
 
@@ -305,8 +337,9 @@ StrawberryPerl just for C<github-keygen>!
 
 =item v1.003
 
-No changes in the github-keygen code, but the fatpacked build has been tweaked
-to use a better list of packed modules. This should improve compatibility.
+No changes in the C<github-keygen> code, but the fatpacked build has been
+tweaked to use a better list of packed modules. This should improve
+compatibility.
 
 Documentation fixes.
 
@@ -354,7 +387,7 @@ Known issues:
 
 =item *
 
-on Win32, ~/.ssh/config is always written in CRLF end-of-line style. This is
+on Win32, F<~/.ssh/config> is always written in CRLF end-of-line style. This is
 not a bug, it's a feature.
 
 =back
@@ -364,7 +397,7 @@ not a bug, it's a feature.
 
 IRC: ask C<dolmen> on C<irc.perl.org>.
 
-Or fill an issue at Github: L<https://github.com/dolmen/github-keygen/issues>
+Or fill an issue at GitHub: L<https://github.com/dolmen/github-keygen/issues>
 
 =head1 AUTHOR
 
@@ -377,7 +410,7 @@ L<Eric Lefevre|https://github.com/elefevre>: documentation patch.
 L<Eu Beng Hee|https://github.com/ahbeng>: L<blog post about SSH connection sharing|http://interrobeng.com/2013/08/25/speed-up-git-5x-to-50x/> that inspired
 changes in 1.008.
 
-L<Pedro Figueiredo|https://github.com/pfig>: support for Github account with
+L<Pedro Figueiredo|https://github.com/pfig>: support for GitHub account with
 dashes (v1.009).
 
 If you want to contribute, have a look to L<CONTRIBUTING.pod>.
