@@ -464,6 +464,7 @@ MACs $algorithms{mac}
 ForwardAgent no
 ForwardX11 no
 PermitLocalCommand no
+UseRoaming no
 # Connexion sharing for 60 seconds, for speedup
 ControlMaster auto
 ControlPath ${ControlPath_dir}/conn-%n
@@ -508,6 +509,10 @@ EOF
         }
         if ($fh) {
             my %supported_options;
+            # UseRoaming was an undocumented option that is a security issue
+            # if enabled when connecting to a malicious server.
+            # http://www.openssh.com/txt/release-7.1p2
+            $supported_options{useroaming}++ if $SSH_VERSION > 0x5400;
             while (<$fh>) {
                 $supported_options{lc $1}++ if /^\.It Cm ([A-Z]\S+)/
             }

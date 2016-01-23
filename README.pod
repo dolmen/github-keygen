@@ -92,6 +92,12 @@ L<@stribika advices|https://stribika.github.io/2015/01/04/secure-secure-shell.ht
 
 Disable bad things that could come from the GitHub hosts ("Trust no-one")
 
+=item *
+
+Disable the C<UseRoaming> option to protect you if ever GitHub (or a MITM) tries
+to exploit the
+L<C<OpenSSH roaming> vulnerability|http://www.openssh.com/txt/release-7.1p2>.
+
 =back
 
 =item *
@@ -244,6 +250,11 @@ the diff feature of Git/GitHub to view exactly what happened between two
 releases. And you can also have a look to the commit log.
 
 =over 4
+
+=item v1.101
+
+Config: set C<UseRoaming no> to protect against the
+L<C<OpenSSH roaming> vulnerability|http://www.openssh.com/txt/release-7.1p2>.
 
 =item v1.100
 
