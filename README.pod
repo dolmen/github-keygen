@@ -92,6 +92,12 @@ L<@stribika advices|https://stribika.github.io/2015/01/04/secure-secure-shell.ht
 
 Disable bad things that could come from the GitHub hosts ("Trust no-one")
 
+=item *
+
+Disable the C<UseRoaming> option to protect you if ever GitHub (or a MITM) tries
+to exploit the
+L<C<OpenSSH roaming> vulnerability|http://www.openssh.com/txt/release-7.1p2>.
+
 =back
 
 =item *
@@ -149,9 +155,12 @@ Here are some arguments that should help you to make your choice:
 
 =item *
 
-C<github-keygen> is written in a scripting language (Perl), so the code that
+C<github-keygen> is written in a scripting language (Perl 5), so the code that
 runs is the code in the script. You can audit it (or ask someone who you
-trust to do it for you) to trust it.
+trust to do it for you) to trust it. The author is a full time professional
+Perl developer who is well aware of all Perl best practices and works daily
+on Perl code maintained by a team, so the source is not the spaghetti plate
+for which Perl 5 got shame.
 
 =item *
 
@@ -212,7 +221,7 @@ delete it.
 
 I<Windows only>: the tool is written in Perl, but you don't have to install
 L<StrawberryPerl|http://strawberryperl.com> (or Cygwin or ActivePerl); the perl
-bundled with L<msysgit|http://msysgit.github.com/> will be automatically
+bundled with L<msysgit|https://git-for-windows.github.io/> will be automatically
 detected and used.
 
 Fetch the script from GitHub:
@@ -242,6 +251,11 @@ releases. And you can also have a look to the commit log.
 
 =over 4
 
+=item v1.101
+
+Config: set C<UseRoaming no> to protect against the
+L<C<OpenSSH roaming> vulnerability|http://www.openssh.com/txt/release-7.1p2>.
+
 =item v1.100
 
 Config: use the official case for the C<HostName> option (instead of
@@ -252,7 +266,7 @@ now look in the L<ssh_config(5)> man page for the list of supported options
 and unavailable options are then commented with '##'. If the man page is not
 found, we still use all options.
 
-On msys platform (bash in L<msysgit|https://msysgit.github.io/>), the
+On msys platform (bash in L<msysgit|https://git-for-windows.github.io/>), the
 C<ControlMaster> option of OpenSSH doesn't work because msys lacks support for
 passing file descriptors. So we now disable this option on this platform.
 
