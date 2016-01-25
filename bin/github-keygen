@@ -512,7 +512,7 @@ EOF
             # UseRoaming was an undocumented option that is a security issue
             # if enabled when connecting to a malicious server.
             # http://www.openssh.com/txt/release-7.1p2
-            $supported_options{useroaming}++ if $SSH_VERSION > 0x5400;
+            $supported_options{useroaming}++ if $SSH_VERSION >= 0x5400;
             while (<$fh>) {
                 $supported_options{lc $1}++ if /^\.It Cm ([A-Z]\S+)/
             }
@@ -538,6 +538,9 @@ EOF
     # OpenSSH 4.6p1 from msysgit: keep the poor algorithms list
     if ($SSH_VERSION < 0x5000) {
         s/^(KexAlgorithms|MACs|Control(?:Persist|Path)) /##$1 / for @ghkg_config_lines;
+    }
+    if ($SSH_VERSION < 0x5400) {
+        s/^(UseRoaming )/##$1/ for @ghkg_config_lines;
     }
 
     push @ssh_config_lines,
