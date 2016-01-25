@@ -146,6 +146,7 @@ while (@ARGV) {
     }
 }
 
+# Load ~/.ssh/config
 
 my @ssh_config_lines;
 
@@ -159,7 +160,9 @@ if (-e SSH_CONFIG_FILE) {
     }
 }
 
-# Parse ~/.ssh/config
+# Save the original content to show the diff later
+my @ssh_config_lines_orig = @ssh_config_lines;
+
 
 my @hosts_patterns = ('*');
 my %users;
@@ -245,7 +248,6 @@ foreach my $l (@ssh_config_lines) {
 }
 
 # Delete the github-keygen blocks
-my @ssh_config_lines_orig = @ssh_config_lines;
 splice(@ssh_config_lines, $_->[0]-1, $_->[1]-$_->[0]+1) for @ghkg_blocks;
 
 warn sprintf "failed to parse some parts of %s\n",
