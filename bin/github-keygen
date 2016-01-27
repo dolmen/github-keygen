@@ -812,7 +812,7 @@ do not use a host alias).
 Remove the account from F<~/.ssh/config>. The private key will be kept, but not
 referenced anymore in F<~/.ssh/config>.
 
-=item -f I<key-file>
+=item -i I<key-file>
 
 The key is created only if it doesn't already exists.
 
@@ -854,7 +854,7 @@ Default is F<~/.ssh/id_I<account>@github.com>.
     github-keygen account2
 
     # Add a third GitHub account with key file
-    github-keygen account3 -f ./id_account3
+    github-keygen account3 -i ./id_account3
 
     # Remove account2
     github-keygen account2 -r
