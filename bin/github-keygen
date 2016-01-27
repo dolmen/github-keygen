@@ -164,64 +164,81 @@ if (-e SSH_CONFIG_FILE) {
 my @ssh_config_lines_orig = @ssh_config_lines;
 
 
-my @hosts_patterns = ('*');
 my %users;
-my $in_ghkg = '';
-my $block = 1;
-my $clean = 1;
+my $in_ghkg;
+my $dirty;
 my $n = 0;
-my @ghkg_blocks;
 my @github_accounts_from_config;
 
-foreach my $l (@ssh_config_lines) {
-    $n++;
+# List of sections initialized with default section: "Host *"
+my @sections = ([ Host => [ '*' ] ]);
+my $section_start = 1; # line number of the start of current section
+my $ghkg_section_pos;  # index of the last GHKG section
+
+while ($n < @ssh_config_lines) {
+    my $l = $ssh_config_lines[$n++];
+
     if ($l =~ m/\A\s*#.*\bgithub-keygen\b.*\bbegin\b/i) {
         if ($in_ghkg) {
-            $clean = '';
-            warn sprintf "github-keygen block error in %s at line %d\n",
+            $dirty = 1;
+            warn sprintf "github-keygen section error in %s at line %d\n",
                          compress_path(SSH_CONFIG_FILE), $n;
+        } else {
+            $in_ghkg = $n;
+            $ghkg_section_pos = scalar @sections;
         }
-        $in_ghkg = $n;
-        $in_ghkg-- if $n > 0 && $ssh_config_lines[$n-2] =~ /\A\Z/m;
     } elsif ($l =~ m/\A\s*#.*\bgithub-keygen\b.*\bend\b/i) {
-        unless ($in_ghkg) {
-            $clean = '';
-            warn sprintf "github-keygen block error in %s at line %d\n",
+        if ($in_ghkg) {
+            undef $in_ghkg;
+            $n++ while $n < @ssh_config_lines && $ssh_config_lines[$n] eq "\n";
+            next;
+        } else {
+            $dirty = 1;
+            warn sprintf "github-keygen section error in %s at line %d\n",
                          compress_path(SSH_CONFIG_FILE), $n;
         }
-        # Remove the github-keygen block
-        push @ghkg_blocks, [ $in_ghkg, $n ] if $clean;
-        $in_ghkg = 0;
-    } elsif ($l =~ m/\A\s*Host\s+(.*?)\s*\Z/) {
-        $block = $n;
+    } elsif ($l =~ m/\A\s*Host\s+(.*?)\s*\Z/i) {
         %users = ();
-        @hosts_patterns = split /\s+/, $1;
+        my @hosts_patterns = split /\s+/, $1;
+
+        unless ($in_ghkg) {
+            # TODO Extract comment lines just above to put them
+            # in the new section
+
+            # If the previous section was empty, drop it.
+            pop @sections if @{$sections[-1]} == 2;
+            # Begin the new section
+            push @sections, [ Host => \@hosts_patterns ];
+            $section_start = $n;
+        }
+
         my @github_hosts_pat = grep { /\bgithub\.com$/ } @hosts_patterns;
         if (@github_hosts_pat) {
             unless ($in_ghkg) {
-                warn sprintf "GitHub block outside github-keygen block in %s line %u\n",
-                             compress_path(SSH_CONFIG_FILE), $block;
-                $clean = '';
+                warn sprintf "GitHub section outside github-keygen section in %s line %u\n",
+                             compress_path(SSH_CONFIG_FILE), $n;
+                # $dirty = 1;
             }
             #print map(+"[$_] ", @github_hosts_pat), "\n";
             # perl 5.10
             #%users = map { m/^((?!gist)[a-z_0-9]*+)(?:\.gist)?\.github.com$/ ? ($1 => undef) : () } @github_hosts_pat;
             # perl 5.8
             %users = map { m/^([a-z_0-9]+)(?:\.(?:gist|ssh|443))?\.github.com$/ && $_ ne 'gist.github.com' && $_ ne 'ssh.github.com' && $_ ne '443.github.com' ? ($1 => undef) : () } @github_hosts_pat;
-            next unless %users;
-            # Ignore users which are asked to be removed
-            delete @users{keys %github_remove};
-            if ($remove_all) {
-                $github_remove{$_} = 1 for keys %users;
-            } elsif ($github_default eq '' && keys(%users) == 1 && grep { $_ eq 'github.com' } @github_hosts_pat) {
-                ($github_default) = keys %users;
+            if (%users) {
+                # Ignore users which are asked to be removed
+                delete @users{keys %github_remove};
+                if ($remove_all) {
+                    $github_remove{$_} = 1 for keys %users;
+                } elsif ($github_default eq '' && keys(%users) == 1 && grep { $_ eq 'github.com' } @github_hosts_pat) {
+                    ($github_default) = keys %users;
+                }
             }
         }
-    } elsif (%users && $l =~ m/^\s*IdentityFile\s+(\S+)\s*/) {
+    } elsif (%users && $l =~ m/^\s*IdentityFile\s+(\S+)\s*/i) {
         if (keys %users > 1) {
             warn sprintf "multiple users detected in %s line %u\n",
-                             compress_path(SSH_CONFIG_FILE), $block;
-            $clean = '';
+                             compress_path(SSH_CONFIG_FILE), $section_start;
+            $dirty = 1;
         } else {
             my $user = (keys %users)[0];
             if (exists $github_accounts{$user}) {
@@ -245,13 +262,15 @@ foreach my $l (@ssh_config_lines) {
             }
         }
     }
+    # Append the line to the current section
+    push @{$sections[-1]}, $l unless $in_ghkg;
 }
 
-# Delete the github-keygen blocks
-splice(@ssh_config_lines, $_->[0]-1, $_->[1]-$_->[0]+1) for @ghkg_blocks;
+# Pop the last section if it has no lines
+pop @sections if @sections && @{$sections[-1]} == 2;
 
 warn sprintf "failed to parse some parts of %s\n",
-             compress_path(SSH_CONFIG_FILE) unless $clean;
+             compress_path(SSH_CONFIG_FILE) if $dirty;
 
 @github_accounts = do {
     my %seen;
@@ -362,7 +381,7 @@ if (@github_accounts) {
     unlink KNOWN_HOSTS_FILE;
 }
 
-# Create the new config block
+# Create the new config section
 if (@github_accounts) {
 
     my $SSH_V = `ssh -V 2>&1`;
@@ -545,14 +564,43 @@ EOF
         s/^(UseRoaming )/##$1/ for @ghkg_config_lines;
     }
 
-    push @ssh_config_lines,
-        ( @ssh_config_lines ? ("\n") : ()),
+    @ghkg_config_lines = (
         "# -- github-keygen - begin --\n",
         "\n",
         @ghkg_config_lines,
         "\n",
-        "# -- github-keygen - end --\n";
+        "# -- github-keygen - end --\n",
+    );
+
+    # If no GHKG section existed, add it at the end of the file
+    $ghkg_section_pos = scalar @sections unless defined $ghkg_section_pos;
+
+    # But if the last section of the file is "Host *" (default settings for
+    # all hosts), we want to be just before
+    if ($ghkg_section_pos > 0 && $ghkg_section_pos == @sections) {
+        $ghkg_section_pos--
+            if $sections[-1][0] eq 'Host' && grep $_ eq '*', @{$sections[-1][1]}
+    }
+
+    # If not the last section, append "\n"
+    push @ghkg_config_lines, "\n" if $ghkg_section_pos <= @sections;
+
+    # Inject our section
+    splice @sections, $ghkg_section_pos, 0, [ '', '', @ghkg_config_lines ]
 }
+
+
+# If we either deleted or created a GHKG section,
+# rebuild the file content from @sections
+if (defined $ghkg_section_pos) {
+    undef @ssh_config_lines;
+    while (my $s = shift @sections) {
+        splice @$s, 0, 2;
+        push @ssh_config_lines, @$s;
+    }
+}
+
+
 
 # Workaround for perl 5.8
 # (smartmatch is at least good at easily comparing arrays)
@@ -565,7 +613,6 @@ sub array_equals (\@\@)
     }
     return 1
 }
-
 
 if (@ssh_config_lines) {
     #if (@ssh_config_lines ~~ @ssh_config_lines_orig) {   # perl 5.10
