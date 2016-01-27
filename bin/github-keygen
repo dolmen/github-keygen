@@ -341,6 +341,16 @@ foreach my $user (@github_accounts) {
 	next;
     }
 
+    # If an SSH Agent is available, give him the key
+    # The $SSH_AGENT_PID check is to exclude gnome-keyring that does not
+    # behave properly (it doesn't allow to remove keys)
+    #
+    # I'm not sure this is really useful, so disable it for now.
+    #if ($ENV{SSH_AUTH_SOCK} && $ENV{SSH_AGENT_PID}) {
+    #    print "Adding the key to the SSH agent for 20 minutes...\n";
+    #    system qw< ssh-add -t 1200 >, $u->{key_file};
+    #}
+
     push @keys_created, $u->{key_file};
 }
 
