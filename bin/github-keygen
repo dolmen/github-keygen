@@ -202,13 +202,18 @@ while ($n < @ssh_config_lines) {
         my @hosts_patterns = split /\s+/, $1;
 
         unless ($in_ghkg) {
-            # TODO Extract comment lines just above to put them
+            # Extract comment lines just above to put them
             # in the new section
+            my @comments;
+            my $last_section = $sections[-1];
+            while (@$last_section > 2 && $last_section->[-1] =~ /^#/) {
+                unshift @comments, pop @$last_section;
+            }
 
             # If the previous section was empty, drop it.
             pop @sections if @{$sections[-1]} == 2;
             # Begin the new section
-            push @sections, [ Host => \@hosts_patterns ];
+            push @sections, [ Host => \@hosts_patterns, @comments ];
             $section_start = $n;
         }
 
