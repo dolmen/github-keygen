@@ -247,9 +247,18 @@ changed:
 
 I<Note:> As C<github-keygen> is released with Git on GitHub, you can simply use
 the diff feature of Git/GitHub to view exactly what happened between two
-releases. And you can also have a look to the commit log.
+releases. And you can also have a look at
+L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
+
+=item v1.200
+
+Preserve the position of the github-keygen section in F<~/.ssh/config>.
+Previously, the section was always put at the end of the file. This was
+breaking configs were the user had a C<Host *> section at the end of the file
+to set default settings: as the section was moved above us, those default
+settings were applied before our own.
 
 =item v1.101
 
