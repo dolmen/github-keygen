@@ -266,6 +266,16 @@ while ($n < @ssh_config_lines) {
                 push @github_accounts_from_config, $user;
             }
         }
+    } elsif ($in_ghkg && $l =~ /^# Version: ([0-9]+\.[0-9]*)/) {
+        my $v = $1;
+        if ($v > $VERSION) {
+            if ($ENV{GITHUB_KEYGEN_DONWGRADE}) {
+                warn sprintf "downgrading github-keygen section from v%s to v%s\n", $v, $VERSION;
+            } else {
+                die sprintf "%s has a github-keygen section of v%s. Can't downgrade to v%s!\n",
+                    compress_path(SSH_CONFIG_FILE), $v, $VERSION;
+            }
+        }
     }
     # Append the line to the current section
     push @{$sections[-1]}, $l unless $in_ghkg;
