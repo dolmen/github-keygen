@@ -462,7 +462,9 @@ if (@github_accounts) {
         }
     }
 
-    my @ghkg_config_lines = map { "$_\n" } split /\n/, <<EOF;
+    my @ghkg_config_lines = map { "$_\n" } split /\n/, <<EOF, -1;
+# -- github-keygen - begin --
+
 Host gist.github.com *.gist.github.com
 HostName gist.github.com
 
@@ -509,15 +511,18 @@ EOF
 
     foreach my $u (@github_accounts) {
         push @ghkg_config_lines,
-            "\n",
             join(' ',
                 'Host',
                 (map { "$u.$_" } GITHUB_HOSTS),
                 ($u eq $github_default ? (GITHUB_HOSTS) : ()),
             ) . "\n",
             "IdentitiesOnly yes\n",
-            'IdentityFile '. compress_path($github_accounts{$u}->{key_file}) . "\n";
+            'IdentityFile '. compress_path($github_accounts{$u}->{key_file}) . "\n",
+            "\n";
     }
+
+    # Close the section
+    push @ghkg_config_lines, "# -- github-keygen - end --\n";
 
 
     # Check against the man page that all the options we plan to use are supported
@@ -578,14 +583,6 @@ EOF
     if ($SSH_VERSION < 0x5400) {
         s/^(UseRoaming )/##$1/ for @ghkg_config_lines;
     }
-
-    @ghkg_config_lines = (
-        "# -- github-keygen - begin --\n",
-        "\n",
-        @ghkg_config_lines,
-        "\n",
-        "# -- github-keygen - end --\n",
-    );
 
     # If no GHKG section existed, add it at the end of the file
     $ghkg_section_pos = scalar @sections unless defined $ghkg_section_pos;
