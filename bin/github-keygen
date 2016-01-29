@@ -464,6 +464,7 @@ if (@github_accounts) {
 
     my @ghkg_config_lines = map { "$_\n" } split /\n/, <<EOF, -1;
 # -- github-keygen - begin --
+# Version: $VERSION
 
 Host gist.github.com *.gist.github.com
 HostName gist.github.com
