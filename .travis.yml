@@ -12,6 +12,7 @@ addons:
     apt:
         packages:
         - aspell
+        - aspell-en
 env:
     AUTOMATED_TESTING: 1
 notifications:
