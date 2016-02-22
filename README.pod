@@ -1,3 +1,7 @@
+=pod
+
+=for stopwords MITM
+
 =head1 NAME
 
 github-keygen - bootstrap your GitHub SSH configuration
