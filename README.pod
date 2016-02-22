@@ -1,6 +1,6 @@
 =pod
 
-=for stopwords MITM
+=for stopwords MITM versioning
 
 =head1 NAME
 
@@ -257,6 +257,9 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 =over 4
 
 =item v1.200
+
+Add versioning to the generated config. This will allow to detect dangerous
+attempts at downgrading to an older version of github-keygen.
 
 Preserve the position of the github-keygen section in F<~/.ssh/config>.
 Previously, the section was always put at the end of the file. This was
