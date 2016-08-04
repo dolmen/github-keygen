@@ -1,0 +1,27 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use feature 'say';
+
+use Path::Tiny 'path';
+use MIME::Base64 ();
+
+my %decoders = (
+    'ssh-rsa' => sub {
+        my ($exp, $mod, $rem) = unpack('(N/a)2 a*', $_[0]);
+        sprintf("exponent: %v02X\nmodulus: %v02X\n", $exp, $mod)
+        . (length($rem) ? sprintf("other: %v02X\n", $rem) : '')
+    },
+);
+
+
+open my $f, '<', $ARGV[0] or die;
+while (<$f>) {
+    my ($b64) = $_ =~ m!^[^ ]+ ([0-9a-zA-Z+/]+=*) ! or die;
+    my $bytes = MIME::Base64::decode($b64);
+    my ($type, $remain) = unpack('N/a a*', $bytes);
+    printf "type: %s\n%s", $type, $decoders{$type}->($remain);
+}
+
+close $f;
