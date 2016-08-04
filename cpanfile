@@ -19,8 +19,8 @@ on test => sub {
     requires 'Test::Pod::No404s';
 };
 
-# Stuff for the maintainer to make releases (see release.pl)
 on develop => sub {
+    # Stuff for the maintainer to make releases (see release.pl)
     requires 'App::Prove';
     requires 'App::FatPacker';
     requires 'Module::CoreList';
@@ -28,4 +28,9 @@ on develop => sub {
     requires 'File::Path';
     requires 'IPC::Run';
     requires 'Symbol';
+
+    # tools/
+    recommends 'Path::Tiny';
+    recommends 'MIME::Base64';
+    recommends 'JSON::PP';
 };
