@@ -1,0 +1,46 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use feature 'say';
+use JSON::PP ();
+
+
+sub read_openssl_list
+{
+    my $cat = shift;
+    open my $f, '-|', 'openssl', "list-$cat-algorithms" or die $!;
+    my %alg;
+    while (<$f>) {
+	next if / => /;
+	chomp;
+	$_ = lc;
+	$alg{$_}++;
+    }
+    close $f;
+    my @a = sort keys %alg;
+    \@a
+}
+
+
+sub read_openssl_list_public_key
+{
+    open my $f, '-|', 'openssl', "list-public-key-algorithms" or die $!;
+    my %alg;
+    while (<$f>) {
+	next unless /PEM string: (.*)\n/;
+	$alg{lc $1}++;
+    }
+    close $f;
+    my @a = sort keys %alg;
+    \@a
+}
+
+
+my %alg;
+
+$alg{mac} = read_openssl_list('message-digest');
+$alg{cipher} = read_openssl_list('cipher');
+$alg{key} = read_openssl_list_public_key();
+
+print JSON::PP->new->pretty->encode(\%alg);
