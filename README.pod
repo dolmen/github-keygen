@@ -256,6 +256,12 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
+=item v1.300
+
+Key registered in ~/.ssh/config are now compared with keys registered on GitHub
+to detect keys unknown to GitHub.
+
+
 =item v1.200
 
 Add versioning to the generated config. This will allow to detect dangerous

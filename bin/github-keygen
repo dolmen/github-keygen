@@ -81,6 +81,7 @@ use constant {
     KNOWN_HOSTS_FILE => ssh_file('known_hosts_github'),
 };
 
+my $offline; # No network connection
 my $remove_all;
 my $key_type = 'rsa';
 my $key_bits = 2048;
@@ -91,6 +92,7 @@ GetOptions(
     'R|reset|remove-all' => \$remove_all,
     't|key-type=s' => \$key_type,
     'b|key-bits=i' => \$key_bits,
+    'offline' => \$offline,
 ) or pod2usage(1);
 
 my @github_accounts;
@@ -362,6 +364,7 @@ foreach my $user (@github_accounts) {
     #}
 
     push @keys_created, $u->{key_file};
+    $u->{created}++;
 }
 
 die "errors while creating key\n" if $errors;
@@ -371,6 +374,67 @@ $errors = 0;
 
 
 if (@github_accounts) {
+
+    foreach my $user (@github_accounts) {
+        my $u = $github_accounts{$user};
+        my $pub_key_file = $u->{key_file} . ".pub";
+        if (-e $pub_key_file) {
+            if (open my $f, '-|', qw<ssh-keygen -l -f>, $pub_key_file) {
+                chomp(my $fingerprint = <$f>);
+                close $f;
+                if ($fingerprint =~ m/^\S* (\S+)/) {
+                    $u->{fingerprint} = $1;
+                    print "$user: $1\n";
+                }
+            }
+            if (open my $f, '<', $pub_key_file) {
+                chomp(my $line = <$f>);
+                close $f;
+                if ($line =~ m/^\S+ (\S+)/) {
+                    my $pub_key_b64 = $1;
+                    # TODO skip if $offline
+                    if (open $f, '-|', qw<curl -s -f>, "https://github.com/$user.keys") {
+                        my $found;
+                        my $rows;
+                        while (<$f>) {
+                            $rows++;
+                            chomp;
+                            if ($_ eq $pub_key_b64) {
+                                $found++;
+                                $u->{key_on_github}++;
+                                last
+                            }
+                        }
+                        close $f;
+                        if ($rows) {
+                            if ($found) {
+                                print "$user: key is registered on GitHub\n"
+                            } elsif (!$u->{created}) {
+                                warn "$user: key not registered on GitHub!\n"
+                            }
+                        } else {
+                            # curl exit codes:
+                            # 6: Couldn't resolve host
+                            # 7: Failed to connect to host
+                            # 22: HTTP status > 22 (see option -f)
+                            my $rc = $? >> 8;
+                            #printf "%d\n", $rc;
+                            if ($rc == 6 || $rc == 8) {
+                                print "Offline mode: not checking key registration on GitHub.\n" if !defined $offline;
+                                $offline++;
+                            }
+                        }
+                        $offline = 0 unless defined $offline;
+                    } else {
+                        warn("curl failed: exit code ".($?>>8)."\n");
+                    }
+                }
+            }
+        }
+    }
+
+
+
     # To rebuild __DATA__ (if GitHub ever revokes its host keys):
     #   ssh-keyscan -t dsa,rsa github.com gist.github.com ssh.github.com
 
