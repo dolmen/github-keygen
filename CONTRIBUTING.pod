@@ -7,8 +7,8 @@ How to contribute to C<github-keygen>?
 Patches are welcome!
 
 They must be built against the
-C<L<devel|https://github.com/dolmen/github-keygen/tree/devel>> branch, then
-submitted as pull requests at GitHub.
+C<L<master|https://github.com/dolmen/github-keygen/tree/master>> branch,
+then submitted as pull requests at GitHub.
 
 The documentation is written using the
 L<POD|http://perldoc.perl.org/perlpod.html> format.
@@ -21,7 +21,7 @@ L<POD|http://perldoc.perl.org/perlpod.html> format.
 
     git clone --origin upstream git://github.com/dolmen/github-keygen.git
     cd github-keygen
-    git checkout devel
+    git checkout master
 
 =item 2. Install build dependencies
 
@@ -31,7 +31,7 @@ Not required for doc patches.
 
 =item 3. Make your fix/feature
 
-    git checkout -b <my-patch> devel
+    git checkout -b <my-patch> master
 
     $EDITOR bin/github-keygen
 
@@ -70,7 +70,7 @@ Redo from step 3.
 
 =item * Bump C<$VERSION>
 
-    git checkout devel
+    git checkout master
     # Bump version number
     $EDITOR bin/github-keygen
     # Update changelog
@@ -80,9 +80,9 @@ Redo from step 3.
 
 =item * Release
 
-    git checkout devel
+    git checkout master
     ./release.pl
-    git push origin devel release
+    git push origin master release
     git push origin --tags
 
 =back
