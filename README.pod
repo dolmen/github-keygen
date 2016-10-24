@@ -262,6 +262,8 @@ Keys registered in F<~/.ssh/config> are now compared with keys registered on
 L<GitHub|https://github.com/settings/keys> to detect keys unknown to the
 service. An C<--offline> flag allows to disable this check.
 
+Development is back on C<master> branch (instead of deleted C<devel>).
+
 =item v1.200
 
 Add versioning to the generated config. This will allow to detect dangerous

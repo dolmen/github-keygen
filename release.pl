@@ -204,9 +204,9 @@ say "release: $release_commit";
 my %release_tree;
 git 'ls-tree' => $release_commit, sub {
     my ($mode, $type, $object, $file) = split / |\t/;
-    # Merge files updated in devel
+    # Merge files updated in master
     if (       $type eq 'blob'        # Don't touch trees
-	    # Those files stay in 'devel' branch
+	    # Those files stay in 'master' branch
 	    && $file !~ /^(?:\.gitignore|cpanfile|tools|\.(travis|appveyor)\.yml)\z/
 	    && exists $HEAD_tree{$file}
 	    && $object ne $HEAD_tree{$file}[2]) {
@@ -253,7 +253,7 @@ my $new_release_tree = git mktree => -z =>
 say "new release tree: $new_release_tree";
 
 # Create the release commit
-# TODO use the "author" of devel as the committer
+# TODO use the "author" of master as the committer
 # TODO use more content in the commit message (ask interactively)
 my $new_release_commit =
     git 'commit-tree', $new_release_tree,
@@ -268,8 +268,8 @@ say "new release commit: $new_release_commit";
 
 my $branch = git 'symbolic-ref', 'HEAD';
 
-# If we build from the 'devel' branch, update the 'release' branch
-if ($branch eq 'refs/heads/devel') {
+# If we build from the 'master' branch, update the 'release' branch
+if ($branch eq 'refs/heads/master') {
     git 'update-ref' => 'refs/heads/release' => $new_release_commit, $release_commit;
 
     if ($version) {
@@ -278,9 +278,9 @@ if ($branch eq 'refs/heads/devel') {
 		   "v$version",
 		   $new_release_commit;
 	say 'Done'.
-	say "You can now push: git push github devel release v$version";
+	say "You can now push: git push github : v$version";
     } else {
-	say "You can now push: git push github devel release";
+	say "You can now push: git push github :";
     }
 # Else: just create a tag to the build result, so we can check it out for
 # testing
