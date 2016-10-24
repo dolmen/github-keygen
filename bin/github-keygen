@@ -321,8 +321,6 @@ if (@github_accounts) {
     }
 }
 
-my @keys_created;
-
 unless (-e SSH_DIR) {
     printf "Creating %s...\n", compress_path(SSH_DIR);
     mkdir SSH_DIR, 0700
@@ -349,8 +347,8 @@ foreach my $user (@github_accounts) {
            defined $u->{passphrase} ? ('-N', $u->{passphrase}) : (),
            '-f', $u->{key_file};
     if ($? >> 8 || ! (-e $u->{key_file} && -e ($u->{key_file}.".pub"))) {
-	$errors++;
-	next;
+        $errors++;
+        next;
     }
 
     # If an SSH Agent is available, give him the key
@@ -363,7 +361,6 @@ foreach my $user (@github_accounts) {
     #    system qw< ssh-add -t 1200 >, $u->{key_file};
     #}
 
-    push @keys_created, $u->{key_file};
     $u->{created}++;
 }
 
@@ -430,7 +427,7 @@ if (@github_accounts) {
                     #print "$user pubkey: $pub_key_b64\n";
                     unless ($offline) {
                         if (exists $github_pubkeys{"$user:$pub_key_b64"}) {
-                            print "$user: key is registered on GitHub\n";
+                            print "$user: key is registered on GitHub.\n";
                             $u->{key_on_github}++;
                         } elsif (!$u->{created}) {
                             # Check if a key is shared by multiple users
@@ -738,7 +735,14 @@ if (@ssh_config_lines) {
     }
 }
 
-if (@keys_created) {
+my @unregistered_users =
+    grep {
+        my $u = $github_accounts{$_};
+        $u->{created} || (!$offline && !$u->{key_on_github})
+    } @github_accounts;
+
+if (@unregistered_users) {
+
     my @clip_cmd;
 
     # X11
@@ -748,33 +752,41 @@ if (@keys_created) {
     # Darwin
     @clip_cmd = qw</usr/bin/pbcopy> if -x '/usr/bin/pbcopy';
 
-    if (!$offline && @clip_cmd) {
-	# Copy the first key created to the clipboard
-	my $pub_key = shift(@keys_created).".pub";
+    if (@clip_cmd && @unregistered_users == 1 && !$offline) {
+        my $user = shift @unregistered_users;
+        # Copy the first key created to the clipboard
+        my $pub_key_file = $github_accounts{$user}->{key_file}.".pub";
         # Read the public key from the file
-        open my $pub, '<', "$pub_key";
+        open my $pub, '<', $pub_key_file;
         my $pubkey = <$pub>;
+        $pubkey =~ s/^(\S+ \S+).*/$1/;
         close $pub;
 
         open my $clip, '|-', @clip_cmd;
         print $clip $pubkey;
         close $clip;
-	printf "\n"
-             . "The public key %s has been copied to the clipboard.\n"
+        printf "\n"
+             . "The public key %s for $user has been copied to the clipboard.\n"
              . "Paste it in your SSH settings at <https://github.com/settings/ssh>.\n",
-               compress_path($pub_key);
-	if (@keys_created) {
-	    # Help the user to copy the other keys
-	    print "\n"
-                . "You can copy the other public keys one by one to the clipboard:\n";
-            print "    xclip -sel clip < $_.pub\n" for @keys_created;
-	}
-    } elsif (@keys_created == 1) {
-        printf "\nYou now have to copy the public key %s.pub to your SSH settings at\n<https://github.com/settings/ssh>.\n",
-               compress_path(shift @keys_created);
+               compress_path($pub_key_file);
     } else {
-        print "\nYou now have to copy each public key to the SSH settings at\n<https://github.com/settings/ssh>:\n";
-        printf("    %s\n", compress_path("$_.pub")) for @keys_created;
+        print "\n"
+            . "You now have to copy the public key for each user to your SSH settings at\n"
+            . "<https://github.com/settings/ssh>.\n";
+        # Help the user to copy the other keys
+        foreach my $user (@unregistered_users) {
+            my $pub_key = compress_path($github_accounts{$user}{key_file}).".pub";
+            if (@clip_cmd) {
+                print "  $user:  @clip_cmd < $pub_key\n";
+            } else {
+                print "  $user:  $pub_key\n";
+            }
+        }
+        if ($offline) {
+            print "Then run github-keygen online to check the registration works.\n";
+        } else {
+            print "Then re-run github-keygen to check the registration works.\n";
+        }
     }
 }
 
