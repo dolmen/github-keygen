@@ -256,6 +256,12 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
+=item v1.300
+
+Keys registered in F<~/.ssh/config> are now compared with keys registered on
+L<GitHub|https://github.com/settings/keys> to detect keys unknown to the
+service. An C<--offline> flag allows to disable this check.
+
 =item v1.200
 
 Add versioning to the generated config. This will allow to detect dangerous

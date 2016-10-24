@@ -81,6 +81,7 @@ use constant {
     KNOWN_HOSTS_FILE => ssh_file('known_hosts_github'),
 };
 
+my $offline; # No network connection
 my $remove_all;
 my $key_type = 'rsa';
 my $key_bits = 2048;
@@ -91,6 +92,7 @@ GetOptions(
     'R|reset|remove-all' => \$remove_all,
     't|key-type=s' => \$key_type,
     'b|key-bits=i' => \$key_bits,
+    'offline' => \$offline,
 ) or pod2usage(1);
 
 my @github_accounts;
@@ -319,8 +321,6 @@ if (@github_accounts) {
     }
 }
 
-my @keys_created;
-
 unless (-e SSH_DIR) {
     printf "Creating %s...\n", compress_path(SSH_DIR);
     mkdir SSH_DIR, 0700
@@ -347,8 +347,8 @@ foreach my $user (@github_accounts) {
            defined $u->{passphrase} ? ('-N', $u->{passphrase}) : (),
            '-f', $u->{key_file};
     if ($? >> 8 || ! (-e $u->{key_file} && -e ($u->{key_file}.".pub"))) {
-	$errors++;
-	next;
+        $errors++;
+        next;
     }
 
     # If an SSH Agent is available, give him the key
@@ -361,7 +361,7 @@ foreach my $user (@github_accounts) {
     #    system qw< ssh-add -t 1200 >, $u->{key_file};
     #}
 
-    push @keys_created, $u->{key_file};
+    $u->{created}++;
 }
 
 die "errors while creating key\n" if $errors;
@@ -371,6 +371,80 @@ $errors = 0;
 
 
 if (@github_accounts) {
+
+    # Map pubkey to GitHub account
+    my %github_pubkeys;
+
+    foreach my $user (@github_accounts) {
+        last if $offline;
+        if (open my $f, '-|', qw<curl -s -f>, "https://github.com/$user.keys") {
+            my $rows;
+            while (<$f>) {
+                $rows++;
+                chomp;
+                s/^\S+ +(\S+).*/$1/;
+                # print "$user pubkey on GitHub: $_\n";
+                $github_pubkeys{"$user:$_"}++;
+                push @{ $github_pubkeys{$_} ||= [] }, $user;
+            }
+            close $f;
+            # TODO check $?
+            if (!$rows) {
+                # curl exit codes:
+                # 6: Couldn't resolve host
+                # 7: Failed to connect to host
+                # 22: HTTP status >= 400 (see option -f)
+                my $rc = $? >> 8;
+                #printf "%d\n", $rc;
+                if ($rc == 6 || $rc == 7) {
+                    print "Offline mode: not checking key registration on GitHub.\n" if !defined $offline;
+                    $offline++;
+                }
+            }
+            $offline = 0 unless defined $offline;
+        } else {
+            warn("curl failed: exit code ".($?>>8)."\n");
+        }
+    }
+
+    foreach my $user (@github_accounts) {
+        my $u = $github_accounts{$user};
+        my $pub_key_file = $u->{key_file} . ".pub";
+        if (-e $pub_key_file) {
+            if (open my $f, '-|', qw<ssh-keygen -l -f>, $pub_key_file) {
+                chomp(my $fingerprint = <$f>);
+                close $f;
+                if ($fingerprint =~ m/^\S+ +(\S+)/) {
+                    $u->{fingerprint} = $1;
+                    #print "$user: $1\n";
+                }
+            }
+            if (open my $f, '<', $pub_key_file) {
+                chomp(my $line = <$f>);
+                close $f;
+                if ($line =~ m/^\S+ +(\S+) /) {
+                    $u->{pubkey} = my $pub_key_b64 = $1;
+                    #print "$user pubkey: $pub_key_b64\n";
+                    unless ($offline) {
+                        if (exists $github_pubkeys{"$user:$pub_key_b64"}) {
+                            print "$user: key is registered on GitHub.\n";
+                            $u->{key_on_github}++;
+                        } elsif (!$u->{created}) {
+                            # Check if a key is shared by multiple users
+                            if (exists $github_pubkeys{$pub_key_b64}) {
+                                warn "$user: key is already attached to user @{ $github_pubkeys{$pub_key_b64} } on GitHub!\n";
+                                $u->{key_on_github}++;
+                            } else {
+                                warn "$user: key not registered on GitHub!\n";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
     # To rebuild __DATA__ (if GitHub ever revokes its host keys):
     #   ssh-keyscan -t dsa,rsa github.com gist.github.com ssh.github.com
 
@@ -661,7 +735,14 @@ if (@ssh_config_lines) {
     }
 }
 
-if (@keys_created) {
+my @unregistered_users =
+    grep {
+        my $u = $github_accounts{$_};
+        $u->{created} || (!$offline && !$u->{key_on_github})
+    } @github_accounts;
+
+if (@unregistered_users) {
+
     my @clip_cmd;
 
     # X11
@@ -671,33 +752,41 @@ if (@keys_created) {
     # Darwin
     @clip_cmd = qw</usr/bin/pbcopy> if -x '/usr/bin/pbcopy';
 
-    if (@clip_cmd) {
-	# Copy the first key created to the clipboard
-	my $pub_key = shift(@keys_created).".pub";
+    if (@clip_cmd && @unregistered_users == 1 && !$offline) {
+        my $user = shift @unregistered_users;
+        # Copy the first key created to the clipboard
+        my $pub_key_file = $github_accounts{$user}->{key_file}.".pub";
         # Read the public key from the file
-        open my $pub, '<', "$pub_key";
+        open my $pub, '<', $pub_key_file;
         my $pubkey = <$pub>;
+        $pubkey =~ s/^(\S+ \S+).*/$1/;
         close $pub;
 
         open my $clip, '|-', @clip_cmd;
         print $clip $pubkey;
         close $clip;
-	printf "\n"
-             . "The public key %s has been copied to the clipboard.\n"
+        printf "\n"
+             . "The public key %s for $user has been copied to the clipboard.\n"
              . "Paste it in your SSH settings at <https://github.com/settings/ssh>.\n",
-               compress_path($pub_key);
-	if (@keys_created) {
-	    # Help the user to copy the other keys
-	    print "\n"
-                . "You can copy the other public keys one by one to the clipboard:\n";
-            print "    xclip -sel clip < $_.pub\n" for @keys_created;
-	}
-    } elsif (@keys_created == 1) {
-        printf "\nYou now have to copy the public key %s.pub to your SSH settings at\n<https://github.com/settings/ssh>.\n",
-               compress_path(shift @keys_created);
+               compress_path($pub_key_file);
     } else {
-        print "\nYou now have to copy each public key to the SSH settings at\n<https://github.com/settings/ssh>:\n";
-        printf("    %s\n", compress_path("$_.pub")) for @keys_created;
+        print "\n"
+            . "You now have to copy the public key for each user to your SSH settings at\n"
+            . "<https://github.com/settings/ssh>.\n";
+        # Help the user to copy the other keys
+        foreach my $user (@unregistered_users) {
+            my $pub_key = compress_path($github_accounts{$user}{key_file}).".pub";
+            if (@clip_cmd) {
+                print "  $user:  @clip_cmd < $pub_key\n";
+            } else {
+                print "  $user:  $pub_key\n";
+            }
+        }
+        if ($offline) {
+            print "Then run github-keygen online to check the registration works.\n";
+        } else {
+            print "Then re-run github-keygen to check the registration works.\n";
+        }
     }
 }
 
