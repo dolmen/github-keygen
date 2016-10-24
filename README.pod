@@ -43,7 +43,7 @@ a high level of security.
 It creates a new SSH B<private key dedicated> to GitHub exchanges. This is much
 better than using the same SSH key to connect to multiple hosts.
 (If you loose that key, just revoke it in
-L<your GitHub account SSH settings|https://github.com/settings/ssh>, remove the
+L<your GitHub account SSH settings|https://github.com/settings/keys>, remove the
 key file, and re run C<github-keygen>).
 
 =item *
@@ -53,7 +53,7 @@ is now much easier to use a different SSH key for GitHub on each computer
 you use to publish on GitHub. This will help you to use the best practices in
 SSH security.
 (If you lose that computer or if it is compromised, just revoke the key in
-L<your GitHub account SSH settings|https://github.com/settings/ssh>:
+L<your GitHub account SSH settings|https://github.com/settings/keys>:
 you don't have to recreate a new key on all your other computers).
 
 =item *

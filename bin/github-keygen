@@ -767,12 +767,12 @@ if (@unregistered_users) {
         close $clip;
         printf "\n"
              . "The public key %s for $user has been copied to the clipboard.\n"
-             . "Paste it in your SSH settings at <https://github.com/settings/ssh>.\n",
+             . "Paste it in your SSH settings at <https://github.com/settings/keys>.\n",
                compress_path($pub_key_file);
     } else {
         print "\n"
             . "You now have to copy the public key for each user to your SSH settings at\n"
-            . "<https://github.com/settings/ssh>.\n";
+            . "<https://github.com/settings/keys>.\n";
         # Help the user to copy the other keys
         foreach my $user (@unregistered_users) {
             my $pub_key = compress_path($github_accounts{$user}{key_file}).".pub";
