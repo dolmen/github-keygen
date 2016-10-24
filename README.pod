@@ -258,9 +258,9 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =item v1.300
 
-Key registered in ~/.ssh/config are now compared with keys registered on GitHub
-to detect keys unknown to GitHub.
-
+Keys registered in F<~/.ssh/config> are now compared with keys registered on
+L<GitHub|https://github.com/settings/keys> to detect keys unknown to the
+service. An C<--offline> flag allows to disable this check.
 
 =item v1.200
 
