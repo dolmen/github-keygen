@@ -256,6 +256,13 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
+=item v1.301
+
+Remove C<UseRoaming> option if OpenSSH >= 7.3
+(Mac OS X Sierra,
+L<issue #31|https://github.com/dolmen/github-keygen/issues/31>):
+this option has been removed from OpenSSH.
+
 =item v1.300
 
 Keys registered in F<~/.ssh/config> are now compared with keys registered on
