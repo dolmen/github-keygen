@@ -545,6 +545,11 @@ if (@github_accounts) {
             $ControlPath_dir = $rt_dir;
         }
     }
+    my $ControlPath =
+        # Not sure about the exact version for %n support
+        $SSH_VERSION >= 0x6000
+        ? "$ControlPath_dir/conn-\%n"
+        : "$ControlPath_dir/conn-github";
 
     my @ghkg_config_lines = map { "$_\n" } split /\n/, <<EOF, -1;
 # -- github-keygen - begin --
@@ -590,7 +595,7 @@ PermitLocalCommand no
 UseRoaming no
 # Connexion sharing for 60 seconds, for speedup
 ControlMaster auto
-ControlPath ${ControlPath_dir}/conn-%n
+ControlPath ${ControlPath}
 ControlPersist 60s
 EOF
 
