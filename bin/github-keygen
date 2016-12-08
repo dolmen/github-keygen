@@ -735,6 +735,8 @@ if (@ssh_config_lines) {
         print "Done.\n";
     } else {
     }
+    # ensure correct permissions. done here as pre-existing file might have wrong permissions.
+    chmod 0600, SSH_CONFIG_FILE;
 } else {
     if (-e SSH_CONFIG_FILE) {
         printf "Removing %s...\n", compress_path(SSH_CONFIG_FILE);
