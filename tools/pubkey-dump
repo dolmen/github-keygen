@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use feature 'say';
 
-use Path::Tiny 'path';
 use MIME::Base64 ();
 
 my %decoders = (
