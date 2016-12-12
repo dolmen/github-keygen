@@ -256,6 +256,26 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
+=item v1.302
+
+Remove C<UseRoaming> option if OpenSSH >= 7.2 on Mac OS X Sierra
+(L<issue #31|https://github.com/dolmen/github-keygen/issues/31>): Sierra
+has 7.2p2, same as on Ubuntu 16.04, but not same behaviour.
+
+Old OpenSSH compatibility fixes:
+
+=over 4
+
+=item *
+
+Hide C<ssh -Q> errors (when the option is not supported).
+
+=item *
+
+Do not use C<%n> in C<ControlPath> option.
+
+=back
+
 =item v1.301
 
 Remove C<UseRoaming> option if OpenSSH >= 7.3
