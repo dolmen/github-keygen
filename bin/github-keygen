@@ -526,7 +526,7 @@ if (@github_accounts) {
     );
     # Filter each list against what is supported by the ssh client
     while (my ($kind, $algos) = each %algorithms) {
-        if ($SSH_VERSION > 0x5000 && !open my $ssh_Q, '-|', "ssh -Q $kind") {
+        if ($SSH_VERSION > 0x5000 && !open my $ssh_Q, '-|', "ssh -Q $kind 2>".File::Spec->devnull) {
             my %supported = map { chomp; ($_ => 1) } <$ssh_Q>;
             $algorithms{$kind} = join(',', grep { $supported{$_} } @$algos);
         } else {
