@@ -50,11 +50,6 @@ sub resolve_path($)
     $path
 }
 
-sub resolve_ssh_path($)
-{
-    goto &resolve_path;
-}
-
 sub ssh_file($)
 {
     File::Spec->rel2abs($_[0], SSH_DIR);
