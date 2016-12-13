@@ -526,14 +526,37 @@ if (@github_accounts) {
     );
     # Filter each list against what is supported by the ssh client
     while (my ($kind, $algos) = each %algorithms) {
-        if ($SSH_VERSION > 0x5000 && !open my $ssh_Q, '-|', "ssh -Q $kind 2>".File::Spec->devnull) {
+        if ($SSH_VERSION > 0x5200 && open my $ssh_Q, '-|', "ssh -Q $kind 2>".File::Spec->devnull) {
             my %supported = map { chomp; ($_ => 1) } <$ssh_Q>;
-            $algorithms{$kind} = join(',', grep { $supported{$_} } @$algos);
-        } else {
+            close $ssh_Q;
+            if (%supported) {
+                $algorithms{$kind} = join(',', grep { $supported{$_} } @$algos);
+                next;
+            }
             #warn "ssh -Q $kind: failure ($!)";
-            $algorithms{$kind} = join(',', @$algos);
         }
+
+        # For old OpenSSH that don't have -Q option:
+        # - Detect supported cipher algorithms with 'ssh -c'
+        # - Detect supported mac algorithms with 'ssh -m'
+        my %kind2opt = (cipher => '-c', mac => '-m');
+        if (my $opt = $kind2opt{$kind}) {
+            for(my $i=0; $i<@$algos; $i++) {
+                my $check = `ssh $opt $algos->[$i] -o XXX=xxx 2>&1`;
+                # If the result is not "Unknown ...", the algorithm is
+                # supported
+                if (substr($check, 0, 7) eq 'Unknown') {
+                    splice @$algos, $i, 1;
+                    last if $i == @$algos;
+                    redo
+                }
+            }
+        }
+
+        $algorithms{$kind} = @$algos ? join(',', @$algos) : '';
     }
+    # hmac-sha1 is only for old OpenSSH that support none above
+    $algorithms{'mac'} = 'hmac-sha1' unless length $algorithms{'mac'};
 
     my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
 
