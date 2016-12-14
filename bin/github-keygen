@@ -135,7 +135,7 @@ while (@ARGV) {
             } else {
                 # If the relative path contains a volume or directory,
                 # make it relative to CWD, else to SSH_DIR
-                my ($v, $d, $f) = File::Spec->splitpath($u{key_file});
+                my ($v, $d, undef) = File::Spec->splitpath($u{key_file});
                 $u{key_file} = File::Spec->rel2abs($u{key_file},
                    (length($v) || length($d)) ? CWD : SSH_DIR);
             }
