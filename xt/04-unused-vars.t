@@ -34,5 +34,12 @@ unshift @INC, \&require_fake;
 #print STDOUT ${ require_fake(undef, "$fake_source') }; exit;
 #require $fake_source;
 
-vars_ok($fake_package);
+vars_ok($fake_package,
+    ignore_vars => [
+	# False positive: captured in a named closure
+	qw< %compressed_paths >,
+	# False positive: in a block hidden by < if (WIN32) ... >
+	qw< $pathsep $p >,
+    ],
+);
 done_testing;
