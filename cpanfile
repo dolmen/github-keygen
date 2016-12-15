@@ -17,6 +17,7 @@ on test => sub {
     requires 'Test::Pod';
     requires 'Test::Spelling';
     requires 'Test::Pod::No404s';
+    requires 'Test::Vars' => '0.012';
 };
 
 on develop => sub {
