@@ -148,6 +148,14 @@ while (@ARGV) {
 my @ssh_config_lines;
 
 if (-e SSH_CONFIG_FILE) {
+    my @stat = stat SSH_CONFIG_FILE;
+    if ($stat[4] != $<) {
+        die sprintf("%s: bad owner\n", SSH_CONFIG_FILE);
+    }
+    if (!WIN32 && $stat[2] & 0133) {
+        die sprintf("%s: bad file permissions. Fix: chmod u-x,og-wx %s\n", SSH_CONFIG_FILE, compress_path(SSH_CONFIG_FILE));
+    }
+
     # The :crlf layer is needed for msys
     if (open my $f, WIN32 ? '<:crlf' : '<', SSH_CONFIG_FILE) {
         @ssh_config_lines = <$f>;
