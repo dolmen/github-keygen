@@ -1,7 +1,10 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::More tests => 1;
+use Test::Requires {
+    'Test::Vars' => '0.012',
+};
 use Test::Vars;
 
 # To use Test::Vars on a script, we wrap the script in a fake package
@@ -42,4 +45,3 @@ vars_ok($fake_package,
 	qw< $pathsep $p >,
     ],
 );
-done_testing;
