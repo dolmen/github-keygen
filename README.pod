@@ -168,8 +168,10 @@ for which Perl 5 got shame.
 
 =item *
 
-When running, C<github-keygen> only generates files locally on your system. It
-will not connect to your GitHub account (or other hosts).
+When running, C<github-keygen> generates files locally on your system. It
+connects to github.com using public URLs only to check if your keys are
+properly setup on the server side. You can disable this feature with the
+C<--offline> flag.
 
 =item *
 
