@@ -31,6 +31,7 @@ on develop => sub {
     requires 'File::Path';
     requires 'IPC::Run';
     requires 'Symbol';
+    requires 'LWP::Protocol::https';
 
     # tools/
     recommends 'Path::Tiny';
