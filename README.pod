@@ -42,7 +42,7 @@ a high level of security.
 
 It creates a new SSH B<private key dedicated> to GitHub exchanges. This is much
 better than using the same SSH key to connect to multiple hosts.
-(If you loose that key, just revoke it in
+(If you lose that key, just revoke it in
 L<your GitHub account SSH settings|https://github.com/settings/keys>, remove the
 key file, and re run C<github-keygen>).
 
@@ -168,8 +168,10 @@ for which Perl 5 got shame.
 
 =item *
 
-When running, C<github-keygen> only generates files locally on your system. It
-will not connect to your GitHub account (or other hosts).
+When running, C<github-keygen> generates files locally on your system. It
+connects to github.com using public URLs only to check if your keys are
+properly setup on the server side. You can disable this feature with the
+C<--offline> flag.
 
 =item *
 
@@ -225,7 +227,7 @@ delete it.
 
 I<Windows only>: the tool is written in Perl, but you don't have to install
 L<StrawberryPerl|http://strawberryperl.com> (or Cygwin or ActivePerl); the perl
-bundled with L<msysgit|https://git-for-windows.github.io/> will be automatically
+bundled with L<msysgit|https://gitforwindows.org/> will be automatically
 detected and used.
 
 Fetch the script from GitHub:
@@ -255,6 +257,15 @@ releases. And you can also have a look at
 L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
+
+=item v1.303
+
+Fix SSH options and algorithm support detection that was accidentally disabled since v1.100.
+This makes github-keygen work with OpenSSH 7.6+ that removed an algorithm.
+
+Fix for support of OpenSSH down to 5.1.
+
+Detect bad permissions on F<~/.ssh/config> and report them.
 
 =item v1.302
 
@@ -317,7 +328,7 @@ now look in the L<ssh_config(5)> man page for the list of supported options
 and unavailable options are then commented with '##'. If the man page is not
 found, we still use all options.
 
-On msys platform (bash in L<msysgit|https://git-for-windows.github.io/>), the
+On msys platform (bash in L<msysgit|https://gitforwindows.org/>), the
 C<ControlMaster> option of OpenSSH doesn't work because msys lacks support for
 passing file descriptors. So we now disable this option on this platform.
 
@@ -482,7 +493,7 @@ If you want to contribute, have a look to L<CONTRIBUTING.pod>.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright E<copy> 2011-2015 Olivier MenguE<eacute>.
+Copyright E<copy> 2011-2017 Olivier MenguE<eacute>.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

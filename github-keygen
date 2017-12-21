@@ -2477,7 +2477,7 @@ $fatpacked{"Pod/Simple.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_
   );
   
   @ISA = ('Pod::Simple::BlackBox');
-  $VERSION = '3.32';
+  $VERSION = '3.35';
   
   @Known_formatting_codes = qw(I B C L E F S X Z); 
   %Known_formatting_codes = map(($_=>1), @Known_formatting_codes);
@@ -4111,7 +4111,7 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n
   use strict;
   use Carp ();
   use vars qw($VERSION );
-  $VERSION = '3.32';
+  $VERSION = '3.35';
   #use constant DEBUG => 7;
   BEGIN {
     require Pod::Simple;
@@ -4287,7 +4287,12 @@ $fatpacked{"Pod/Simple/BlackBox.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n
   
             # On Perls that have this function, we can see if the sequence is
             # valid UTF-8 or not.
-            if (! utf8::decode($non_ascii_seq)) {
+            my $is_utf8;
+            {
+              no warnings 'utf8';
+              $is_utf8 = utf8::decode($non_ascii_seq);
+            }
+            if (! $is_utf8) {
               $encoding = 'CP1252';
               goto guessed;
             }
@@ -6218,12 +6223,12 @@ $fatpacked{"Pod/Simple/LinkSection.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   package Pod::Simple::LinkSection;
     # Based somewhat dimly on Array::Autojoin
   use vars qw($VERSION );
-  $VERSION = '3.32';
+  $VERSION = '3.35';
   
   use strict;
   use Pod::Simple::BlackBox;
   use vars qw($VERSION );
-  $VERSION = '3.32';
+  $VERSION = '3.35';
   
   use overload( # So it'll stringify nice
     '""'   => \&Pod::Simple::BlackBox::stringify_lol,
@@ -6390,7 +6395,7 @@ $fatpacked{"Pod/Simple/LinkSection.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
 POD_SIMPLE_LINKSECTION
 
 $fatpacked{"Pod/Text.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_TEXT';
-  # Pod::Text -- Convert POD data to formatted text.
+  # Convert POD data to formatted text.
   #
   # This module converts POD to formatted text.  It replaces the old Pod::Text
   # module that came with versions of Perl prior to 5.6.0 and attempts to match
@@ -6404,7 +6409,7 @@ $fatpacked{"Pod/Text.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_TE
   # standard Perl mailing lists.
   #
   # Copyright 1999, 2000, 2001, 2002, 2004, 2006, 2008, 2009, 2012, 2013, 2014,
-  #     2015 Russ Allbery <rra@cpan.org>
+  #     2015, 2016 Russ Allbery <rra@cpan.org>
   #
   # This program is free software; you may redistribute it and/or modify it
   # under the same terms as Perl itself.
@@ -6431,7 +6436,26 @@ $fatpacked{"Pod/Text.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_TE
   # We have to export pod2text for backward compatibility.
   @EXPORT = qw(pod2text);
   
-  $VERSION = '4.06';
+  $VERSION = '4.09';
+  
+  # Ensure that $Pod::Simple::nbsp and $Pod::Simple::shy are available.  Code
+  # taken from Pod::Simple 3.32, but was only added in 3.30.
+  my ($NBSP, $SHY);
+  if ($Pod::Simple::VERSION ge 3.30) {
+      $NBSP = $Pod::Simple::nbsp;
+      $SHY  = $Pod::Simple::shy;
+  } else {
+      if ($] ge 5.007_003) {
+          $NBSP = chr utf8::unicode_to_native(0xA0);
+          $SHY  = chr utf8::unicode_to_native(0xAD);
+      } elsif (Pod::Simple::ASCII) {
+          $NBSP = "\xA0";
+          $SHY  = "\xAD";
+      } else {
+          $NBSP = "\x41";
+          $SHY  = "\xCA";
+      }
+  }
   
   ##############################################################################
   # Initialization
@@ -6665,7 +6689,12 @@ $fatpacked{"Pod/Text.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_TE
   sub output {
       my ($self, @text) = @_;
       my $text = join ('', @text);
-      $text =~ tr/\240\255/ /d;
+      if ($NBSP) {
+          $text =~ s/$NBSP/ /g;
+      }
+      if ($SHY) {
+          $text =~ s/$SHY//g;
+      }
       unless ($$self{opt_utf8}) {
           my $encoding = $$self{encoding} || '';
           if ($encoding && $encoding ne $$self{ENCODING}) {
@@ -7391,7 +7420,7 @@ $fatpacked{"Pod/Text.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_TE
   =head1 COPYRIGHT AND LICENSE
   
   Copyright 1999, 2000, 2001, 2002, 2004, 2006, 2008, 2009, 2012, 2013, 2014,
-  2015 Russ Allbery <rra@cpan.org>
+  2015, 2016 Russ Allbery <rra@cpan.org>
   
   This program is free software; you may redistribute it and/or modify it
   under the same terms as Perl itself.
@@ -7414,7 +7443,7 @@ $fatpacked{"Pod/Usage.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_U
   use strict;
   
   use vars qw($VERSION @ISA @EXPORT);
-  $VERSION = '1.68';  ## Current version of this package
+  $VERSION = '1.69';  ## Current version of this package
   require  5.006;    ## requires this Perl version or later
   
   #use diagnostics;
@@ -8307,7 +8336,7 @@ $fatpacked{"Text/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEXT_
   use Exporter        ();
   use Algorithm::Diff ();
   
-  our $VERSION = '1.43';
+  our $VERSION = '1.45';
   our @ISA     = qw/ Exporter /;
   our @EXPORT  = qw/ diff /;
   
@@ -8536,7 +8565,11 @@ $fatpacked{"Text/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEXT_
       return () unless defined $op_sym;
   
       $a_or_b = $op->[OPCODE] ne "+" ? 0 : 1 unless defined $a_or_b;
-      return ( $op_sym, $seqs->[$a_or_b][$op->[$a_or_b]] );
+      my @line = ( $op_sym, $seqs->[$a_or_b][$op->[$a_or_b]] );
+      unless ( $line[1] =~ /(?:\n|\r\n)$/ ) {
+          $line[1] .= "\n\\ No newline at end of file\n";
+      }
+      return @line;
   }
   
   SCOPE: {
@@ -8719,8 +8752,8 @@ $fatpacked{"Text/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEXT_
   Relies on L<Algorithm::Diff> for, well, the algorithm.  This may not produce
   the same exact diff as a system's local C<diff> executable, but it will be a
   valid diff and comprehensible by C<patch>.  We haven't seen any differences
-  between Algorithm::Diff's logic and GNU diff's, but we have not examined them
-  to make sure they are indeed identical.
+  between L<Algorithm::Diff>'s logic and GNU C<diff>'s, but we have not examined
+  them to make sure they are indeed identical.
   
   B<Note>: If you don't want to import the C<diff> function, do one of the
   following:
@@ -8729,27 +8762,28 @@ $fatpacked{"Text/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEXT_
   
      require Text::Diff;
   
-  That's a pretty rare occurence, so C<diff()> is exported by default.
+  That's a pretty rare occurrence,
+  so C<diff()> is exported by default.
   
   If you pass a filename, but the file can't be read,
   then C<diff()> will C<croak>.
   
   =head1 OPTIONS
   
-  diff() takes two parameters from which to draw input and a set of
-  options to control it's output.  The options are:
+  C<diff()> takes two parameters from which to draw input and a set of
+  options to control its output.  The options are:
   
   =over
   
   =item FILENAME_A, MTIME_A, FILENAME_B, MTIME_B
   
-  The name of the file and the modification time "files"
+  The name of the file and the modification time "files".
   
-  These are filled in automatically for each file when diff() is passed a
+  These are filled in automatically for each file when C<diff()> is passed a
   filename, unless a defined value is passed in.
   
   If a filename is not passed in and FILENAME_A and FILENAME_B are not provided
-  or C<undef>, the header will not be printed.
+  or are C<undef>, the header will not be printed.
   
   Unused on C<OldStyle> diffs.
   
@@ -8758,7 +8792,7 @@ $fatpacked{"Text/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEXT_
   The index of the first line / element.  These default to 1 for all
   parameter types except ARRAY references, for which the default is 0.  This
   is because ARRAY references are presumed to be data structures, while the
-  others are line oriented text.
+  others are line-oriented text.
   
   =item STYLE
   
@@ -8770,9 +8804,9 @@ $fatpacked{"Text/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEXT_
   Defaults to "Unified" (unlike standard C<diff>, but Unified is what's most
   often used in submitting patches and is the most human readable of the three.
   
-  If the package indicated by the STYLE has no hunk() method, c<diff()> will
+  If the package indicated by the STYLE has no C<hunk()> method, C<diff()> will
   load it automatically (lazy loading).  Since all such packages should inherit
-  from Text::Diff::Base, this should be marvy.
+  from C<Text::Diff::Base>, this should be marvy.
   
   Styles may be specified as class names (C<STYLE =E<gt> 'Foo'>),
   in which case they will be C<new()>ed with no parameters,
@@ -8810,21 +8844,23 @@ $fatpacked{"Text/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEXT_
   =back
   
   B<Note>: if neither C<FILENAME_> option is defined, the header will not be
-  printed.  If at one is present, the other and both MTIME_ options must be
-  present or "Use of undefined variable" warnings will be generated (except
+  printed.  If at least one is present, the other and both C<MTIME_> options must
+  be present or "Use of undefined variable" warnings will be generated (except
   on C<OldStyle> diffs, which ignores these options).
   
   =head1 Formatting Classes
   
   These functions implement the output formats.  They are grouped in to classes
-  so diff() can use class names to call the correct set of output routines and so
-  that you may inherit from them easily.  There are no constructors or instance
-  methods for these classes, though subclasses may provide them if need be.
+  so C<diff()> can use class names to call the correct set of output routines and
+  so that you may inherit from them easily.  There are no constructors or
+  instance methods for these classes, though subclasses may provide them if need
+  be.
   
-  Each class has file_header(), hunk_header(), hunk(), and footer() methods
-  identical to those documented in the Text::Diff::Unified section.  header() is
-  called before the hunk() is first called, footer() afterwards.  The default
-  footer function is an empty method provided for overloading:
+  Each class has C<file_header()>, C<hunk_header()>, C<hunk()>, and C<footer()>
+  methods identical to those documented in the C<Text::Diff::Unified> section.
+  C<header()> is called before the C<hunk()> is first called, C<footer()>
+  afterwards.  The default footer function is an empty method provided for
+  overloading:
   
       sub footer { return "End of patch\n" }
   
@@ -8859,12 +8895,12 @@ $fatpacked{"Text/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEXT_
   
   =over
   
-  =item file_header
+  =item Text::Diff::Unified::file_header
   
     $s = Text::Diff::Unified->file_header( $options );
   
   Returns a string containing a unified header.  The sole parameter is the
-  options hash passed in to diff(), containing at least:
+  C<options> hash passed in to C<diff()>, containing at least:
   
     FILENAME_A  => $fn1,
     MTIME_A     => $mtime1,
@@ -8878,11 +8914,11 @@ $fatpacked{"Text/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEXT_
   
   to override the default prefixes (default values shown).
   
-  =item hunk_header
+  =item Text::Diff::Unified::hunk_header
   
     Text::Diff::Unified->hunk_header( \@ops, $options );
   
-  Returns a string containing the output of one hunk of unified diff.
+  Returns a string containing the heading of one hunk of unified diff.
   
   =item Text::Diff::Unified::hunk
   
@@ -8964,7 +9000,7 @@ $fatpacked{"Text/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEXT_
         12
         13
   
-  Note: hunk_header() returns only "***************\n".
+  Note: C<hunk_header()> returns only "***************\n".
   
   =head2 Text::Diff::OldStyle
   
@@ -8977,23 +9013,23 @@ $fatpacked{"Text/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEXT_
       12d12
       < 11d
   
-  Note: no file_header().
+  Note: no C<file_header()>.
   
   =head1 LIMITATIONS
   
   Must suck both input files entirely in to memory and store them with a normal
   amount of Perlish overhead (one array location) per record.  This is implied by
-  the implementation of Algorithm::Diff, which takes two arrays.  If
-  Algorithm::Diff ever offers an incremental mode, this can be changed (contact
-  the maintainers of Algorithm::Diff and Text::Diff if you need this; it
-  shouldn't be too terribly hard to tie arrays in this fashion).
+  the implementation of L<Algorithm::Diff>, which takes two arrays.  If
+  L<Algorithm::Diff> ever offers an incremental mode, this can be changed
+  (contact the maintainers of L<Algorithm::Diff> and C<Text::Diff> if you need
+  this; it shouldn't be too terribly hard to tie arrays in this fashion).
   
-  Does not provide most of the more refined GNU diff options: recursive directory
-  tree scanning, ignoring blank lines / whitespace, etc., etc.  These can all be
-  added as time permits and need arises, many are rather easy; patches quite
-  welcome.
+  Does not provide most of the more refined GNU C<diff> options: recursive
+  directory tree scanning, ignoring blank lines / whitespace, etc., etc.  These
+  can all be added as time permits and need arises, many are rather easy; patches
+  quite welcome.
   
-  Uses closures internally, this may lead to leaks on C<perl> versions 5.6.1 and
+  Uses closures internally, this may lead to leaks on Perl versions 5.6.1 and
   prior if used many times over a process' life time.
   
   =head1 SEE ALSO
@@ -9088,7 +9124,7 @@ use Sys::Hostname;
 
 use constant HAS_TEXT_DIFF => eval { require Text::Diff; 1 };
 
-our $VERSION = '1.302';
+our $VERSION = '1.303';
 
 use constant {
     PROG => (File::Spec->splitpath($0))[2],
@@ -9124,11 +9160,6 @@ sub resolve_path($)
         $path =~ s!^\~(?=/)! HOME_DIR !e;
     }
     $path
-}
-
-sub resolve_ssh_path($)
-{
-    goto &resolve_path;
 }
 
 sub ssh_file($)
@@ -9216,7 +9247,7 @@ while (@ARGV) {
             } else {
                 # If the relative path contains a volume or directory,
                 # make it relative to CWD, else to SSH_DIR
-                my ($v, $d, $f) = File::Spec->splitpath($u{key_file});
+                my ($v, $d, undef) = File::Spec->splitpath($u{key_file});
                 $u{key_file} = File::Spec->rel2abs($u{key_file},
                    (length($v) || length($d)) ? CWD : SSH_DIR);
             }
@@ -9229,6 +9260,14 @@ while (@ARGV) {
 my @ssh_config_lines;
 
 if (-e SSH_CONFIG_FILE) {
+    my @stat = stat SSH_CONFIG_FILE;
+    if ($stat[4] != $<) {
+        die sprintf("%s: bad owner\n", SSH_CONFIG_FILE);
+    }
+    if (!WIN32 && $stat[2] & 0133) {
+        die sprintf("%s: bad file permissions. Fix: chmod u-x,og-wx %s\n", SSH_CONFIG_FILE, compress_path(SSH_CONFIG_FILE));
+    }
+
     # The :crlf layer is needed for msys
     if (open my $f, WIN32 ? '<:crlf' : '<', SSH_CONFIG_FILE) {
         @ssh_config_lines = <$f>;
@@ -9602,14 +9641,37 @@ if (@github_accounts) {
     );
     # Filter each list against what is supported by the ssh client
     while (my ($kind, $algos) = each %algorithms) {
-        if ($SSH_VERSION > 0x5000 && !open my $ssh_Q, '-|', "ssh -Q $kind 2>".File::Spec->devnull) {
+        if ($SSH_VERSION > 0x5200 && open my $ssh_Q, '-|', "ssh -Q $kind 2>".File::Spec->devnull) {
             my %supported = map { chomp; ($_ => 1) } <$ssh_Q>;
-            $algorithms{$kind} = join(',', grep { $supported{$_} } @$algos);
-        } else {
+            close $ssh_Q;
+            if (%supported) {
+                $algorithms{$kind} = join(',', grep { $supported{$_} } @$algos);
+                next;
+            }
             #warn "ssh -Q $kind: failure ($!)";
-            $algorithms{$kind} = join(',', @$algos);
         }
+
+        # For old OpenSSH that don't have -Q option:
+        # - Detect supported cipher algorithms with 'ssh -c'
+        # - Detect supported mac algorithms with 'ssh -m'
+        my %kind2opt = (cipher => '-c', mac => '-m');
+        if (my $opt = $kind2opt{$kind}) {
+            for(my $i=0; $i<@$algos; $i++) {
+                my $check = `ssh $opt $algos->[$i] -o XXX=xxx 2>&1`;
+                # If the result is not "Unknown ...", the algorithm is
+                # supported
+                if (substr($check, 0, 7) eq 'Unknown') {
+                    splice @$algos, $i, 1;
+                    last if $i == @$algos;
+                    redo
+                }
+            }
+        }
+
+        $algorithms{$kind} = @$algos ? join(',', @$algos) : '';
     }
+    # hmac-sha1 is only for old OpenSSH that support none above
+    $algorithms{'mac'} = 'hmac-sha1' unless length $algorithms{'mac'};
 
     my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
 
@@ -10102,7 +10164,7 @@ Olivier MenguE<eacute>, L<mailto:dolmen@cpan.org>.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright E<copy> 2011-2015 Olivier MenguE<eacute>.
+Copyright E<copy> 2011-2017 Olivier MenguE<eacute>.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
