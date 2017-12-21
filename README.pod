@@ -258,6 +258,15 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
+=item v1.303
+
+Fix SSH options and algorithm support detection that was accidentally disabled since v1.100.
+This makes github-keygen work with OpenSSH 7.6+ that removed an algorithm.
+
+Fix for support of OpenSSH down to 5.1.
+
+Detect bad permissions on F<~/.ssh/config> and report them.
+
 =item v1.302
 
 Remove C<UseRoaming> option if OpenSSH >= 7.2 on Mac OS X Sierra
