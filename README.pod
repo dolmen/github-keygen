@@ -258,6 +258,11 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
+=item v1.304
+
+Remove algorithm C<diffie-hellman-group14-sha1> as it has been removed server side
+by GitHub: see L<https://githubengineering.com/crypto-deprecation-notice/>.
+
 =item v1.303
 
 Fix SSH options and algorithm support detection that was accidentally disabled since v1.100.
