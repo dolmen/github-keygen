@@ -9124,7 +9124,7 @@ use Sys::Hostname;
 
 use constant HAS_TEXT_DIFF => eval { require Text::Diff; 1 };
 
-our $VERSION = '1.303';
+our $VERSION = '1.304';
 
 use constant {
     PROG => (File::Spec->splitpath($0))[2],
@@ -9632,11 +9632,13 @@ if (@github_accounts) {
             hmac-sha2-512
         > ],
         # KexAlgorithms: ssh -Q kex
+        #
+        # diffie-hellman-group14-sha1 removed by GitHub on 2018-02-01
+        # https://githubengineering.com/crypto-deprecation-notice/
         kex => [ qw<
             curve25519-sha256@libssh.org
             diffie-hellman-group-exchange-sha256
             diffie-hellman-group-exchange-sha1
-            diffie-hellman-group14-sha1
         > ],
     );
     # Filter each list against what is supported by the ssh client
@@ -10164,7 +10166,7 @@ Olivier MenguE<eacute>, L<mailto:dolmen@cpan.org>.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright E<copy> 2011-2017 Olivier MenguE<eacute>.
+Copyright E<copy> 2011-2018 Olivier MenguE<eacute>.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

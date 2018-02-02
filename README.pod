@@ -258,6 +258,11 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
+=item v1.304
+
+Remove algorithm C<diffie-hellman-group14-sha1> as it has been removed server side
+by GitHub: see L<https://githubengineering.com/crypto-deprecation-notice/>.
+
 =item v1.303
 
 Fix SSH options and algorithm support detection that was accidentally disabled since v1.100.
@@ -493,7 +498,7 @@ If you want to contribute, have a look to L<CONTRIBUTING.pod>.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright E<copy> 2011-2017 Olivier MenguE<eacute>.
+Copyright E<copy> 2011-2018 Olivier MenguE<eacute>.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
