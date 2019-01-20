@@ -258,6 +258,12 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
+=item v1.305
+
+Remove MAC algorithm C<hmac-ripemd160> as it has been
+L<removed from OpenSSH 7.6|https://www.openssh.com/txt/release-7.6>.
+It is also not supported by GitHub anymore.
+
 =item v1.304
 
 Remove algorithm C<diffie-hellman-group14-sha1> as it has been removed server side
