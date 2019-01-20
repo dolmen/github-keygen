@@ -675,6 +675,10 @@ EOF
             $supported_options{useroaming} =
                 $SSH_VERSION >= 0x5400
                 && $SSH_VERSION < ($^O eq 'darwin' ? 0x7200 : 0x7300);
+            # SSH protocol v1 removed in OpenSSH 7.6
+            # https://www.openssh.com/txt/release-7.6
+            $supported_options{protocol} =
+                $SSH_VERSION < 0x7600;
             while (<$fh>) {
                 $supported_options{lc $1}++ if /^\.It Cm ([A-Z]\S+)/
             }
