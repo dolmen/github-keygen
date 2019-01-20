@@ -679,6 +679,8 @@ EOF
             # https://www.openssh.com/txt/release-7.6
             $supported_options{protocol} =
                 $SSH_VERSION < 0x7600;
+            # We have to lower case the option names because the case in the
+            # manual has not been conistent in OpenSSH history.
             while (<$fh>) {
                 $supported_options{lc $1}++ if /^\.It Cm ([A-Z]\S+)/
             }
