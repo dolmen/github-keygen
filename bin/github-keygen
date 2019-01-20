@@ -672,8 +672,8 @@ EOF
             # http://www.openssh.com/txt/release-7.1p2
             # Special case for MacOS X Sierra that has 7.2p2 but no
             # UseRoaming: https://github.com/dolmen/github-keygen/issues/31
-            $supported_options{useroaming}++
-                if $SSH_VERSION >= 0x5400
+            $supported_options{useroaming} =
+                $SSH_VERSION >= 0x5400
                 && $SSH_VERSION < ($^O eq 'darwin' ? 0x7200 : 0x7300);
             while (<$fh>) {
                 $supported_options{lc $1}++ if /^\.It Cm ([A-Z]\S+)/
@@ -682,8 +682,9 @@ EOF
             if (scalar(keys %supported_options) > 1) {
                 foreach (@ghkg_config_lines) {
                     next unless /^([A-Z]\S+)/;
-                    unless (exists $supported_options{lc $1}) {
-                        warn "ssh option '$1' is not available";
+                    my $sup = $supported_options{lc $1};
+                    unless ($sup) {
+                        warn "ssh option '$1' is not available" if !defined $sup;
                         s/^/##/;
                     }
                 }
