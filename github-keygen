@@ -6436,7 +6436,7 @@ $fatpacked{"Pod/Text.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_TE
   # We have to export pod2text for backward compatibility.
   @EXPORT = qw(pod2text);
   
-  $VERSION = '4.09';
+  $VERSION = '4.10';
   
   # Ensure that $Pod::Simple::nbsp and $Pod::Simple::shy are available.  Code
   # taken from Pod::Simple 3.32, but was only added in 3.30.
@@ -7104,7 +7104,7 @@ $fatpacked{"Pod/Text.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_TE
       my $self = shift;
       $self->reinit;
   
-      # Fake the old cutting option to Pod::Parser.  This fiddings with internal
+      # Fake the old cutting option to Pod::Parser.  This fiddles with internal
       # Pod::Simple state and is quite ugly; we need a better approach.
       if (ref ($_[0]) eq 'HASH') {
           my $opts = shift @_;
@@ -8326,6 +8326,15 @@ $fatpacked{"Pod/Usage.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'POD_U
   
 POD_USAGE
 
+$fatpacked{"Storable/Limit.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'STORABLE_LIMIT';
+  # bisected by stacksize
+  $Storable::recursion_limit = 38984
+    unless defined $Storable::recursion_limit;
+  $Storable::recursion_limit_hash = 23384
+    unless defined $Storable::recursion_limit_hash;
+  1;
+STORABLE_LIMIT
+
 $fatpacked{"Text/Diff.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEXT_DIFF';
   package Text::Diff;
   
@@ -9124,7 +9133,7 @@ use Sys::Hostname;
 
 use constant HAS_TEXT_DIFF => eval { require Text::Diff; 1 };
 
-our $VERSION = '1.304';
+our $VERSION = '1.305';
 
 use constant {
     PROG => (File::Spec->splitpath($0))[2],
@@ -9627,7 +9636,6 @@ if (@github_accounts) {
         mac => [ qw<
             hmac-sha2-512-etm@openssh.com
             hmac-sha2-256-etm@openssh.com
-            hmac-ripemd160-etm@openssh.com
             umac-128-etm@openssh.com
             hmac-sha2-512
         > ],
@@ -9785,9 +9793,15 @@ EOF
             # http://www.openssh.com/txt/release-7.1p2
             # Special case for MacOS X Sierra that has 7.2p2 but no
             # UseRoaming: https://github.com/dolmen/github-keygen/issues/31
-            $supported_options{useroaming}++
-                if $SSH_VERSION >= 0x5400
+            $supported_options{useroaming} =
+                $SSH_VERSION >= 0x5400
                 && $SSH_VERSION < ($^O eq 'darwin' ? 0x7200 : 0x7300);
+            # SSH protocol v1 removed in OpenSSH 7.6
+            # https://www.openssh.com/txt/release-7.6
+            $supported_options{protocol} =
+                $SSH_VERSION < 0x7600;
+            # We have to lower case the option names because the case in the
+            # manual has not been conistent in OpenSSH history.
             while (<$fh>) {
                 $supported_options{lc $1}++ if /^\.It Cm ([A-Z]\S+)/
             }
@@ -9795,8 +9809,9 @@ EOF
             if (scalar(keys %supported_options) > 1) {
                 foreach (@ghkg_config_lines) {
                     next unless /^([A-Z]\S+)/;
-                    unless (exists $supported_options{lc $1}) {
-                        warn "ssh option '$1' is not available";
+                    my $sup = $supported_options{lc $1};
+                    unless ($sup) {
+                        warn "ssh option '$1' is not available" if !defined $sup;
                         s/^/##/;
                     }
                 }
