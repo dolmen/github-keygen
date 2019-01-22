@@ -278,9 +278,9 @@ if ($branch eq 'refs/heads/master') {
 		   "v$version",
 		   $new_release_commit;
 	say 'Done'.
-	say "You can now push: git push github : v$version";
+	say "You can now push: \e[1mgit push github : v$version\e[m";
     } else {
-	say "You can now push: git push github :";
+	say "You can now push: \e[1mgit push github :\e[m";
     }
 # Else: just create a tag to the build result, so we can check it out for
 # testing
@@ -290,6 +290,6 @@ if ($branch eq 'refs/heads/master') {
 	       -m => "Build for branch $branch",
 	       "$branch.build",
 	       $new_release_commit;
-    say "You can now check out the build: git checkout $branch.build";
+    say "You can now check out the build: \e[1mgit checkout $branch.build\e[m";
 }
 
