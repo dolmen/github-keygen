@@ -272,15 +272,17 @@ my $branch = git 'symbolic-ref', 'HEAD';
 if ($branch eq 'refs/heads/master') {
     git 'update-ref' => 'refs/heads/release' => $new_release_commit, $release_commit;
 
+    my $remote = `git config --local branch.release.remote`;
+
     if ($version) {
 	git tag => -a =>
 	           -m => "Release v$version",
 		   "v$version",
 		   $new_release_commit;
 	say 'Done'.
-	say "You can now push: \e[1mgit push github : v$version\e[m";
+	say "You can now push: \e[1mgit push $remote : v$version\e[m";
     } else {
-	say "You can now push: \e[1mgit push github :\e[m";
+	say "You can now push: \e[1mgit push $remote :\e[m";
     }
 # Else: just create a tag to the build result, so we can check it out for
 # testing
