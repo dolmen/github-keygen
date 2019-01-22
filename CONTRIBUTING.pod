@@ -38,6 +38,9 @@ Not required for doc patches.
     # Test...
     bin/github-keygen ...
 
+    # Run the author testsuite
+    prove -v xt
+
     git commit
 
 =item 4. Setup a fork
