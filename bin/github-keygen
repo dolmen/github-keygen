@@ -79,7 +79,7 @@ use constant {
 my $offline; # No network connection
 my $remove_all;
 my $key_type = 'rsa';
-my $key_bits = 2048;
+my $key_bits = 4096;
 my $github_default = '';
 
 # Parse global options
