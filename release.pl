@@ -273,6 +273,7 @@ if ($branch eq 'refs/heads/master') {
     git 'update-ref' => 'refs/heads/release' => $new_release_commit, $release_commit;
 
     my $remote = `git config --local branch.release.remote`;
+    chomp $remote;
 
     if ($version) {
 	git tag => -a =>
