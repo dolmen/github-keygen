@@ -59,7 +59,7 @@ you don't have to recreate a new key on all your other computers).
 =item *
 
 The
-L<GitHub manual|https://help.github.com/articles/generating-ssh-keys> tells to
+L<GitHub manual|https://help.github.com/articles/generating-ssh-keys> used to tell to
 I<remove> your existing SSH keys. But this may not be what you want. This tool
 avoids that: keep your keys and your existing SSH config; they will not be used
 for GitHub.
@@ -386,7 +386,7 @@ Create F<~/.ssh> with rights 0700 if it doesn't exists because L<ssh-keygen(1)>
 will fail if it is missing.
 
 Add support for host C<ssh.github.com> for
-L<SSH over https port|https://help.github.com/articles/using-ssh-over-the-https-port>.
+L<SSH over https port|https://docs.github.com/en/authentication/troubleshooting-ssh/using-ssh-over-the-https-port>.
 Add C<*.ssh.github.com> host aliases for Git.
 Users should run again C<github-keygen> (without argument) to enable those new
 features.
