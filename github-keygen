@@ -9701,7 +9701,7 @@ HostName github.com
 Host github.com gist.github.com ssh.github.com 443.github.com *.github.com *.gist.github.com *.ssh.github.com *.443.github.com
 User git
 # Knwon options which are available only in some OpenSSH versions
-IgnoreUnknown Protocol UseRoaming UseKeychain
+IgnoreUnknown Protocol,UseRoaming,UseKeychain
 # Force SSH2
 Protocol 2
 # Enforce host checks
