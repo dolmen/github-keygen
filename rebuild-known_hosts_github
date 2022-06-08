@@ -2,7 +2,8 @@
 
 set -euo pipefail
 
-f=~/.ssh/known_host_github
+f=~/.ssh/known_hosts_github
+umask 0077
 
 rm -f "$f"
 touch "$f"
