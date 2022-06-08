@@ -282,6 +282,7 @@ if ($branch eq 'refs/heads/master') {
 		   $new_release_commit;
 	say 'Done'.
 	say "You can now push: \e[1mgit push $remote : v$version\e[m";
+	say "Then, open https://github.com/dolmen/github-keygen/releases/new?tag=v$version"
     } else {
 	say "You can now push: \e[1mgit push $remote :\e[m";
     }
