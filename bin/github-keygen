@@ -585,7 +585,7 @@ if (@github_accounts) {
 Host gist.github.com *.gist.github.com
 HostName gist.github.com
 
-# See https://help.github.com/articles/using-ssh-over-the-https-port
+# See https://docs.github.com/en/authentication/troubleshooting-ssh/using-ssh-over-the-https-port
 Host ssh.github.com *.ssh.github.com 443.github.com *.443.github.com
 HostName ssh.github.com
 Port 443
