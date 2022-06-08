@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+f=~/.ssh/known_host_github
+
+rm -f "$f"
+touch "$f"
+
+for host in github.com gist.github.com ssh.github.com
+do
+	echo "[[ $host ]]"
+	! ssh -T -oControlMaster=no -oControlPersist=no "-oUserKnownHostsFile=$f" -oStrictHostKeyChecking=no -oHashKnownHosts=no $host
+	echo -----
+	cat "$f"
+	echo -----
+done
+
+echo 'You can paste the result into bin/github-keygen (look for __END__).'
