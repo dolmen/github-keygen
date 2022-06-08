@@ -455,7 +455,7 @@ if (@github_accounts) {
              ? (stat KNOWN_HOSTS_FILE)[7]
              : 0;
 
-    if ($size == 1815) {
+    if ($size == 291) {
         printf "No changes in %s.\n",
                compress_path(KNOWN_HOSTS_FILE);
     } else {
