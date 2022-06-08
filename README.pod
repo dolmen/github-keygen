@@ -260,7 +260,7 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =item v1.306
 
-On key creation, dwitch default key size from 2048 bits to 4096 bits.
+On key creation, switch default key size from 2048 bits to 4096 bits.
 
 Update C<~/.ssh/known_hosts_github> to include only the C<ssh-ed25519> public
 keys of GitHub servers (`ssh-rsa` and `ssh-dss` keys are removed).
