@@ -258,6 +258,15 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
+=item v1.306
+
+On key creation, dwitch default key size from 2048 bits to 4096 bits.
+
+Update C<~/.ssh/known_hosts_github> to include only the C<ssh-ed25519> public
+keys of GitHub servers (`ssh-rsa` and `ssh-dss` keys are removed).
+
+Disallow C<ssh-rsa> public keys for GitHub servers.
+
 =item v1.305
 
 Remove MAC algorithm C<hmac-ripemd160> as it has been
@@ -508,7 +517,7 @@ If you want to contribute, have a look to L<CONTRIBUTING.pod>.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright E<copy> 2011-2018 Olivier MenguE<eacute>.
+Copyright E<copy> 2011-2022 Olivier MenguE<eacute>.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
