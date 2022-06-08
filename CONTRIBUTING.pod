@@ -1,3 +1,6 @@
+# To read this file, run:
+#    perldoc CONTRIBUTING.pod
+
 =head1 NAME
 
 How to contribute to C<github-keygen>?
@@ -11,7 +14,10 @@ C<L<master|https://github.com/dolmen/github-keygen/tree/master>> branch,
 then submitted as pull requests at GitHub.
 
 The documentation is written using the
-L<POD|http://perldoc.perl.org/perlpod.html> format.
+L<POD|http://perldoc.perl.org/perlpod.html> format. Use the C<perldoc> tool
+to render it in a terminal:
+
+    perldoc CONTRIBUTING.pod
 
 =head1 PATCHING, STEP BY STEP
 
