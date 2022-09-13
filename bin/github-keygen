@@ -341,7 +341,7 @@ foreach my $user (@github_accounts) {
     printf "Creating private key %s for user %s...\n",
            compress_path($u->{key_file}), $user;
 
-    $u->{key_comment} = hostname."/$user\@github.com";
+    $u->{key_comment} //= hostname."/$user\@github.com";
 
     system 'ssh-keygen',
            '-t', delete $u->{key_type},
