@@ -950,7 +950,7 @@ Set default key type for key creation. Default is C<rsa>.
 
 =item -b I<key-bits>
 
-Set default key bits for key creation. Default is C<2048>.
+Set default key bits for key creation. Default is C<4096>.
 
 =back
 
