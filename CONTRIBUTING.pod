@@ -1,6 +1,8 @@
 # To read this file, run:
 #    perldoc CONTRIBUTING.pod
 
+=encoding utf8
+
 =head1 NAME
 
 How to contribute to C<github-keygen>?
