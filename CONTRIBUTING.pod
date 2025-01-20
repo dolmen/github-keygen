@@ -23,19 +23,56 @@ to render it in a terminal:
 
 =over 4
 
-=item 1. Get the source
+=item 1. Setup a Perl development environment
+
+There are various ways to setup a Perl development environment, but here is mine
+ (@dolmen). The key principles are:
+
+=over 4
+
+=item a. Do not depend on the Perl of the operating system. Instead, install a recent version which you control upgrades independently of the O/S.
+
+=item b. Setup environment to install Perl modules from CPAN using cpanm.
+
+=back
+
+
+Step by step on MacOS (zsh):
+
+=over 4
+
+=item a. Install L<plenv|https://github.com/tokuhirom/plenv> (note: this is incompatible with I<perlbrew>)
+
+    git clone git://github.com/tokuhirom/plenv.git ~/.plenv
+    echo 'export PATH="$HOME/.plenv/bin:$PATH"' >> ~/.profile
+    echo 'eval "$(plenv init -)"' >> ~/.zshrc
+    exec $SHELL -l
+    git clone git://github.com/tokuhirom/Perl-Build.git ~/.plenv/plugins/perl-build/
+
+=item b. Install a recent perl:
+
+    plenv install 5.40.1
+    plenv global 5.40.1
+
+=item c. Install cpanm:
+
+    plenv install-cpanm
+
+=back
+
+=item 2. Get the source
 
     git clone --origin upstream git://github.com/dolmen/github-keygen.git
     cd github-keygen
     git checkout master
 
-=item 2. Install build dependencies
+=item 3. Install build dependencies
 
 Not required for doc patches.
 
     curl -L https://cpanmin.us | perl - --installdeps --with-develop .
 
-=item 3. Make your fix/feature
+=item 4. Make your fix/feature
 
     git checkout -b <my-patch> master
 
@@ -49,25 +86,33 @@ Not required for doc patches.
 
     git commit
 
-=item 4. Setup a fork
+=item 5. Setup a fork
 
-=item 4.1. L<Fork the project on GitHub|https://github.com/dolmen/github-keygen/>
+=over 4
 
-=item 4.2. Link your local repo to your fork (just once)
+=item 5.1. L<Fork the project on GitHub|https://github.com/dolmen/github-keygen/>
+
+=item 5.2. Link your local repo to your fork (just once)
 
 (You are using C<github-keygen> isn't it?)
 
     git remote add github <github-user>.github.com:<github-user>/github-keygen.git
 
-=item 5. Submit your work
+=back
 
-=item 5.1 Push!
+=item 6. Submit your work
+
+=over 4
+
+=item 6.1 Push!
 
     git push github <my-patch>
 
-=item 5.2 Submit a pull request on GitHub
+=item 6.2 Submit a pull request on GitHub
 
-=item 6. Loop
+=back
+
+=item 7. Loop
 
 Redo from step 3.
 
