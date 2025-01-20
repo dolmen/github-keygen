@@ -19,11 +19,9 @@ to render it in a terminal:
 
     perldoc CONTRIBUTING.pod
 
-=head1 PATCHING, STEP BY STEP
+=head1 INITIAL SETUP
 
-=over 4
-
-=item 1. Setup a Perl development environment
+=head2 1. Setup a Perl development environment
 
 There are various ways to setup a Perl development environment, but here is mine
  (@dolmen). The key principles are:
@@ -32,7 +30,7 @@ There are various ways to setup a Perl development environment, but here is mine
 
 =item a. Do not depend on the Perl of the operating system. Instead, install a recent version which you control upgrades independently of the O/S.
 
-=item b. Setup environment to install Perl modules from CPAN using cpanm.
+=item b. Setup environment to install Perl modules from CPAN into that C<perl> using C<cpanm>.
 
 =back
 
@@ -54,27 +52,58 @@ Step by step on MacOS (zsh):
     plenv install 5.40.1
     plenv global 5.40.1
 
-=item c. Install cpanm:
+=item c. Install L<cpanm|https://metacpan.org/dist/App-cpanminus/view/bin/cpanm>:
 
     plenv install-cpanm
 
 =back
 
-=item 2. Get the source
+
+=head2 2. Get the source
 
     git clone --origin upstream git://github.com/dolmen/github-keygen.git
     cd github-keygen
     git checkout master
 
-=item 3. Install build dependencies
+=head2 3. Install build dependencies
 
 Not required for doc patches.
 
     curl -L https://cpanmin.us | perl - --installdeps --with-develop .
 
-=item 4. Make your fix/feature
+=head2 4. Setup a fork
 
-    git checkout -b <my-patch> master
+=over 4
+
+=item 4.1. L<Fork the project on GitHub|https://github.com/dolmen/github-keygen/>
+
+=item 4.2. Link your local repo to your fork:
+
+(You are already using C<github-keygen>, aren't you?)
+
+    git remote add github <github-user>.github.com:<github-user>/github-keygen.git
+    git remote update
+
+=back
+
+=head1 PATCHING, STEP BY STEP
+
+=over 4
+
+=item 1. Update your local fork
+
+    git remote update
+    git checkout master
+    git rebase upstream/master
+
+=item 2. Update Perl dependencies (not required for doc patches)
+
+    curl -L https://cpanmin.us | perl - --installdeps --with-develop .
+    
+
+=item 3. Make your fix/feature in a dedicated Git branch
+
+    git checkout -b <my-patch> upstream/master
 
     $EDITOR bin/github-keygen
 
@@ -86,35 +115,22 @@ Not required for doc patches.
 
     git commit
 
-=item 5. Setup a fork
+
+=item 4. Submit your work
 
 =over 4
 
-=item 5.1. L<Fork the project on GitHub|https://github.com/dolmen/github-keygen/>
-
-=item 5.2. Link your local repo to your fork (just once)
-
-(You are using C<github-keygen> isn't it?)
-
-    git remote add github <github-user>.github.com:<github-user>/github-keygen.git
-
-=back
-
-=item 6. Submit your work
-
-=over 4
-
-=item 6.1 Push!
+=item 4.1 Push!
 
     git push github <my-patch>
 
-=item 6.2 Submit a pull request on GitHub
+=item 4.2 Submit a pull request on GitHub
 
 =back
 
-=item 7. Loop
+=item 5. Loop
 
-Redo from step 3.
+Ready for another contribution? Redo from step 1!
 
 =back
 
@@ -135,9 +151,10 @@ Redo from step 3.
 =item * Release
 
     git checkout master
+    ./release.pl -n
     ./release.pl
-    git push origin master release
-    git push origin --tags
+    git push github master release
+    git push github --tags
 
 =back
 
