@@ -1,5 +1,7 @@
 =pod
 
+=encoding utf8
+
 =for stopwords MITM versioning
 
 =head1 NAME
