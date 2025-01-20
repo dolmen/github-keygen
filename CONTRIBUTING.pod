@@ -14,7 +14,7 @@ C<L<master|https://github.com/dolmen/github-keygen/tree/master>> branch,
 then submitted as pull requests at GitHub.
 
 The documentation is written using the
-L<POD|http://perldoc.perl.org/perlpod.html> format. Use the C<perldoc> tool
+L<POD|https://perldoc.perl.org/perlpod.html> format. Use the C<perldoc> tool
 to render it in a terminal:
 
     perldoc CONTRIBUTING.pod
