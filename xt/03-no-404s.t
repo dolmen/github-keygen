@@ -9,7 +9,8 @@ use Test::More 0.88
 
 use Test::Pod::No404s;
 
-$TODO = 'Test::Pod::No404s has issues with stribika.github.io and cpanmin.us';
+# $TODO = 'Test::Pod::No404s has issues with ';
+
 pod_file_ok($_) for qw< README.pod bin/github-keygen CONTRIBUTING.pod >;
 
 done_testing;

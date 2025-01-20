@@ -100,7 +100,7 @@ Disable bad things that could come from the GitHub hosts ("Trust no-one")
 
 Disable the C<UseRoaming> option to protect you if ever GitHub (or a MITM) tries
 to exploit the
-L<C<OpenSSH roaming> vulnerability|http://www.openssh.com/txt/release-7.1p2>.
+L<C<OpenSSH roaming> vulnerability|https://www.openssh.com/txt/release-7.1p2>.
 
 =back
 
@@ -226,7 +226,7 @@ more like a wizard that you use just once. So just get the file, run it, and
 delete it.
 
 I<Windows only>: the tool is written in Perl, but you don't have to install
-L<StrawberryPerl|http://strawberryperl.com> (or Cygwin or ActivePerl); the perl
+L<StrawberryPerl|https://strawberryperl.com> (or Cygwin or ActivePerl); the perl
 bundled with L<msysgit|https://gitforwindows.org/> will be automatically
 detected and used.
 
@@ -346,7 +346,7 @@ settings were applied before our own.
 =item v1.101
 
 Config: set C<UseRoaming no> to protect against the
-L<C<OpenSSH roaming> vulnerability|http://www.openssh.com/txt/release-7.1p2>.
+L<C<OpenSSH roaming> vulnerability|https://www.openssh.com/txt/release-7.1p2>.
 
 =item v1.100
 
@@ -372,7 +372,7 @@ Various fixes/workarounds to restore full support of the old SSH (4.6p1) that
 is bundled with msysgit (Git on Win32).
 
 Store the C<ControlPath> in C<$XDG_RUNTIME_DIR> (see the
-L<XDG Base Directory Specification|http://standards.freedesktop.org/basedir-spec/latest/ar01s03.html>)
+L<XDG Base Directory Specification|https://specifications.freedesktop.org/basedir-spec/latest/#variables>)
 if available.
 
 Doc fixes: change "Github" to "GitHub".
@@ -420,7 +420,7 @@ with GitHub.
 
 Fixed a message that wrongly told to paste the I<private> key (C<'.pub'>
 forgotten). Fixed at the
-L<Quack and Hack 2012 Europe hackathon|http://act.yapc.eu/qh2012eu/>,
+L<Quack and Hack 2012 Europe hackathon|https://act.yapc.eu/qh2012eu/>,
 but released (too) long later.
 
 =item v1.006
