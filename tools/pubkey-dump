@@ -1,5 +1,12 @@
 #!/usr/bin/env perl
 
+# Decode OpenSSH public key string into structured data.
+# The data and encoding depends on the key type.
+#
+# Usage: pubkey-dump ~/.ssh/id_rsa.pub
+# Usage: pubkey-dump ~/.ssh/known_hosts
+# Usage: pubkey-dump ~/.ssh/authorized_keys
+
 use strict;
 use warnings;
 use feature 'say';
@@ -12,14 +19,28 @@ my %decoders = (
         sprintf("exponent: %v02X\nmodulus: %v02X\n", $exp, $mod)
         . (length($rem) ? sprintf("other: %v02X\n", $rem) : '')
     },
+    'ssh-ed25519' => sub {
+	# Skip 4 first bytes (00.00.00.20)
+	# Show the other 32 bytes as hex
+	sprintf("pk: %v02X\n", substr($_[0], 4))
+    },
+    # TODO: add other key types
 );
 
 
 open my $f, '<', $ARGV[0] or die;
 while (<$f>) {
-    my ($b64) = $_ =~ m!^[^ ]+ ([0-9a-zA-Z+/]+=*) ! or die;
+    next if /^#/;
+    if (/^[^ ]+ +ssh-/) { # Allow to also decode known_hosts: move hostname to the end of the line
+	s/^([^ ]*) +(ssh-.*)$/$2 $1/;
+    }
+    my ($b64) = $_ =~ m!^[^ ]+ ([0-9a-zA-Z+/]+=*)( |$)! or die "unexpected line format: \"$_\"";
     my $bytes = MIME::Base64::decode($b64);
     my ($type, $remain) = unpack('N/a a*', $bytes);
+    unless ($decoders{$type}) {
+	printf STDERR "unknown key type $type\n";
+	next
+    }
     printf "type: %s\n%s", $type, $decoders{$type}->($remain);
 }
 
