@@ -1,10 +1,12 @@
+use utf8;
 use strict;
 use warnings;
 
 use Test::More;
 use Test::Spelling;
 
-plan skip_all => 'No working spellchecker' unless has_working_spellchecker;
+plan skip_all => 'No working spellchecker (hint: install hunspell and LibreOffice dictionaries)'
+  unless has_working_spellchecker;
 
 local $TODO = 'Test::Spelling is broken (no UTF-8 support)';
 
