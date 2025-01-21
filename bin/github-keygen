@@ -499,9 +499,16 @@ if (@github_accounts) {
     # Algorithms subset recommended by Stribika
     #  See https://stribika.github.io/2015/01/04/secure-secure-shell.html
     #  Last in each list is the minimum supported by GitHub
-    # TODO: some algorithms are imported by OpenSSH from OpenSSL at runtime
-    #       so we could check the output of `openssl list-cipher-algorithms`
+    # TODO: Some algorithms are imported by OpenSSH from OpenSSL at runtime
+    #       so we could check the output of `openssl list -cipher-algorithms`
     #       in the case `ssh -Q cipher` is not implemented (old OpenSSH).
+    #       However:
+    #       - this is less and less relevant as recent version of OpenSSH get
+    #         deployed
+    #       - we would have to parse various versions of the openssl tool output
+    #         (`openssl list -cipher-algorithms` vs
+    #         `openssl list-cipher-algorithms`: see
+    #         tools/list-openssl-algorithms)
     my %algorithms = (
         # Ciphers: ssh -Q cipher
         cipher => [
