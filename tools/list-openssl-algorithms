@@ -6,16 +6,37 @@ use feature 'say';
 use JSON::PP ();
 
 
+# OpenSSL 3.x: https://docs.openssl.org/master/man1/openssl-list/#synopsis
+# LibreSSL (the version bundled with macOS): https://man.openbsd.org/openssl.1
+my $has_openssl_list = `openssl version` =~ /^OpenSSL 3/;
+
+sub cmd_openssl_list
+{
+    my $cat = shift;
+    if ($has_openssl_list) {
+	('openssl', 'list', '-1', "-$cat")
+    } else {
+	('openssl', "list-$cat")
+    }
+}
+
 sub read_openssl_list
 {
     my $cat = shift;
-    open my $f, '-|', 'openssl', "list-$cat-algorithms" or die $!;
+    open my $f, '-|', cmd_openssl_list("$cat-algorithms") or die $!;
     my %alg;
     while (<$f>) {
-	next if / => /;
+	next if / => / || /^(?:Legacy|Provided.*):/;
 	chomp;
 	$_ = lc;
-	$alg{$_}++;
+	s/^ *//;
+	s/ @ default$//;
+	if (/^\{ (.*) \}$/) {
+	    my @algs = split /, /, $1;
+	    $alg{$_}++ for @algs;
+	} else {
+	    $alg{$_}++;
+	}
     }
     close $f;
     my @a = sort keys %alg;
@@ -25,7 +46,7 @@ sub read_openssl_list
 
 sub read_openssl_list_public_key
 {
-    open my $f, '-|', 'openssl', "list-public-key-algorithms" or die $!;
+    open my $f, '-|', cmd_openssl_list('public-key-algorithms') or die $!;
     my %alg;
     while (<$f>) {
 	next unless /PEM string: (.*)\n/;
@@ -39,7 +60,7 @@ sub read_openssl_list_public_key
 
 my %alg;
 
-$alg{mac} = read_openssl_list('message-digest');
+$alg{mac} = read_openssl_list($has_openssl_list ? 'mac' : 'message-digest');
 $alg{cipher} = read_openssl_list('cipher');
 $alg{key} = read_openssl_list_public_key();
 
