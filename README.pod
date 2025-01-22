@@ -262,12 +262,16 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =item NEXT
 
-Change default key type to C<ed25519> (previously C<rsa>)
+Change default key type on key creation to C<ed25519> (previously C<rsa>)
 (L<GitHub #48|https://github.com/dolmen/github-keygen/issues/48>).
 
 On key creation, custom key comment provided by C<-C> was ignored
 (L<GitHub #46|https://github.com/dolmen/github-keygen/issues/46>). This is
 fixed.  Thanks to L<@tinhtruong|https://github.com/tinhtruong> for the report.
+
+Fix typo in a comment in F<~/.ssh/config>: "I<Knwon>".
+
+Improve Windows compatibility (fix in parsing of C<ssh -V>). 
 
 =item v1.306
 
