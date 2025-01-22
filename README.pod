@@ -260,7 +260,7 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
-=item NEXT
+=item v1.400
 
 Change default key type on key creation to C<ed25519> (previously C<rsa>)
 (L<GitHub #48|https://github.com/dolmen/github-keygen/issues/48>).
