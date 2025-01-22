@@ -78,7 +78,7 @@ use constant {
 
 my $offline; # No network connection
 my $remove_all;
-my $key_type = 'rsa';
+my $key_type = 'ed25519';
 my $key_bits = 4096;
 my $github_default = '';
 
@@ -954,7 +954,7 @@ Remove all accounts, except those following on the command-line.
 
 =item -t I<key-type>
 
-Set default key type for key creation. Default is C<rsa>.
+Set default key type for key creation. Default is C<ed25519>.
 
 =item -b I<key-bits>
 
