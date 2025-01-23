@@ -6,19 +6,31 @@
 # Usage: pubkey-dump ~/.ssh/id_rsa.pub
 # Usage: pubkey-dump ~/.ssh/known_hosts
 # Usage: pubkey-dump ~/.ssh/authorized_keys
+#
+# See also:
+#   ssh-keygen -e -m PEM -f id_rsa
+#   ssh-keygen -e -m PEM -f id_rsa.pub
+#
+# References:
+#   https://www.rfc-editor.org/rfc/rfc4716.html#section-3.4
 
 use strict;
 use warnings;
 use feature 'say';
 
 use MIME::Base64 ();
+use Math::BigInt ();
 
 my %decoders = (
+    # References:
+    #  https://www.rfc-editor.org/rfc/rfc4253.html#section-6.6
+    #  https://www.rfc-editor.org/rfc/rfc4251.html#section-5
     'ssh-rsa' => sub {
+	require 'Math/BigInt.pm';
         my ($exp, $mod, $rem) = unpack('(N/a)2 a*', $_[0]);
-	# Why $mod starts with an additional byte that is always zero?
-	my $bits = ((length $mod)-1)*8;
-        sprintf("bits: %d\nexponent: %v02X\nmodulus: %v02X\n", $bits, $exp, $mod)
+	my $len = length $mod;
+	my $bits = (substr($mod, 0, 1) == 0 ? $len-1 : $len )*8;
+        sprintf("bits: %d\nexponent-mpint-hex: %v02X\nmodulus-mpint-hex: %v02X\nmodulus: %s\n", $bits, $exp, $mod, Math::BigInt->new(sprintf "0x%*v02X", '', substr($mod, 1)))
         . (length($rem) ? sprintf("other: %v02X\n", $rem) : '')
     },
     'ssh-ed25519' => sub {
