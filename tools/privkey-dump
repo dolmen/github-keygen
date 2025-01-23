@@ -1,0 +1,72 @@
+#!/usr/bin/env perl
+
+# Decode the content of an OpenSSH private key file.
+#
+# References:
+# - https://coolaj86.com/articles/the-openssh-private-key-format/
+
+use utf8;
+use strict;
+use warnings;
+use feature 'say';
+
+use MIME::Base64 'decode_base64';
+
+# Decode PEM
+# https://metacpan.org/dist/Convert-PEM/source/lib/Convert/PEM.pm#L204
+# Perl license
+sub explode_PEM {
+    my $message = shift;
+    # Canonicalize line endings into "\n".
+    $message =~ s/\r\n|\n|\r/\n/g;
+    my ($head, $object, $headers, $content, $tail) = $message =~ 
+        m:(-----BEGIN ([^\n\-]+)-----)\n(.*?\n\n)?(.+)(-----END .*?-----)$:s;
+    my $buf = decode_base64($content);
+    my @headers;
+    if ($headers) {
+        for my $h ( split /\n/, $headers ) {
+            my ($k, $v) = split /:\s*/, $h, 2;
+            push @headers, [ $k => $v ] if $k;
+        }
+    }
+    { Content => $buf,
+      Object  => $object,
+      Headers => \@headers }
+}
+
+my $pem = do { local $/; explode_PEM <> };
+
+my $content = $pem->{Content};
+# printf MIME::Base64::encode_base64($pem->{Content}), "\n";
+
+# printf "len: %d\n", length $content;
+#printf "raw: %v02X\n", $content;
+# printf "%s\n", $content;
+
+
+my $magic;
+($magic, $content) = unpack 'Z* a*', $content;
+
+if ($magic ne 'openssh-key-v1') {
+    die "magic 'openssh-key-v1' expected (got '$magic').\n";
+}
+
+my ($ciphername, $kdfname, $kdf, $nb_keys, $sshpub, $sshpriv) =
+    unpack 'N/a N/a N/a N N/a N/a', $content;
+
+printf "magic: %s\nciphername: %s\nkdfname: %s\nkdf: %v02X\nnb_keys: %d\n",
+  $magic, $ciphername, $kdfname, $kdf, $nb_keys;
+#printf "sshpub: %v02X\nsshpriv: %v02X\n",
+#  $sshpub, $sshpriv;
+
+# RFC4253 public key: https://www.rfc-editor.org/rfc/rfc4253.html#section-6.6
+my ($key_type, $sshpub_raw) = unpack 'N/a a*', $sshpub;
+printf "public key:\n  type: %s\n", $key_type;
+if ($key_type eq 'ssh-rsa') {
+    require 'Math/BigInt.pm';
+    my ($rsa_e_raw, $rsa_mod_raw) = unpack 'N/a N/a', $sshpub_raw;
+    printf "  exponent: %s\n", Math::BigInt->from_hex(unpack('H*', $rsa_e_raw));
+    printf "  modulus: %s\n", Math::BigInt->from_hex(unpack('H*', $rsa_mod_raw));
+} else {
+    printf "  raw: %v02X\n", $sshpub_raw
+}
