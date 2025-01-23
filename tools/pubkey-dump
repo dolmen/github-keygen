@@ -16,7 +16,9 @@ use MIME::Base64 ();
 my %decoders = (
     'ssh-rsa' => sub {
         my ($exp, $mod, $rem) = unpack('(N/a)2 a*', $_[0]);
-        sprintf("exponent: %v02X\nmodulus: %v02X\n", $exp, $mod)
+	# Why $mod starts with an additional byte that is always zero?
+	my $bits = ((length $mod)-1)*8;
+        sprintf("bits: %d\nexponent: %v02X\nmodulus: %v02X\n", $bits, $exp, $mod)
         . (length($rem) ? sprintf("other: %v02X\n", $rem) : '')
     },
     'ssh-ed25519' => sub {
@@ -41,7 +43,7 @@ while (<$f>) {
 	printf STDERR "unknown key type $type\n";
 	next
     }
-    printf "type: %s\n%s", $type, $decoders{$type}->($remain);
+    printf "type: %s\nlength: %d\nraw: %v02X\n%s", $type, length $remain, $remain, $decoders{$type}->($remain);
 }
 
 close $f;
