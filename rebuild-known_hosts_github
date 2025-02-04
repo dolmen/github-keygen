@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# This tool is obsolete. Use instead:
+#   ssh-keyscan -t ed25519 github.com gist.github.com ssh.github.com 2>/dev/null
+
+
 set -euo pipefail
 
 f=~/.ssh/known_hosts_github
