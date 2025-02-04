@@ -632,6 +632,8 @@ HostKeyAlgorithms -ssh-rsa
 ForwardAgent no
 ForwardX11 no
 PermitLocalCommand no
+# Never request a TTY (OpenSSH 5.9), like -T
+RequestTTY no
 UseRoaming no
 # Connexion sharing for 60 seconds, for speedup
 ControlMaster auto
