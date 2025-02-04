@@ -64,8 +64,12 @@ sub compress_path($)
     unless (defined $path) {
         $path = File::Spec->canonpath($p);
         my $home_dir = HOME_DIR;
-        # FIXME
-        $path =~ s!^\Q$home_dir\E\b!~!;
+        my $home_dir_token = '~';
+        # Avoid bug with ~ expansion on Windows ("tilde_expand: No such user \\.ssh\\...")
+        # by using %d which also represents the home directory on newer OpenSSH
+        # versions that support %-token expansions
+        $home_dir_token = '%d' if WIN32;
+        $path =~ s!^\Q$home_dir\E\b!$home_dir_token!;
         $compressed_paths{$p} = $path;
     }
     $path;
