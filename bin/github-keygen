@@ -42,10 +42,10 @@ sub resolve_path($)
 {
     my $path = shift;
     if (WIN32) {
-        $path =~ s!^\~(?=[/\\])! HOME_DIR !e;
+        $path =~ s!^(?:\~|\%d)(?=[/\\])! HOME_DIR !e;
         $path =~ s!/!\\!g if $^O ne 'msys';
     } else {
-        $path =~ s!^\~(?=/)! HOME_DIR !e;
+        $path =~ s!^(?:\~|\%d)(?=/)! HOME_DIR !e;
     }
     $path
 }
