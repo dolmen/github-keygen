@@ -576,6 +576,8 @@ if (@github_accounts) {
 
     my $known_hosts_file = compress_path KNOWN_HOSTS_FILE;
 
+    # ControlMaster requires support for Unix sockets, so not Windows
+    my $ControlMaster = WIN32 ? 'no' : 'auto';
     # Store ControlPath in XDG_RUNTIME_DIR
     my $ControlPath_dir = '~/.ssh';
     if (my $rt_dir = $ENV{XDG_RUNTIME_DIR}) {
@@ -639,8 +641,8 @@ PermitLocalCommand no
 # Never request a TTY (OpenSSH 5.9), like -T
 RequestTTY no
 UseRoaming no
-# Connexion sharing for 60 seconds, for speedup
-ControlMaster auto
+# Connection sharing for 60 seconds, for speedup (disabled on Windows)
+ControlMaster ${ControlMaster}
 ControlPath ${ControlPath}
 ControlPersist 60s
 EOF
@@ -720,8 +722,10 @@ EOF
     # OpenSSH 6.6.1p1 from msys:
     # msys does not support passing file descriptors and ControlMaster relies
     # on that, so we comment all Control options
-    if ($^O eq 'msys') {
-        s/^(Control)/##$1/ for @ghkg_config_lines;
+    # OpenSSH_for_Windows_9.5p1:
+    # doesn't support Unix sockets ("getsockname failed: Not a socket").
+    if (WIN32) {
+        s/^(ControlP(?:ath|ersist) )/##$1/ for @ghkg_config_lines;
     }
     # OpenSSH 4.6p1 from msysgit: keep the poor algorithms list
     if ($SSH_VERSION < 0x5000) {
