@@ -10204,7 +10204,7 @@ if (@github_accounts) {
             if (open my $f, '<', $pub_key_file) {
                 chomp(my $line = <$f>);
                 close $f;
-                if ($line =~ m/^\S+ +(\S+) /) {
+                if ($line =~ m/^\S+\s+(\S+)(?:\s+|$)/) {
                     $u->{pubkey} = my $pub_key_b64 = $1;
                     #print "$user pubkey: $pub_key_b64\n";
                     unless ($offline) {
