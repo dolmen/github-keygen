@@ -10289,31 +10289,36 @@ if (@github_accounts) {
     #         (`openssl list -cipher-algorithms` vs
     #         `openssl list-cipher-algorithms`: see
     #         tools/list-openssl-algorithms)
+    # modern algorithm subsets (openssh 8.9+ defaults + hybrid pq kex)
     my %algorithms = (
-        # Ciphers: ssh -Q cipher
-        cipher => [
-            (qw< chacha20-poly1305@openssh.com >)
-             x!! ($SSH_VERSION >= 0x5000),
-            (qw< aes256-gcm@openssh.com aes128-gcm@openssh.com >)
-             x!! ($SSH_VERSION >= 0x5000 && $^O ne 'msys'),
-            'aes256-ctr',
-        ],
-        # MACs: ssh -Q mac
-        mac => [ qw<
-            hmac-sha2-512-etm@openssh.com
-            hmac-sha2-256-etm@openssh.com
-            umac-128-etm@openssh.com
-            hmac-sha2-512
-        > ],
         # KexAlgorithms: ssh -Q kex
-        #
-        # diffie-hellman-group14-sha1 removed by GitHub on 2018-02-01
-        # https://githubengineering.com/crypto-deprecation-notice/
-        kex => [ qw<
-            curve25519-sha256@libssh.org
-            diffie-hellman-group-exchange-sha256
-            diffie-hellman-group-exchange-sha1
-        > ],
+        # only hybrid post quantum key exchange algorithms, avoiding nist curves
+        kex => [
+            qw(
+                mlkem768x25519-sha256
+                sntrup761x25519-sha512@openssh.com
+                curve25519-sha256@libssh.org
+            )
+        ],
+
+        # MACs: ssh -Q mac
+        # only hmac-sha2-etm with 256 bit tags
+        mac => [
+            qw(
+                hmac-sha2-512-etm@openssh.com
+                hmac-sha2-256-etm@openssh.com
+            )
+        ],
+
+        # Ciphers: ssh -Q cipher
+        # only 256 bit or chacha20 ciphers
+        cipher => [
+            qw(
+                chacha20-poly1305@openssh.com
+                aes256-gcm@openssh.com
+                aes256-ctr
+            )
+        ],
     );
     # Filter each list against what is supported by the ssh client
     while (my ($kind, $algos) = each %algorithms) {
@@ -10398,9 +10403,7 @@ VerifyHostKeyDNS no
 # Enable only the required authentication
 PubkeyAuthentication yes
 PreferredAuthentications publickey
-# Select algorithms recommended by Stribika
-#  See https://stribika.github.io/2015/01/04/secure-secure-shell.html
-#  Last in each list is the minimum supported by GitHub
+# Modern algorithms (pq+classical, 256 bit keys & tags, opting to avoid nist curves)
 KexAlgorithms $algorithms{kex}
 Ciphers $algorithms{cipher}
 MACs $algorithms{mac}
