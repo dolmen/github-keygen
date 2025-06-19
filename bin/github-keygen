@@ -539,7 +539,6 @@ if (@github_accounts) {
             curve25519-sha256
             curve25519-sha256@libssh.org
             diffie-hellman-group-exchange-sha256
-            diffie-hellman-group-exchange-sha1
         > ],
     );
     # Filter each list against what is supported by the ssh client
