@@ -535,6 +535,7 @@ if (@github_accounts) {
         # diffie-hellman-group14-sha1 removed by GitHub on 2018-02-01
         # https://githubengineering.com/crypto-deprecation-notice/
         kex => [ qw<
+            mlkem768x25519-sha256
             curve25519-sha256
             curve25519-sha256@libssh.org
             diffie-hellman-group-exchange-sha256
