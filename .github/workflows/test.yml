@@ -5,6 +5,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/release'
     steps:
     - name: Check out
       uses: actions/checkout@v4
@@ -19,8 +20,19 @@ jobs:
     - name: Simulate release
       run: ./release.pl -n
 
+  test-release:
+    name: Test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/release'
+    steps:
+    - name: Check out
+      uses: actions/checkout@v4
+    - name: perl -c
+      run: perl -c ./github-keygen
+
   test-ssh:
     runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/release'
     steps:
     - run: ssh -V
     - name: Show GitHub public keys
