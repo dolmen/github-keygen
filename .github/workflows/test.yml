@@ -1,0 +1,31 @@
+name: Test
+on: [push]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out
+      uses: actions/checkout@v4
+
+    - uses: shogo82148/actions-setup-perl@v1
+      with:
+        perl-version: "5.40"
+    - name: Install dependencies
+      run: cpanm --installdeps --with-develop  .
+    - name: perl -c
+      run: perl -c bin/github-keygen
+    - name: Simulate release
+      run: ./release.pl -n
+
+  test-ssh:
+    runs-on: ubuntu-latest
+    steps:
+    - run: ssh -V
+    - name: Show GitHub public keys
+      run: |
+        ssh-keyscan -t ed25519 github.com gist.github.com 2>/dev/null
+        ssh-keyscan -t ed25519 -p 443 ssh.github.com 2>/dev/null
+    - name: Show GitHub kex algorithms
+      run: ssh -vvv github.com 2>&1 | grep -A1 'server KEXINIT'
