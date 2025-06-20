@@ -527,7 +527,11 @@ following environments:
 
 =item *
 
-Ubuntu with perl 5.14.2
+Ubuntu 24.04
+
+=item *
+
+MacOS with perl 5.40.2 and OpenSSH 9.7
 
 =item *
 
@@ -535,7 +539,7 @@ Windows with StrawberryPerl (5.12.1 and above) and msysgit
 
 =item *
 
-Windows with msysgit's antique perl 5.8.8.
+Windows with perl and OpenSSH bundled with L<Git for Windows|https://gitforwindows.org>
 
 =back
 
