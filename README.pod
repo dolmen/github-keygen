@@ -302,7 +302,7 @@ Improve Windows compatibility (fix in parsing of C<ssh -V>).
 On key creation, switch default key size from 2048 bits to 4096 bits.
 
 Update C<~/.ssh/known_hosts_github> to include only the C<ssh-ed25519> public
-keys of GitHub servers (`ssh-rsa` and `ssh-dss` keys are removed).
+keys of GitHub servers (C<ssh-rsa> and C<ssh-dss> keys are removed).
 
 Disallow C<ssh-rsa> public keys for GitHub servers.
 
@@ -311,7 +311,7 @@ Disallow C<ssh-rsa> public keys for GitHub servers.
 Remove MAC algorithm C<hmac-ripemd160> as it has been
 L<removed from OpenSSH 7.6|https://www.openssh.com/txt/release-7.6>.
 It is also not supported by GitHub anymore.
-Thanks to [Laggard Kernel](https://github.com/laggardkernel) for the patch.
+Thanks to L<Laggard Kernel|https://github.com/laggardkernel> for the patch.
 
 Hide warnings about known deprecated OpenSSH options (C<Protocol>, C<UseRoaming>).
 We still support them to secure old OpenSSH clients. 
