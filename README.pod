@@ -92,7 +92,9 @@ should check that someone is not altering your network link).
 =item *
 
 Use stronger encryption algorithms than your default SSH setup (following
-L<@stribika advices|https://stribika.github.io/2015/01/04/secure-secure-shell.html>; this is a "best effort" that depends on your OpenSSH being recent enough);
+L<@stribika advices|https://stribika.github.io/2015/01/04/secure-secure-shell.html>;
+this is a "best effort" that depends on your OpenSSH being recent enough),
+including post-quantum algorithms;
 
 =item *
 
@@ -269,7 +271,7 @@ Update key exchange algorithms:
 =item *
 
 Add C<mlkem768x25519-sha256>, an hybrid post-quantum algorithm which the new default
-in OpenSSH 10. However GitHub doesn't yet support it server side.
+in L<OpenSSH 10.0|https://www.openssh.com/txt/release-10.0>. However GitHub doesn't yet support it server side.
 
 =item *
 
@@ -343,7 +345,7 @@ by GitHub: see L<https://githubengineering.com/crypto-deprecation-notice/>.
 =item L<v1.303|https://github.com/dolmen/github-keygen/compare/v1.302...v1.303>
 
 Fix SSH options and algorithm support detection that was accidentally disabled since v1.100.
-This makes github-keygen work with OpenSSH 7.6+ that removed an algorithm.
+This makes github-keygen work with L<OpenSSH 7.6+|https://www.openssh.com/txt/release-7.6> that removed an algorithm.
 
 Fix for support of OpenSSH down to 5.1.
 
@@ -353,7 +355,7 @@ Detect bad permissions on F<~/.ssh/config> and report them.
 
 Remove C<UseRoaming> option if OpenSSH >= 7.2 on Mac OS X Sierra
 (L<issue #31|https://github.com/dolmen/github-keygen/issues/31>): Sierra
-has 7.2p2, same as on Ubuntu 16.04, but not same behaviour.
+has L<7.2p2|https://www.openssh.com/txt/release-7.2p2>, same as on Ubuntu 16.04, but not same behaviour.
 
 Old OpenSSH compatibility fixes:
 
@@ -371,7 +373,7 @@ Do not use C<%n> in C<ControlPath> option.
 
 =item L<v1.301|https://github.com/dolmen/github-keygen/compare/v1.300...v1.301>
 
-Remove C<UseRoaming> option if OpenSSH >= 7.3
+Remove C<UseRoaming> option if OpenSSH >= L<7.3|https://www.openssh.com/txt/release-7.3>
 (Mac OS X Sierra,
 L<issue #31|https://github.com/dolmen/github-keygen/issues/31>):
 this option has been removed from OpenSSH.
