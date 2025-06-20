@@ -13,10 +13,12 @@ jobs:
     - uses: shogo82148/actions-setup-perl@v1
       with:
         perl-version: "5.40"
+        install-modules-with: cpanm
+        install-modules-args: --with-develop
     - name: Force install of Net::SSLeay
       run: cpanm --force Net::SSLeay
-    - name: Install dependencies
-      run: cpanm --installdeps --with-develop  .
+    #- name: Install dependencies
+    #  run: cpanm --installdeps --with-develop  .
     - name: perl -c
       run: perl -c bin/github-keygen
     - name: Simulate release
