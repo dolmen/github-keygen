@@ -203,7 +203,7 @@ git 'ls-tree' => $HEAD_commit, sub {
 };
 
 my %updated_files;
-my ($release_commit) = git 'rev-parse' => 'release';
+my ($release_commit) = git 'rev-parse' => $REPOSITORY.'/release';
 say "release: $release_commit";
 my %release_tree;
 git 'ls-tree' => $release_commit, sub {
