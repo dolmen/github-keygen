@@ -11,10 +11,12 @@ use Getopt::Long;
 
 my $DRY_RUN;
 my $SKIP_TESTS;
+my $REPOSITORY = 'origin';
 
 GetOptions(
     'n|dry-run|just-print' => \$DRY_RUN,
     'T|skip-tests' => \$SKIP_TESTS,
+    'repository' => \$REPOSITORY,
 )
     or die "usage: $0 [-n]\n";
 
@@ -182,7 +184,9 @@ sub git ($;@)
     }
 }
 
-
+# Fetch the release branch. This is needed on CI
+# where only the current branch is available.
+git fetch => $REPOSITORY, 'release';
 
 my @new_files = (
     'github-keygen',
