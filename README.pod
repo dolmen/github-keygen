@@ -260,6 +260,30 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
+=item I<NEXT>
+
+Update key exchange algorithms:
+
+=over 4
+
+=item *
+
+Add C<mlkem768x25519-sha256>, an hybrid post-quantum algorithm which the new default
+in OpenSSH 10. However GitHub doesn't yet support it server side.
+
+=item *
+
+Add C<curve25519-sha256>, the official (IANA) alias of C<curve25519-sha256@libssh.org>
+that was already used.
+
+=item *
+
+Remove C<diffie-hellman-group-exchange-sha1> which isn't anymore supported by GitHub.
+
+=back
+
+Thanks to L<@agnosticlines|https://github.com/agnosticlines> for contributions.
+
 =item v1.400
 
 Change default key type on key creation to C<ed25519> (previously C<rsa>)
