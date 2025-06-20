@@ -6,7 +6,7 @@
 
 =head1 NAME
 
-github-keygen - bootstrap your GitHub SSH configuration
+github-keygen - bootstrap and manage your SSH configuration for GitHub
 
 =head1 SYNOPSIS
 
