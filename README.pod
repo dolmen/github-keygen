@@ -282,6 +282,7 @@ Remove C<diffie-hellman-group-exchange-sha1> which isn't anymore supported by Gi
 
 =back
 
+Thanks to L<@agnosticlines|https://github.com/agnosticlines> for contributions.
 
 =item v1.400
 
