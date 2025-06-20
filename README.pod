@@ -282,6 +282,25 @@ Remove C<diffie-hellman-group-exchange-sha1> which isn't anymore supported by Gi
 
 =back
 
+Force option C<RequestTTY> to I<no>. Because the SSH connections are only used for
+non-interactive use via Git.
+
+On Windows:
+
+=over 4
+
+=item *
+
+Disable C<ControlMaster>, C<ControlPath>, C<ControlPersist> to avoid
+failure "I<getsockname failed: Not a socket>".
+
+=item *
+
+In ssh config, save paths to files using C<%d> instead of C<~> to workaround an issue
+in OpenSSH with tilde expansion when paths use backslashes.
+
+=back
+
 Thanks to L<@agnosticlines|https://github.com/agnosticlines> for contributions.
 
 =item v1.400
