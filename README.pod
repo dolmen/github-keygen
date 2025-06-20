@@ -262,7 +262,7 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
-=item L<v1.401|https://github.com/dolmen/github-keygen/compare/v1.400...v1.401>
+=item v1.401
 
 Update key exchange algorithms:
 
