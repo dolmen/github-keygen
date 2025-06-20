@@ -13,6 +13,8 @@ jobs:
     - uses: shogo82148/actions-setup-perl@v1
       with:
         perl-version: "5.40"
+    - name: Force install of Net::SSLeay
+      run: cpanm --force Net::SSLeay
     - name: Install dependencies
       run: cpanm --installdeps --with-develop  .
     - name: perl -c
