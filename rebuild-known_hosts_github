@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This tool is obsolete. Use instead:
-#   ssh-keyscan -t ed25519 github.com gist.github.com ssh.github.com 2>/dev/null
+#   { ssh-keyscan -t ed25519 github.com gist.github.com; ssh-keyscan -t ed25519 -p 443 ssh.github.com; } 2>/dev/null
 
 
 set -euo pipefail
