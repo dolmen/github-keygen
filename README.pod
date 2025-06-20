@@ -553,9 +553,9 @@ not a bug, it's a feature.
 
 =head1 SUPPORT
 
-IRC: ask C<dolmen> on C<irc.perl.org>.
+Fill an issue at GitHub: L<https://github.com/dolmen/github-keygen/issues>.
 
-Or fill an issue at GitHub: L<https://github.com/dolmen/github-keygen/issues>
+Check the L<the contributor's documentation|CONTRIBUTING.pod> I<before> writing patches.
 
 =head1 AUTHOR
 
