@@ -6,7 +6,7 @@
 
 =head1 NAME
 
-github-keygen - bootstrap your GitHub SSH configuration
+github-keygen - bootstrap and manage your SSH configuration for GitHub
 
 =head1 SYNOPSIS
 
@@ -92,7 +92,9 @@ should check that someone is not altering your network link).
 =item *
 
 Use stronger encryption algorithms than your default SSH setup (following
-L<@stribika advices|https://stribika.github.io/2015/01/04/secure-secure-shell.html>; this is a "best effort" that depends on your OpenSSH being recent enough);
+L<@stribika advices|https://stribika.github.io/2015/01/04/secure-secure-shell.html>;
+this is a "best effort" that depends on your OpenSSH being recent enough),
+including post-quantum algorithms;
 
 =item *
 
@@ -260,7 +262,50 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
-=item v1.400
+=item v1.401
+
+Update key exchange algorithms:
+
+=over 4
+
+=item *
+
+Add C<mlkem768x25519-sha256>, an hybrid post-quantum algorithm which the new default
+in L<OpenSSH 10.0|https://www.openssh.com/txt/release-10.0>. However GitHub doesn't yet support it server side.
+
+=item *
+
+Add C<curve25519-sha256>, the official (IANA) alias of C<curve25519-sha256@libssh.org>
+that was already used.
+
+=item *
+
+Remove C<diffie-hellman-group-exchange-sha1> which isn't anymore supported by GitHub.
+
+=back
+
+Force option C<RequestTTY> to I<no>. Because the SSH connections are only used for
+non-interactive use via Git.
+
+On Windows:
+
+=over 4
+
+=item *
+
+Disable C<ControlMaster>, C<ControlPath>, C<ControlPersist> to avoid
+failure "I<getsockname failed: Not a socket>".
+
+=item *
+
+In ssh config, save paths to files using C<%d> instead of C<~> to workaround an issue
+in OpenSSH with tilde expansion when paths use backslashes.
+
+=back
+
+Thanks to L<@agnosticlines|https://github.com/agnosticlines> for contributions.
+
+=item L<v1.400|https://github.com/dolmen/github-keygen/compare/v1.306...v1.400>
 
 Change default key type on key creation to C<ed25519> (previously C<rsa>)
 (L<GitHub #48|https://github.com/dolmen/github-keygen/issues/48>).
@@ -273,44 +318,44 @@ Fix typo in a comment in F<~/.ssh/config>: "I<Knwon>".
 
 Improve Windows compatibility (fix in parsing of C<ssh -V>). 
 
-=item v1.306
+=item L<v1.306|https://github.com/dolmen/github-keygen/compare/v1.305...v1.306>
 
 On key creation, switch default key size from 2048 bits to 4096 bits.
 
 Update C<~/.ssh/known_hosts_github> to include only the C<ssh-ed25519> public
-keys of GitHub servers (`ssh-rsa` and `ssh-dss` keys are removed).
+keys of GitHub servers (C<ssh-rsa> and C<ssh-dss> keys are removed).
 
 Disallow C<ssh-rsa> public keys for GitHub servers.
 
-=item v1.305
+=item L<v1.305|https://github.com/dolmen/github-keygen/compare/v1.304...v1.305>
 
 Remove MAC algorithm C<hmac-ripemd160> as it has been
 L<removed from OpenSSH 7.6|https://www.openssh.com/txt/release-7.6>.
 It is also not supported by GitHub anymore.
-Thanks to [Laggard Kernel](https://github.com/laggardkernel) for the patch.
+Thanks to L<Laggard Kernel|https://github.com/laggardkernel> for the patch.
 
 Hide warnings about known deprecated OpenSSH options (C<Protocol>, C<UseRoaming>).
 We still support them to secure old OpenSSH clients. 
 
-=item v1.304
+=item L<v1.304|https://github.com/dolmen/github-keygen/compare/v1.303...v1.304>
 
 Remove algorithm C<diffie-hellman-group14-sha1> as it has been removed server side
 by GitHub: see L<https://githubengineering.com/crypto-deprecation-notice/>.
 
-=item v1.303
+=item L<v1.303|https://github.com/dolmen/github-keygen/compare/v1.302...v1.303>
 
 Fix SSH options and algorithm support detection that was accidentally disabled since v1.100.
-This makes github-keygen work with OpenSSH 7.6+ that removed an algorithm.
+This makes github-keygen work with L<OpenSSH 7.6+|https://www.openssh.com/txt/release-7.6> that removed an algorithm.
 
 Fix for support of OpenSSH down to 5.1.
 
 Detect bad permissions on F<~/.ssh/config> and report them.
 
-=item v1.302
+=item L<v1.302|https://github.com/dolmen/github-keygen/compare/v1.301...v1.302>
 
 Remove C<UseRoaming> option if OpenSSH >= 7.2 on Mac OS X Sierra
 (L<issue #31|https://github.com/dolmen/github-keygen/issues/31>): Sierra
-has 7.2p2, same as on Ubuntu 16.04, but not same behaviour.
+has L<7.2p2|https://www.openssh.com/txt/release-7.2p2>, same as on Ubuntu 16.04, but not same behaviour.
 
 Old OpenSSH compatibility fixes:
 
@@ -326,14 +371,14 @@ Do not use C<%n> in C<ControlPath> option.
 
 =back
 
-=item v1.301
+=item L<v1.301|https://github.com/dolmen/github-keygen/compare/v1.300...v1.301>
 
-Remove C<UseRoaming> option if OpenSSH >= 7.3
+Remove C<UseRoaming> option if OpenSSH >= L<7.3|https://www.openssh.com/txt/release-7.3>
 (Mac OS X Sierra,
 L<issue #31|https://github.com/dolmen/github-keygen/issues/31>):
 this option has been removed from OpenSSH.
 
-=item v1.300
+=item L<v1.300|https://github.com/dolmen/github-keygen/compare/v1.200...v1.300>
 
 Keys registered in F<~/.ssh/config> are now compared with keys registered on
 L<GitHub|https://github.com/settings/keys> to detect keys unknown to the
@@ -341,7 +386,7 @@ service. An C<--offline> flag allows to disable this check.
 
 Development is back on C<master> branch (instead of deleted C<devel>).
 
-=item v1.200
+=item L<v1.200|https://github.com/dolmen/github-keygen/compare/v1.101...v1.200>
 
 Add versioning to the generated config. This will allow to detect dangerous
 attempts at downgrading to an older version of github-keygen.
@@ -352,12 +397,12 @@ breaking configs were the user had a C<Host *> section at the end of the file
 to set default settings: as the section was moved above us, those default
 settings were applied before our own.
 
-=item v1.101
+=item L<v1.101|https://github.com/dolmen/github-keygen/compare/v1.100...v1.101>
 
 Config: set C<UseRoaming no> to protect against the
 L<C<OpenSSH roaming> vulnerability|https://www.openssh.com/txt/release-7.1p2>.
 
-=item v1.100
+=item L<v1.100|https://github.com/dolmen/github-keygen/compare/v1.020...v1.100>
 
 Config: use the official case for the C<HostName> option (instead of
 C<Hostname>).
@@ -386,7 +431,7 @@ if available.
 
 Doc fixes: change "Github" to "GitHub".
 
-=item v1.020
+=item L<v1.020|https://github.com/dolmen/github-keygen/compare/v1.011...v1.020>
 
 B<Improve SSH encryption> by selecting L<stronger algorithms recommended by
 @stribika|https://stribika.github.io/2015/01/04/secure-secure-shell.html>:
@@ -395,7 +440,7 @@ C<aes256-ctr> instead of C<aes128-ctr>, and C<hmac-sha2-512> instead of C<hmac-s
 Open the F<~/.ssh/known_hosts_github> with mode 0600 before
 initializing/updating it.
 
-=item v1.011
+=item L<v1.011|https://github.com/dolmen/github-keygen/compare/v1.010...v1.011>
 
 Create F<~/.ssh> with rights 0700 if it doesn't exists because L<ssh-keygen(1)>
 will fail if it is missing.
@@ -410,47 +455,47 @@ Fixed L<issue #13|https://github.com/dolmen/github-keygen/issues/13>: default
 GitHub account set with `--default` option was lost when running again
 C<github-keygen> without repeating the setting. The issue existed since v1.004.
 
-=item v1.010
+=item L<v1.010|https://github.com/dolmen/github-keygen/compare/v1.009...v1.010>
 
 Darwin: implemented pasting the public key to the clipboard. Thanks to Vincent
 Pit for testing!
 
-=item v1.009
+=item L<v1.009|https://github.com/dolmen/github-keygen/compare/v1.008...v1.009>
 
 Added support for dashes in GitHub usernames. Thanks Pedro Figueiredo!
 
-=item v1.008
+=item L<v1.008|https://github.com/dolmen/github-keygen/compare/v1.007...v1.008>
 
 Added connection sharing: connection to GitHub is kept alive for 60
 seconds. This speeds-up any script that do multiple sequential Git interactions
 with GitHub.
 
-=item v1.007
+=item L<v1.007|https://github.com/dolmen/github-keygen/compare/v1.006...v1.007>
 
 Fixed a message that wrongly told to paste the I<private> key (C<'.pub'>
 forgotten). Fixed at the
 L<Quack and Hack 2012 Europe hackathon|https://act.yapc.eu/qh2012eu/>,
 but released (too) long later.
 
-=item v1.006
+=item L<v1.006|https://github.com/dolmen/github-keygen/compare/v1.005...v1.006>
 
 UI improvement: when keys are created, the message about what to do with the
 key is now shown at the end, after the diff instead of before.
 
-=item v1.005
+=item L<v1.005|https://github.com/dolmen/github-keygen/compare/v1.004...v1.005>
 
 No functional changes.
 
 Updated Pod::Simple to 3.23. Updated copyright.
 
-=item v1.004
+=item L<v1.004|https://github.com/dolmen/github-keygen/compare/v1.003...v1.004>
 
 Changes for compatibility with msysgit's bundled perl (an antique 5.8.8
 with major core modules missing: C<Pod::*>). So no changes for Unix users, but
 a big improvement for all Windows+msysgit users: no need to install
 StrawberryPerl just for C<github-keygen>!
 
-=item v1.003
+=item L<v1.003|https://github.com/dolmen/github-keygen/compare/v1.002...v1.003>
 
 No changes in the C<github-keygen> code, but the fatpacked build has been
 tweaked to use a better list of packed modules. This should improve
@@ -458,7 +503,7 @@ compatibility.
 
 Documentation fixes.
 
-=item v1.002
+=item L<v1.002|https://github.com/dolmen/github-keygen/compare/v1.001...v1.002>
 
 No functional changes, but distribution changes: branch C<master> abandoned
 and replaced by C<release> (build result) and C<devel> (source).
@@ -484,7 +529,11 @@ following environments:
 
 =item *
 
-Ubuntu with perl 5.14.2
+Ubuntu 24.04
+
+=item *
+
+MacOS with perl 5.40.2 and OpenSSH 9.7
 
 =item *
 
@@ -492,7 +541,7 @@ Windows with StrawberryPerl (5.12.1 and above) and msysgit
 
 =item *
 
-Windows with msysgit's antique perl 5.8.8.
+Windows with perl and OpenSSH bundled with L<Git for Windows|https://gitforwindows.org>
 
 =back
 
@@ -510,9 +559,9 @@ not a bug, it's a feature.
 
 =head1 SUPPORT
 
-IRC: ask C<dolmen> on C<irc.perl.org>.
+Fill an issue at GitHub: L<https://github.com/dolmen/github-keygen/issues>.
 
-Or fill an issue at GitHub: L<https://github.com/dolmen/github-keygen/issues>
+Check the L<the contributor's documentation|CONTRIBUTING.pod> I<before> writing patches.
 
 =head1 AUTHOR
 

@@ -26,7 +26,7 @@ to render it in a terminal:
 =head2 1. Setup a Perl development environment
 
 There are various ways to setup a Perl development environment, but here is mine
- (@dolmen). The key principles are:
+ (L<@dolmen|https://github.com/dolmen>). The key principles are:
 
 =over 4
 
@@ -51,8 +51,8 @@ Step by step on MacOS (zsh):
 
 =item b. Install a recent perl:
 
-    plenv install 5.40.1
-    plenv global 5.40.1
+    plenv install 5.40.2
+    plenv global 5.40.2
 
 =item c. Install L<cpanm|https://metacpan.org/dist/App-cpanminus/view/bin/cpanm>:
 
@@ -65,21 +65,24 @@ Step by step on MacOS (zsh):
 
     git clone --origin upstream git://github.com/dolmen/github-keygen.git
     cd github-keygen
+
+=head2 3. Switch to the C<master> branch
+
     git checkout master
 
-=head2 3. Install build dependencies
+=head2 4. Install build dependencies
 
 Not required for doc patches.
 
     curl -L https://cpanmin.us | perl - --installdeps --with-develop .
 
-=head2 4. Setup a fork
+=head2 5. Setup a fork
 
 =over 4
 
-=item 4.1. L<Fork the project on GitHub|https://github.com/dolmen/github-keygen/>
+=item 5.1. L<Fork the project on GitHub|https://github.com/dolmen/github-keygen/>
 
-=item 4.2. Link your local repo to your fork:
+=item 5.2. Link your local repo to your fork:
 
 (You are already using C<github-keygen>, aren't you?)
 
@@ -94,14 +97,13 @@ Not required for doc patches.
 
 =item 1. Update your local fork
 
-    git remote update
+    git remote update --prune
     git checkout master
     git rebase upstream/master
 
 =item 2. Update Perl dependencies (not required for doc patches)
 
     curl -L https://cpanmin.us | perl - --installdeps --with-develop .
-    
 
 =item 3. Make your fix/feature in a dedicated Git branch
 
@@ -115,8 +117,15 @@ Not required for doc patches.
     # Run the author testsuite
     prove -v xt
 
-    git commit
+=item 4. Commit
 
+An important rule is that the commits in your branch will be added to the project
+history, so you get full attribution for your contribution. So take care to have
+carefully written commit message that follow the style of the existing commits.
+
+Each commit must be an independent and fully contained change on its own.
+
+    git commit
 
 =item 4. Submit your work
 
@@ -124,9 +133,16 @@ Not required for doc patches.
 
 =item 4.1 Push!
 
-    git push github <my-patch>
+    git push -u github <my-patch>
 
 =item 4.2 Submit a pull request on GitHub
+
+=item 4.3 Add more changes
+
+You may want to add more changes, or changes may be requested by the reviewer.
+
+Don't hesitate to edit existing commits (C<git commit --amend>) and force push
+(C<git push -f>) if necessary.
 
 =back
 
