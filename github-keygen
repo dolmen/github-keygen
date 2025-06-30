@@ -10195,7 +10195,8 @@ if (@github_accounts) {
 
     foreach my $user (@github_accounts) {
         my $u = $github_accounts{$user};
-        my $pub_key_file = $u->{key_file} . ".pub";
+        # only append ".pub" if it's not already there
+        my $pub_key_file = $u->{key_file} =~ /\.pub$/ ? $u->{key_file} : $u->{key_file}.".pub";
         if (-e $pub_key_file) {
             if (open my $f, '-|', qw<ssh-keygen -l -f>, $pub_key_file) {
                 chomp(my $fingerprint = <$f>);
@@ -10609,7 +10610,7 @@ if (@unregistered_users) {
     if (@clip_cmd && @unregistered_users == 1 && !$offline) {
         my $user = shift @unregistered_users;
         # Copy the first key created to the clipboard
-        my $pub_key_file = $github_accounts{$user}->{key_file}.".pub";
+        my $pub_key_file = $github_accounts{$user}->{key_file} =~ /\.pub$/ ? $github_accounts{$user}->{key_file} : $github_accounts{$user}->{key_file}.".pub";
         # Read the public key from the file
         open my $pub, '<', $pub_key_file;
         my $pubkey = <$pub>;
@@ -10629,7 +10630,8 @@ if (@unregistered_users) {
             . "<https://github.com/settings/keys>.\n";
         # Help the user to copy the other keys
         foreach my $user (@unregistered_users) {
-            my $pub_key = compress_path($github_accounts{$user}{key_file}).".pub";
+            my $key_path = compress_path($github_accounts{$user}{key_file});
+            my $pub_key = $key_path =~ /\.pub$/ ? $key_path : $key_path.".pub";
             if (@clip_cmd) {
                 print "  $user:  @clip_cmd < $pub_key\n";
             } else {
