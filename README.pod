@@ -470,7 +470,7 @@ Pit for testing!
 
 =item L<v1.009|https://github.com/dolmen/github-keygen/compare/v1.008...v1.009>
 
-Added support for dashes in GitHub usernames. Thanks Pedro Figueiredo!
+Added support for dashes in GitHub usernames. Thanks L<Pedro Figueiredo|https://github.com/pfig>!
 
 =item L<v1.008|https://github.com/dolmen/github-keygen/compare/v1.007...v1.008>
 
@@ -577,17 +577,32 @@ Olivier MenguE<eacute>, L<mailto:dolmen@cpan.org>.
 
 =head2 Thanks
 
+=over 4
+
+=item *
+
 L<Eric Lefevre|https://github.com/elefevre>: documentation patch.
+
+=item *
 
 L<Eu Beng Hee|https://github.com/ahbeng>: L<blog post about SSH connection sharing|http://interrobeng.com/2013/08/25/speed-up-git-5x-to-50x/> that inspired
 changes in 1.008.
 
+=item *
+
 L<Pedro Figueiredo|https://github.com/pfig>: support for GitHub account with
 dashes (v1.009).
 
-L<agosticlines|https://github.com/agnosticlines>: L<GitHub #65|https://github.com/dolmen/github-keygen/pull/65>.
+=item *
 
-If you want to contribute, have a look to L<CONTRIBUTING.pod>.
+L<agnosticlines|https://github.com/agnosticlines>:
+L<GitHub #65|https://github.com/dolmen/github-keygen/pull/65>
+and hints about macOS SEC.
+
+=back
+
+If you want to contribute, have a look at L<CONTRIBUTING.pod>.
+
 
 =head1 COPYRIGHT & LICENSE
 
