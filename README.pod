@@ -541,7 +541,7 @@ Ubuntu 24.04
 
 =item *
 
-MacOS with perl 5.40.2 and OpenSSH 9.7
+MacOS with perl 5.42.0 and OpenSSH 10.2.
 
 =item *
 
