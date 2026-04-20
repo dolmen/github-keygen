@@ -51,8 +51,8 @@ Step by step on MacOS (zsh):
 
 =item b. Install a recent perl:
 
-    plenv install 5.40.2
-    plenv global 5.40.2
+    plenv install 5.42.0
+    plenv global 5.42.0
 
 =item c. Install L<cpanm|https://metacpan.org/dist/App-cpanminus/view/bin/cpanm>:
 
@@ -137,12 +137,14 @@ Each commit must be an independent and fully contained change on its own.
 
 =item 4.2 Submit a pull request on GitHub
 
+Be careful to submit the changes are submitted for the C<master> branch, not C<release>.
+
 =item 4.3 Add more changes
 
 You may want to add more changes, or changes may be requested by the reviewer.
 
-Don't hesitate to edit existing commits (C<git commit --amend>) and force push
-(C<git push -f>) if necessary.
+Don't hesitate to edit existing commits (C<git commit --amend>) or rebase (C<git rebase -i>)
+if necessary. Then force push (C<git push -f>).
 
 =back
 
