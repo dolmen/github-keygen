@@ -758,7 +758,11 @@ EOF
     push @ghkg_config_lines, "\n" if $ghkg_section_pos <= @sections;
 
     # Inject our section
-    splice @sections, $ghkg_section_pos, 0, [ '', '', @ghkg_config_lines ]
+    if ($ghkg_section_pos > scalar @sections) {
+        push @sections, [ '', '', @ghkg_config_lines ]
+    } else {
+        splice @sections, $ghkg_section_pos, 0, [ '', '', @ghkg_config_lines ]
+    }
 }
 
 
