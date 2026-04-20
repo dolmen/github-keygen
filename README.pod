@@ -262,7 +262,15 @@ L<the commit log|https://github.com/dolmen/github-keygen/commits/release>.
 
 =over 4
 
-=item v1.401
+=item UNRELEASED
+
+Improve handling of C<IdentityFile> (either from config or given via C<-i>) to allow
+to point directly to a public key file: this is for the case where the private key is
+not stored on disk with the public key but in a more secure area (e.g. macOS SEP).
+Thanks L<agnosticlines|https://github.com/agnosticlines>
+(L<GitHub #65|https://github.com/dolmen/github-keygen/pull/65>)!
+
+=item L<v1.401|https://github.com/dolmen/github-keygen/compare/v1.400...v1.401>
 
 Update key exchange algorithms:
 
@@ -576,6 +584,8 @@ changes in 1.008.
 
 L<Pedro Figueiredo|https://github.com/pfig>: support for GitHub account with
 dashes (v1.009).
+
+L<agosticlines|https://github.com/agnosticlines>: L<GitHub #65|https://github.com/dolmen/github-keygen/pull/65>.
 
 If you want to contribute, have a look to L<CONTRIBUTING.pod>.
 

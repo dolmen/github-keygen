@@ -416,7 +416,8 @@ if (@github_accounts) {
 
     foreach my $user (@github_accounts) {
         my $u = $github_accounts{$user};
-        my $pub_key_file = $u->{key_file} . ".pub";
+        my $pub_key_file = $u->{key_file};
+        $pub_key_file .= '.pub' unless $pub_key_file =~ /\.pub\z/;
         if (-e $pub_key_file) {
             if (open my $f, '-|', qw<ssh-keygen -l -f>, $pub_key_file) {
                 chomp(my $fingerprint = <$f>);
@@ -658,6 +659,9 @@ EOF
                 ($u eq $github_default ? (GITHUB_HOSTS) : ()),
             ) . "\n",
             "IdentitiesOnly yes\n",
+            # Note: IdentityFile may be either a private key or a public key (.pub)
+            # depending on the storage method: when the private key is stored
+            # in a more secure area than that directory, the .pub is directly linked here
             'IdentityFile '. compress_path($github_accounts{$u}->{key_file}) . "\n",
             "\n";
     }
@@ -834,7 +838,9 @@ if (@unregistered_users) {
     if (@clip_cmd && @unregistered_users == 1 && !$offline) {
         my $user = shift @unregistered_users;
         # Copy the first key created to the clipboard
-        my $pub_key_file = $github_accounts{$user}->{key_file}.".pub";
+        my $pub_key_file = $github_accounts{$user}->{key_file};
+        $pub_key_file .= '.pub' unless $pub_key_file =~ /\.pub\z/;
+
         # Read the public key from the file
         open my $pub, '<', $pub_key_file;
         my $pubkey = <$pub>;
@@ -854,11 +860,12 @@ if (@unregistered_users) {
             . "<https://github.com/settings/keys>.\n";
         # Help the user to copy the other keys
         foreach my $user (@unregistered_users) {
-            my $pub_key = compress_path($github_accounts{$user}{key_file}).".pub";
+            my $pub_key_file = compress_path($github_accounts{$user}{key_file});
+            $pub_key_file .= '.pub' unless $pub_key_file =~ /\.pub\z/;
             if (@clip_cmd) {
-                print "  $user:  @clip_cmd < $pub_key\n";
+                print "  $user:  @clip_cmd < $pub_key_file\n";
             } else {
-                print "  $user:  $pub_key\n";
+                print "  $user:  $pub_key_file\n";
             }
         }
         if ($offline) {
