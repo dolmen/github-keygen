@@ -4,8 +4,13 @@ on: [push]
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
     if: github.ref != 'refs/heads/release'
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Check out
       uses: actions/checkout@v6
@@ -23,8 +28,13 @@ jobs:
       run: ./release.pl -n
 
   test-release:
-    name: Test
-    runs-on: ubuntu-latest
+    name: Test Release
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
     if: github.ref == 'refs/heads/release'
     steps:
     - name: Check out
@@ -33,8 +43,14 @@ jobs:
       run: perl -c ./github-keygen
 
   test-ssh:
-    runs-on: ubuntu-latest
+    name: Test SSH
     if: github.ref != 'refs/heads/release'
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
     steps:
     - run: ssh -V
     - name: Show GitHub public keys
