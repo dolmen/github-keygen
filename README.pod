@@ -606,7 +606,7 @@ If you want to contribute, have a look at L<CONTRIBUTING.pod>.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright E<copy> 2011-2025 Olivier MenguE<eacute>.
+Copyright E<copy> 2011-2026 Olivier MenguE<eacute>.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
