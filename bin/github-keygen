@@ -828,9 +828,15 @@ if (@unregistered_users) {
 
     my @clip_cmd;
 
-    # X11
+    # X11: xsel
+    @clip_cmd = qw</usr/bin/xsel --clipboard --input>
+        if exists $ENV{DISPLAY} && -x '/usr/bin/xsel';
+    # X11: xclip (overrides xsel)
     @clip_cmd = qw</usr/bin/xclip -selection clipboard>
         if exists $ENV{DISPLAY} && -x '/usr/bin/xclip';
+    # Wayland (must override X11 if wl-copy is available)
+    @clip_cmd = qw</usr/bin/wl-copy>
+        if exists $ENV{WAYLAND_DISPLAY} && -x '/usr/bin/wl-copy';
 
     # Darwin
     @clip_cmd = qw</usr/bin/pbcopy> if -x '/usr/bin/pbcopy';
