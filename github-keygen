@@ -9944,7 +9944,7 @@ if (-e SSH_CONFIG_FILE) {
         @ssh_config_lines = <$f>;
         close $f;
     } else {
-        warn sprintf "can't open %s\n", SSH_CONFIG_FILE;
+        die sprintf "can't open %s: %s\n", SSH_CONFIG_FILE, $!;
     }
 }
 
